@@ -12,6 +12,8 @@
 ; CONSTANTS
 ;*****************************************************************************************************************
 
+CONSTANT1 equ 100                            ; constant declaration
+
 ; declares a data structure 
              rsreset
 ship.x       rs.w       1
@@ -77,41 +79,111 @@ main         nop
              move.w     d0,value2            ; value2 = remainder of 100/30 = 10
 
 ; left shift
+             move.w     #20,d0               ; d0 = 20
+             asl.w      #2,d0                ; shifts d0 2 bits to the left => d0 = d0 * 2^2 = d0 * 4
 
 ; right shift
+             move.w     #20,d0               ; d0 = 20
+             asr.w      #1,d0                ; shifts d0 1 bit to the right => d0 = d0 / 2
 
 ; logical and
+             move.w     #%10011100,d0        ; d0 = 156
+             and.w      #%00001111,d0        ; d0 = 1100
 
 ; logical or
+             move.w     #%11110000,d0        ; d0 = 240 = $f0
+             or.w       #%00001111,d0        ; d0 = %11111111 = $ff
 
 ; logical xor
+             move.w     #%00001010,d0        
+             eor.w      #%00001111,d0        ; d0 = %00000101
+
+; logical not
+             move.w     #%00001111,d0        
+             not.w      d0                   ; d0 = %11110000
 
 ; test if zero
+             move.w     #0,d0
+             tst.w      d0
+             move.w     #1,d0
+             tst.w      d0 
 
 ; bit test
+             move.w     #%00000100,d0
+             btst.l     #2,d0
 
 ; compare
+             move.w     #123,d0
+             cmp.w      #100,d0
+             move.w     #90,d0
+             cmp.w      #100,d0
 
 ; conditional branches
+             move.w     #123,d0
+             cmp.w      #100,d0              ; d0 >= 100?
+             bge        .greater_or_equal    ; if d0 >= 100 jumps to .greater_or_equal
+.else:
+             move.w     d0,d3                ; else executes this instruction
+             bra        .continue
+.greater_or_equal:
+             move.w     d0,d1
+.continue:
+             move.w     #1,d0
+
+             move.w     #123,d0
+             cmp.w      #100,d0              ; d0 <= 100?
+             ble        .less_or_equal       ; if d0 <= 100 jumps to .less_or_equal
+.else:
+             move.w     d0,d3                ; else executes this instruction
+             bra        .continue
+.less_or_equal:
+             move.w     d0,d1
+.continue:
+             move.w     #1,d0
+
+             move.w     #100,d0
+             cmp.w      #100,d0              ; d0 = 100?
+             beq        .equal               ; if d0 = 100 jumps to .equal
+.else:
+             move.w     d0,d3                ; else executes this instruction
+             bra        .continue
+.equal:
+             move.w     d0,d1
+.continue:
+             move.w     #1,d0
 
 ; cycle with a fixed number of iterations
+             moveq      #10-1,d7             ; number of iterations - 1 in d7
+.loop        move.b     (a0)+,(a1)+          ; copies a byte from the address contained into a0 to the address contained in a1
+             dbra       d7,.loop             ; repeats the loop until d7 <> 0
 
-; exmaple of while cycle
+; example of while cycle
+
+.while_loop:
+             cmp.w      #100,d0
+             bgt        .exit                ; if d0 > 100 exits the loop
+             add.w      #1,d0                ; d0 = d0 + 1
+             bra        .while_loop          ; jumps to .while_loop, repeating the loop
+.exit        nop
 
 ; call to subroutine
+             bsr        subroutine1          ; uses a relative addressing of subroutine1
+             jsr        subroutine1          ; uses absolute addressing of subroutine1
 
-; return from subroutine
 
-; save registers value into stack
-
-; restore registers value from stack
-
-            rts
+             rts
 
 ;*****************************************************************************************************************
 ; SUBROUTINES
 ;*****************************************************************************************************************
 
+subroutine1:
+             movem      d0-a6,-(sp)          ; saves registers from d0 to a6 value into stack
+
+             nop                             ; instructions here
+
+             movem      (sp)+,d0-a6          ; restores registers value from stack
+             rts                             ; returns to the instruction after the call
 
 
 
