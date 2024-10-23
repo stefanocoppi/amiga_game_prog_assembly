@@ -24,7 +24,8 @@ ship.length  rs.b       0
 ;*****************************************************************************************************************
 ; MAIN PROGRAM
 ;*****************************************************************************************************************
-main         nop
+main:
+             nop
              nop
 ; move, immediate addressing
              move.b     #$ff,d0              ; copy byte $ff into least significant byte (lsb) of register d0
@@ -80,37 +81,37 @@ main         nop
 
 ; left shift
              move.w     #20,d0               ; d0 = 20
-             asl.w      #2,d0                ; shifts d0 2 bits to the left => d0 = d0 * 2^2 = d0 * 4
+             asl.w      #2,d0                ; shifts d0 2 bits to the left => d0 = d0 * 2^2 = d0 * 4 = 80
 
 ; right shift
              move.w     #20,d0               ; d0 = 20
-             asr.w      #1,d0                ; shifts d0 1 bit to the right => d0 = d0 / 2
+             asr.w      #1,d0                ; shifts d0 1 bit to the right => d0 = d0 / 2 = 10
 
 ; logical and
              move.w     #%10011100,d0        ; d0 = 156
-             and.w      #%00001111,d0        ; d0 = 1100
+             and.w      #%00001111,d0        ; d0 = 1100 = $c
 
 ; logical or
              move.w     #%11110000,d0        ; d0 = 240 = $f0
              or.w       #%00001111,d0        ; d0 = %11111111 = $ff
 
 ; logical xor
-             move.w     #%00001010,d0        
-             eor.w      #%00001111,d0        ; d0 = %00000101
+             move.w     #%00001010,d0        ; d0 = %00001010 = $a
+             eor.w      #%00001111,d0        ; d0 = %00000101 = $5
 
 ; logical not
-             move.w     #%00001111,d0        
-             not.w      d0                   ; d0 = %11110000
+             move.w     #%00001111,d0        ; d0 = $000f
+             not.w      d0                   ; d0 = %1111111111110000 = $fff0
 
 ; test if zero
              move.w     #0,d0
-             tst.w      d0
+             tst.w      d0                   ; SR has Z=1
              move.w     #1,d0
-             tst.w      d0 
+             tst.w      d0                   ; SR has Z=0
 
 ; bit test
-             move.w     #%00000100,d0
-             btst.l     #2,d0
+             move.w     #%00000000,d0
+             btst.l     #2,d0                ; SR has Z = 1 because bit 2 is zero
 
 ; compare
              move.w     #123,d0
@@ -133,23 +134,23 @@ main         nop
              move.w     #123,d0
              cmp.w      #100,d0              ; d0 <= 100?
              ble        .less_or_equal       ; if d0 <= 100 jumps to .less_or_equal
-.else:
+.else2:
              move.w     d0,d3                ; else executes this instruction
-             bra        .continue
+             bra        .continue2
 .less_or_equal:
              move.w     d0,d1
-.continue:
+.continue2:
              move.w     #1,d0
 
              move.w     #100,d0
              cmp.w      #100,d0              ; d0 = 100?
              beq        .equal               ; if d0 = 100 jumps to .equal
-.else:
+.else3:
              move.w     d0,d3                ; else executes this instruction
-             bra        .continue
+             bra        .continue3
 .equal:
              move.w     d0,d1
-.continue:
+.continue3:
              move.w     #1,d0
 
 ; cycle with a fixed number of iterations
@@ -160,8 +161,8 @@ main         nop
 ; example of while cycle
 
 .while_loop:
-             cmp.w      #100,d0
-             bgt        .exit                ; if d0 > 100 exits the loop
+             cmp.w      #5,d0
+             bgt        .exit                ; if d0 > 5 exits the loop
              add.w      #1,d0                ; d0 = d0 + 1
              bra        .while_loop          ; jumps to .while_loop, repeating the loop
 .exit        nop
