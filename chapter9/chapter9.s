@@ -1,7 +1,7 @@
 ;************************************************************************
 ; Amiga Assembly Game Programming Book
 ; 
-; Chapter 9 - 
+; Chapter 9 - Tiles and tilemaps
 ;
 ; (c) 2024 Stefano Coppi
 ;************************************************************************
@@ -34,14 +34,23 @@ CIAAPRA          equ $bfe001
 DMASET           equ %1000001111000000             
 
 ; display
-N_PLANES         equ 3
+N_PLANES         equ 8
 DISPLAY_WIDTH    equ 320
 DISPLAY_HEIGHT   equ 256
 DISPLAY_PLANE_SZ equ DISPLAY_HEIGHT*(DISPLAY_WIDTH/8)
 DISPLAY_ROW_SIZE equ (DISPLAY_WIDTH/8)
+
+; tiles
 TILE_WIDTH       equ 64
 TILE_HEIGHT      equ 64
 TILE_PLANE_SZ    equ TILE_HEIGHT*(TILE_WIDTH/8)
+TILESET_WIDTH    equ 640
+TILESET_HEIGHT   equ 512
+TILESET_ROW_SIZE equ (TILESET_WIDTH/8)
+TILESET_PLANE_SZ equ (TILESET_HEIGHT*TILESET_ROW_SIZE)
+TILESET_COLS     equ 10          
+TILEMAP_ROW_SIZE equ 100*2
+
 
              SECTION    code_section,CODE
 
@@ -55,17 +64,24 @@ main:
              move.l     #screen,d0                                   ; address of screen in d0
              bsr        init_bplpointers                             ; initializes bitplane pointers to our image
 
-             lea        img_tile,a0
-             move.w     #(DISPLAY_WIDTH-TILE_WIDTH)/2,d0             ; x position
-             move.w     #(DISPLAY_HEIGHT-TILE_HEIGHT)/2,d1           ; y position
-             mulu       #DISPLAY_ROW_SIZE,d1                         ; y_offset = y * DISPLAY_ROW_SIZE
-             asr.w      #3,d0                                        ; x_offset = x/8
-             add.w      d1,d0                                        ; sum the offsets
-             ext.l      d0
-             lea        screen,a1
-             add.l      d0,a1                                        ; sum the offset to a1
-             bsr        draw_tile
+            ;  lea        screen,a1                                    ; address where draw the tile
+            ;  move.w     #0,d2                                        ; x position
+            ;  move.w     #256-64,d3                                   ; y position
+            ;  move.w     #2,d0                                        ; tile index
+            ;  bsr        draw_tile
+            ;  move.w     #64,d2                                       ; x position
+            ;  move.w     #256-64,d3                                   ; y position
+            ;  move.w     #3,d0                                        ; tile index
+            ;  bsr        draw_tile
 
+            ;  lea        screen,a1                                    ; address where draw the tile
+            ;  move.w     #11,d0                                       ; map column to draw
+            ;  move.w     #0,d2                                        ; x position (multiple of 16)
+            ;  bsr        draw_tile_column
+
+             lea        screen,a1                                    ; address where draw the tile
+             move.w     #11,d0                                       ; map column to start drawing from
+             bsr        fill_screen_with_tiles
 mainloop: 
              btst       #6,CIAAPRA                                   ; left mouse button pressed?
              bne.s      mainloop                                     ; if not, repeats the loop
@@ -167,36 +183,116 @@ wait_blitter:
 
 
 ;************************************************************************
-; Draw a 64x64 pixel tile using blitter
+; Draws a 64x64 pixel tile using Blitter.
 ;
 ; parameters:
-; a0 - address of tile
-; a1 - address where draw the tile
+; d0.w - tile index
+; d2.w - x position of the screen where the tile will be drawn (multiple of 16)
+; d3.w - y position of the screen where the tile will be drawn
+; a1   - address where draw the tile
 ;************************************************************************
 draw_tile:
              movem.l    d0-a6,-(sp)                                  ; saves registers into the stack
 
-             moveq      #N_PLANES-1,d1
+    ; calculates the screen address where to draw the tile
+             mulu       #DISPLAY_ROW_SIZE,d3                         ; y_offset = y * DISPLAY_ROW_SIZE
+             lsr.w      #3,d2                                        ; x_offset = x / 8
+             ext.l      d2
+             add.l      d3,a1                                        ; sums offsets to a1
+             add.l      d2,a1
+
+    ; calculates row and column of tile in tileset starting from index
+             ext.l      d0                                           ; extends d0 to a long because the destination operand if divu must be long
+             divu       #TILESET_COLS,d0                             ; tile_index / TILESET_COLS
+             swap       d0
+             move.w     d0,d1                                        ; the remainder indicates the tile column
+             swap       d0                                           ; the quotient indicates the tile row
+         
+    ; calculates the x,y coordinates of the tile in the tileset
+             lsl.w      #6,d0                                        ; y = row * 64
+             lsl.w      #6,d1                                        ; x = column * 64
+         
+    ; calculates the offset to add to a0 to get the address of the source image
+             mulu       #TILESET_ROW_SIZE,d0                         ; offset_y = y * TILESET_ROW_SIZE
+             lsr.w      #3,d1                                        ; offset_x = x / 8
+             ext.l      d1
+
+             lea        tileset,a0                                   ; source image address
+             add.l      d0,a0                                        ; add y_offset
+             add.l      d1,a0                                        ; add x_offset
+
+             moveq      #N_PLANES-1,d7
+         
              bsr        wait_blitter
              move.w     #$ffff,BLTAFWM(a5)                           ; don't use mask
              move.w     #$ffff,BLTALWM(a5)
              move.w     #$09f0,BLTCON0(a5)                           ; enable channels A,D
                                                                      ; logical function = $f0, D = A
              move.w     #0,BLTCON1(a5)
-             move.w     #0,BLTAMOD(a5)
-             
+             move.w     #(TILESET_WIDTH-TILE_WIDTH)/8,BLTAMOD(a5)    ; A channel modulus
              move.w     #(DISPLAY_WIDTH-TILE_WIDTH)/8,BLTDMOD(a5)    ; D channel modulus
 .loop:
              bsr        wait_blitter
              move.l     a0,BLTAPT(a5)                                ; source address
              move.l     a1,BLTDPT(a5)                                ; destination address
-             move.w     #64*64+4,BLTSIZE(a5)                         ; blit size: 64 rows for 4 words
-             add.l      #TILE_PLANE_SZ,a0                            ; advances to the next plane
+             move.w     #64*64+4,BLTSIZE(a5)                         ; blit size: 64 rows for 4 word
+             add.l      #TILESET_PLANE_SZ,a0                         ; advances to the next plane
              add.l      #DISPLAY_PLANE_SZ,a1
-             dbra       d1,.loop
+             dbra       d7,.loop
              bsr        wait_blitter
 
-             movem.l    (sp)+,d0-a6                                  ; restores registers values from the stack
+             movem.l    (sp)+,d0-a6                                  ; restore registers from the stack
+             rts
+
+
+;************************************************************************
+; Draws a column of 3 tiles.
+;
+; parameters:
+; d0.w - map column
+; d2.w - x position (multiple of 16)
+; a1   - address where draw the tile
+;************************************************************************
+draw_tile_column: 
+             movem.l    d0-a6,-(sp)
+        
+    ; calculates the tilemap address from which to read the tile index
+             lea        map,a0
+             lsl.w      #1,d0                                        ; offset_x = map_column * 2
+             ext.l      d0
+             add.l      d0,a0
+         
+             moveq      #3-1,d7                                      ; number or tilemap rows - 1
+             move.w     #0,d3                                        ; y position
+.loop:
+             move.w     (a0),d0                                      ; tile index
+             bsr        draw_tile
+             add.w      #TILE_HEIGHT,d3                              ; increment y position
+             add.l      #TILEMAP_ROW_SIZE,a0                         ; move to the next row of the tilemap
+             dbra       d7,.loop
+
+             movem.l    (sp)+,d0-a6
+             rts
+
+
+;************************************************************************
+; Fills the screen with tiles.
+;
+; parameters:
+; d0.w - map column from which to start drawing tiles
+; a1   - address where draw the tile
+;************************************************************************
+fill_screen_with_tiles:
+             movem.l    d0-a6,-(sp)
+
+             moveq      #5-1,d7                                      ; number of tile columns - 1 to draw
+             move.w     #0,d2                                        ; position x
+.loop        bsr        draw_tile_column
+             add.w      #1,d0                                        ; increments map column
+             add.w      #64,d2                                       ; increases position x
+             dbra       d7,.loop
+
+             movem.l    (sp)+,d0-a6
              rts
 
 
@@ -208,6 +304,7 @@ gfx_base     dc.l       0                                            ; base addr
 old_dma      dc.w       0                                            ; saved state of DMACON
 sys_coplist  dc.l       0                                            ; address of system copperlist                                     
 
+map          include    "gfx/shooter_map.i"
 
 ;************************************************************************
 ; Graphics data
@@ -232,22 +329,27 @@ copperlist:
   ; bit 4: most significant bit of bitplane number
   ; bit 9: set to 1 to enable composite video output
   ; bit 12-14: least significant bits of bitplane number
-  ; bitplane number: 3 => %0011
+  ; bitplane number: 8 => %1000
   ;                              5432109876543210
-             dc.w       BPLCON0,%0011001000000001
+             dc.w       BPLCON0,%0000001000010001
              dc.w       FMODE,0                                      ; 16 bit fetch mode
 
 bplpointers:
              dc.w       $e0,0,$e2,0                                  ; plane 1
              dc.w       $e4,0,$e6,0                                  ; plane 2
              dc.w       $e8,0,$ea,0                                  ; plane 3
+             dc.w       $ec,0,$ee,0                                  ; plane 4
+             dc.w       $f0,0,$f2,0                                  ; plane 5
+             dc.w       $f4,0,$f6,0                                  ; plane 6
+             dc.w       $f8,0,$fa,0                                  ; plane 7
+             dc.w       $fc,0,$fe,0                                  ; plane 8
 
-palette      incbin     "gfx/tile.pal"                               ; palette
+palette      incbin     "gfx/shooter_tiles.pal"                      ; palette
 
              dc.w       $ffff,$fffe                                  ; end of copperlist
 
          
-img_tile     incbin     "gfx/tile.raw"                               ; image 64 x 64 pixel , 3 bitplanes
+tileset      incbin     "gfx/shooter_tiles.raw"                      ; image 640 x 512 pixel , 8 bitplanes
 
 
 ;************************************************************************

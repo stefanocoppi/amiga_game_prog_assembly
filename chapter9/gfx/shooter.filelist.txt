@@ -1,2 +1,0 @@
-shooter.png
-C:\Users\stefano.coppi\Downloads\amiga\amiga_game_prog_assembly\chapter9\gfx\shooter.map_final.layer-Layer 1.map001.txm
