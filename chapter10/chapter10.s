@@ -1,7 +1,9 @@
 ;************************************************************************
 ; Amiga Assembly Game Programming Book
 ; 
-; Chapter 10 - 
+; Chapter 10 - Scrolling Background
+
+; simple version using Blitter to scroll.
 ;
 ; (c) 2024 Stefano Coppi
 ;************************************************************************
@@ -74,25 +76,6 @@ main:
               nop
               bsr        take_system                                              ; takes the control of Amiga's hardware
               bsr        init_bplpointers                                         ; initializes bitplane pointers to our image
-
-            ;  lea        screen,a1                                    ; address where draw the tile
-            ;  move.w     #0,d2                                        ; x position
-            ;  move.w     #256-64,d3                                   ; y position
-            ;  move.w     #2,d0                                        ; tile index
-            ;  bsr        draw_tile
-            ;  move.w     #64,d2                                       ; x position
-            ;  move.w     #256-64,d3                                   ; y position
-            ;  move.w     #3,d0                                        ; tile index
-            ;  bsr        draw_tile
-
-            ;  lea        screen,a1                                    ; address where draw the tile
-            ;  move.w     #11,d0                                       ; map column to draw
-            ;  move.w     #0,d2                                        ; x position (multiple of 16)
-            ;  bsr        draw_tile_column
-
-            ;   lea        bgnd_surface,a1                                          ; address where draw the tile
-            ;   move.w     #0,d0                                                   ; map column to start drawing from
-            ;   bsr        fill_screen_with_tiles
 
               move.w     map_ptr,d0
               bsr        init_background
@@ -174,7 +157,7 @@ release_system:
 init_bplpointers:
               movem.l    d0-a6,-(sp)
                    
-              move.l     #screen,d0                                               ; address of visible screen buffer
+              move.l     #dbuffer1,d0                                             ; address of visible screen buffer
               lea        bplpointers,a1                                           ; bitplane pointers in a1
               move.l     #(N_PLANES-1),d1                                         ; number of loop iterations in d1
 .loop:
@@ -351,27 +334,6 @@ draw_tile_column:
 
 
 ;************************************************************************
-; Fills the screen with tiles.
-;
-; parameters:
-; d0.w - map column from which to start drawing tiles
-; a1   - address where draw the tile
-;************************************************************************
-fill_screen_with_tiles:
-              movem.l    d0-a6,-(sp)
-
-              moveq      #5-1,d7                                                  ; number of tile columns - 1 to draw
-              move.w     #0,d2                                                    ; position x
-.loop         bsr        draw_tile_column
-              add.w      #1,d0                                                    ; increments map column
-              add.w      #64,d2                                                   ; increases position x
-              dbra       d7,.loop
-
-              movem.l    (sp)+,d0-a6
-              rts
-
-
-;************************************************************************
 ; Initializes the background, copying the initial part of the level map.
 ;
 ; parameters:
@@ -407,7 +369,7 @@ init_background:
 
 
 ;************************************************************************
-; Draw the background, copying it from background_surface via Blitter.
+; Draws the background, copying it from background_surface via Blitter.
 ;
 ; parameters:
 ;
@@ -465,14 +427,13 @@ scroll_background:
               move.l     draw_buffer,a1                                           ; buffer where to draw                                                  
               bsr        draw_background
 
-              ext.l      d0                                                       ; every 64 pixels draws a new column
+              ext.l      d0                                                       ; every TILE_WIDTH (64) pixels draws a new column
               divu       #TILE_WIDTH,d0
               swap       d0
-              tst.w      d0                                                       ; remainder of bgnd_x/16 is zero?
+              tst.w      d0                                                       ; remainder of bgnd_x/TILE_WIDTH is zero?
               beq        .draw_new_column
               bra        .check_bgnd_end
 .draw_new_column:
-              add.w      #TILE_WIDTH,camera_x
               add.w      #1,map_ptr
               cmp.w      #TILEMAP_WIDTH,map_ptr                                   ; end of map?
               bge        .return
@@ -506,8 +467,7 @@ gfx_base      dc.l       0                                                      
 old_dma       dc.w       0                                                        ; saved state of DMACON
 sys_coplist   dc.l       0                                                        ; address of system copperlist                                     
 
-camera_x      dc.w       0                                                        ; camera x position
-map_ptr       dc.w       90                                                        ; current map column
+map_ptr       dc.w       0                                                        ; current map column
 bgnd_x        dc.w       0                                                        ; current x coordinate of camera into background surface
 map           include    "gfx/shooter_map.i"
 
@@ -566,8 +526,6 @@ tileset       incbin     "gfx/shooter_tiles.raw"                                
 ;************************************************************************
 
               SECTION    bss_data,BSS_C
-
-screen        ds.b       (DISPLAY_PLANE_SZ*N_PLANES)                              ; visible screen
 
 dbuffer1      ds.b       (DISPLAY_PLANE_SZ*N_PLANES)                              ; display buffers used for double buffering
 dbuffer2      ds.b       (DISPLAY_PLANE_SZ*N_PLANES)   
