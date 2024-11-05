@@ -25,7 +25,7 @@ DMASET           equ %1000001110100000
 
 
 ; display
-N_PLANES         equ 4
+N_PLANES         equ 8
 DISPLAY_WIDTH    equ 320
 DISPLAY_HEIGHT   equ 256
 DISPLAY_PLANE_SZ equ DISPLAY_HEIGHT*(DISPLAY_WIDTH/8)
@@ -342,11 +342,15 @@ copperlist:
               dc.w       BPL1MOD,0                                             
               dc.w       BPL2MOD,0
 
+
   ; BPLCON0 ($100)
+  ; bit 0: set to 1 to enable BLTCON3 register
+  ; bit 4: most significant bit of bitplane number
   ; bit 9: set to 1 to enable composite video output
   ; bit 12-14: least significant bits of bitplane number
   ;                               5432109876543210
-              dc.w       BPLCON0,%0100001000000000
+              dc.w       BPLCON0,%0000001000010001
+              dc.w       FMODE,0                        ; 16 bit fetch mode
 
   ; Controls sprite-bitplane collisions
   ; bit 12: enable sprite 1
@@ -360,6 +364,10 @@ bplpointers:
               dc.w       $e4,0,$e6,0                    ; plane 2
               dc.w       $e8,0,$ea,0                    ; plane 3
               dc.w       $ec,0,$ee,0                    ; plane 4
+              dc.w       $f0,0,$f2,0                    ; plane 5
+              dc.w       $f4,0,$f6,0                    ; plane 6
+              dc.w       $f8,0,$fa,0                    ; plane 7
+              dc.w       $fc,0,$fe,0                    ; plane 8
 
 sprite_pointers:
               dc.w       SPR0PTH,0,SPR0PTL,0

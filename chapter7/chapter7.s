@@ -196,7 +196,7 @@ copperlist:
   ; bit 4: most significant bit of bitplane number
   ; bit 9: set to 1 to enable composite video output
   ; bit 12-14: least significant bits of bitplane number
-  ;                             5432109876543210
+  ;                              5432109876543210
              dc.w       BPLCON0,%0000001000010001
              dc.w       FMODE,0                        ; 16 bit fetch mode
 
