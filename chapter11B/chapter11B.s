@@ -332,6 +332,7 @@ sprite_y      dc.w       16
 ; segment loaded in CHIP RAM
               SECTION    graphics_data,DATA_C
 
+              CNOP       0,8                            ; 64-bit alignment
 copperlist:
               dc.w       DIWSTRT,$2c81                  ; display window start at ($81,$2c)
               dc.w       DIWSTOP,$2cc1                  ; display window stop at ($1c1,$12c)
@@ -339,8 +340,8 @@ copperlist:
               dc.w       DDFSTOP,$d0                    ; display data fetch stop at $d0
               dc.w       BPLCON1,0                                          
               dc.w       BPLCON2,%100100                ; sets sprites priority over playfield                               
-              dc.w       BPL1MOD,0                                             
-              dc.w       BPL2MOD,0
+              dc.w       BPL1MOD,-8                     ; due to 64 bit fetch mode                         
+              dc.w       BPL2MOD,-8
 
 
   ; BPLCON0 ($100)
@@ -350,7 +351,7 @@ copperlist:
   ; bit 12-14: least significant bits of bitplane number
   ;                               5432109876543210
               dc.w       BPLCON0,%0000001000010001
-              dc.w       FMODE,0                        ; 16 bit fetch mode
+              dc.w       FMODE,$3                       ; 64 bit fetch mode
 
   ; Controls sprite-bitplane collisions
   ; bit 12: enable sprite 1
@@ -378,19 +379,20 @@ sprite_pointers:
               dc.w       SPR5PTH,0,SPR5PTL,0
               dc.w       SPR6PTH,0,SPR6PTL,0
               dc.w       SPR7PTH,0,SPR7PTL,0
-
-bgnd_palette  incbin     "gfx/bgnd.pal"
+                
+bgnd_palette  incbin     "gfx/bgnd_256.pal"
 palette       incbin     "gfx/alien.pal"
 
               dc.w       $ffff,$fffe                    ; end of copperlist
-
+              
+              CNOP       0,8                            ; 64-bit alignment
 alien_sprite  incbin     "gfx/alien.raw"
 
 ; .\amigeconv.exe -f sprite -a -w 16 -t -d 4 .\alien.png alien.raw
 ; .\amigeconv.exe -f palette -p pal4 -c 16 -x .\alien.png alien.pal
 
-
-bgnd          incbin     "gfx/bgnd.raw"                 ; background image
+              CNOP       0,8                            ; 64-bit alignment
+bgnd          incbin     "gfx/bgnd_256.raw"             ; background image
 
 ;************************************************************************
 ; BSS DATA
