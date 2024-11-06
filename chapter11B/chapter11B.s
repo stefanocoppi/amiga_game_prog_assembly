@@ -434,9 +434,6 @@ palette       incbin     "gfx/ship.pal"
               CNOP       0,8                               ; 64-bit alignment
 ship_sprite   incbin     "gfx/ship.raw"
 
-; .\amigeconv.exe -f sprite -a -w 16 -t -d 4 .\alien.png alien.raw
-; .\amigeconv.exe -f palette -p pal4 -c 16 -x .\alien.png alien.pal
-
               CNOP       0,8                               ; 64-bit alignment
 bgnd          incbin     "gfx/bgnd_256.raw"                ; background image
 
