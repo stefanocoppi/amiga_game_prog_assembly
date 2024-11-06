@@ -30,7 +30,8 @@ DISPLAY_WIDTH    equ 320
 DISPLAY_HEIGHT   equ 256
 DISPLAY_PLANE_SZ equ DISPLAY_HEIGHT*(DISPLAY_WIDTH/8)
 
-SPRITE_HEIGHT    equ 17
+SPRITE_WIDTH     equ 64
+SPRITE_HEIGHT    equ 70
 SPRITE_SPEED     equ 1
 
               SECTION    code_section,CODE
@@ -47,13 +48,20 @@ main:
               bsr        init_bplpointers               ; initializes bitplane pointers to our image
               bsr        init_sprite_pointers
               
-              lea        alien_sprite,a1
+              lea        ship_sprite,a1
               move.w     sprite_y,d0                    ; y position
               move.w     sprite_x,d1                    ; x position
               move.w     #SPRITE_HEIGHT,d2              ; sprite height
               bsr        set_sprite_position
 
-              lea        alien_sprite+76,a1
+              lea        ship_sprite+1152,a1
+              bsr        set_sprite_position
+
+              lea        ship_sprite+1152*2,a1
+              add.w      #SPRITE_WIDTH,d1
+              bsr        set_sprite_position
+
+              lea        ship_sprite+1152*3,a1
               bsr        set_sprite_position
 
 mainloop: 
@@ -190,18 +198,32 @@ init_sprite_pointers:
               movem.l    d0-a6,-(sp)
 
               lea        sprite_pointers,a1
-              move.l     #alien_sprite,d0
+              move.l     #ship_sprite,d0
               move.w     d0,6(a1)                       ; low word
               swap       d0
               move.w     d0,2(a1)                       ; high word
 
               add.l      #8,a1                          ; next sprite pointer
-              move.l     #alien_sprite+76,d0            ; next sprite
+              move.l     #ship_sprite+1152,d0           ; next sprite
               move.w     d0,6(a1)                       ; low word
               swap       d0
               move.w     d0,2(a1)                       ; high word
 
-              bset       #7,alien_sprite+76+3           ; sets sprite1 attached bit
+              bset       #7,ship_sprite+1152+8+1        ; sets sprite1 attached bit
+
+              add.l      #8,a1                          ; next sprite pointer
+              move.l     #ship_sprite+1152*2,d0         ; next sprite
+              move.w     d0,6(a1)                       ; low word
+              swap       d0
+              move.w     d0,2(a1)                       ; high word
+
+              add.l      #8,a1                          ; next sprite pointer
+              move.l     #ship_sprite+1152*3,d0         ; next sprite
+              move.w     d0,6(a1)                       ; low word
+              swap       d0
+              move.w     d0,2(a1)                       ; high word
+
+              bset       #7,ship_sprite+1152*3+8+1      ; sets sprite1 attached bit
 
               movem.l    (sp)+,d0-a6
               rts
@@ -223,27 +245,27 @@ set_sprite_position:
               move.b     d0,(a1)                        ; copies y into sprite VSTART byte
               btst.l     #8,d0                          ; bit 8 of y position is set?
               beq        .dontset_bit8
-              bset.b     #2,3(a1)                       ; sets bit 8 of VSTART
+              bset.b     #2,9(a1)                       ; sets bit 8 of VSTART
               bra        .vstop
 .dontset_bit8:
-              bclr.b     #2,3(a1)                       ; clears bit 8 of VSTART
+              bclr.b     #2,9(a1)                       ; clears bit 8 of VSTART
 .vstop:
               add.w      d2,d0                          ; adds height to y position to get VSTOP
-              move.b     d0,2(a1)                       ; copies the value into sprite VSTOP byte
+              move.b     d0,8(a1)                       ; copies the value into sprite VSTOP byte
               btst.l     #8,d0                          ; bit 8 of VSTOP is set?
               beq        .dontset_VSTOP_bit8
-              bset.b     #1,3(a1)                       ; sets bit 8 of VSTOP
+              bset.b     #1,9(a1)                       ; sets bit 8 of VSTOP
               bra        .set_hpos
 .dontset_VSTOP_bit8:
-              bclr.b     #1,3(a1)                       ; clears bit 8 of VSTOP
+              bclr.b     #1,9(a1)                       ; clears bit 8 of VSTOP
 .set_hpos:
               add.w      #128,d1                        ; adds horizontal offset to x
               btst.l     #0,d1 
               beq        .HSTART_lsb_zero
-              bset.b     #0,3(a1)                       ; sets bit 0 of HSTART
+              bset.b     #0,9(a1)                       ; sets bit 0 of HSTART
               bra        .set_HSTART
 .HSTART_lsb_zero:
-              bclr.b     #0,3(a1)                       ; clears bit 0 of HSTART
+              bclr.b     #0,9(a1)                       ; clears bit 0 of HSTART
 .set_HSTART:
               lsr.w      #1,d1                          ; shifts 1 position to right to get the 8 most significant bits of x position
               move.b     d1,1(a1)                       ; sets HSTART value
@@ -283,13 +305,20 @@ move_sprite_with_joystick:
 .set_down:
               add.w      #SPRITE_SPEED,sprite_y
 .move_sprite:
-              lea        alien_sprite,a1
+              lea        ship_sprite,a1
               move.w     sprite_y,d0                    ; y position
               move.w     sprite_x,d1                    ; x position
               move.w     #SPRITE_HEIGHT,d2              ; sprite height
               bsr        set_sprite_position
 
-              lea        alien_sprite+76,a1
+              lea        ship_sprite+1152,a1
+              bsr        set_sprite_position
+
+              lea        ship_sprite+1152*2,a1
+              add.w      #SPRITE_WIDTH,d1
+              bsr        set_sprite_position
+
+              lea        ship_sprite+1152*3,a1
               bsr        set_sprite_position
 
               movem.l    (sp)+,d0-a6
@@ -306,10 +335,10 @@ check_collisions:
               move.w     CLXDAT(a5),d0
               btst.l     #1,d0                          ; bit 1 checks collisions between playfield and sprites 0-1
               bne        .collision
-              move.w     #$0000,bgnd_palette+2
+              move.w     #$0444,bgnd_palette+6
               bra        .return
 .collision:
-              move.w     #$0f00,bgnd_palette+2
+              move.w     #$0f00,bgnd_palette+6
 .return:
               movem.l    (sp)+,d0-a6
               rts
@@ -351,14 +380,25 @@ copperlist:
   ; bit 12-14: least significant bits of bitplane number
   ;                               5432109876543210
               dc.w       BPLCON0,%0000001000010001
-              dc.w       FMODE,$3                       ; 64 bit fetch mode
+
+; BPLCON4
+; bit 0-3 palette selection for even sprites
+; bit 4-7 palette selection for odd sprites
+; we select palette 7 for both so %1110
+              dc.w       BPLCON4,%11101110
+
+; FMODE
+; bit 0-1: 64 bit fetch mode
+; bit 2-3: 64 pixel sprite width
+              dc.w       FMODE,%1111
 
   ; Controls sprite-bitplane collisions
+  ; bit 13: set to enable sprite 3
   ; bit 12: enable sprite 1
-  ; bit 6-9: enable bitplanes 1-4
+  ; bit 6-11: enable bitplanes 1-6
   ; bit 0-5: color index for collisions with playfield
   ;                              5432109876543210
-              dc.w       CLXCON,%0001001111001000
+              dc.w       CLXCON,%0011111111010001
 
 bplpointers:
               dc.w       $e0,0,$e2,0                    ; plane 1
@@ -379,14 +419,16 @@ sprite_pointers:
               dc.w       SPR5PTH,0,SPR5PTL,0
               dc.w       SPR6PTH,0,SPR6PTL,0
               dc.w       SPR7PTH,0,SPR7PTL,0
-                
+
+
 bgnd_palette  incbin     "gfx/bgnd_256.pal"
-palette       incbin     "gfx/alien.pal"
+palette       incbin     "gfx/ship.pal"
+
 
               dc.w       $ffff,$fffe                    ; end of copperlist
               
               CNOP       0,8                            ; 64-bit alignment
-alien_sprite  incbin     "gfx/alien.raw"
+ship_sprite   incbin     "gfx/ship.raw"
 
 ; .\amigeconv.exe -f sprite -a -w 16 -t -d 4 .\alien.png alien.raw
 ; .\amigeconv.exe -f palette -p pal4 -c 16 -x .\alien.png alien.pal
