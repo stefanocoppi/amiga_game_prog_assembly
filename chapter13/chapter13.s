@@ -35,6 +35,7 @@ DISPLAY_ROW_SIZE equ (DISPLAY_WIDTH/8)
 BOB_WIDTH        equ 128
 BOB_HEIGHT       equ 77
 BOB_SPEED        equ 1
+BOB_PLANE_SZ     equ BOB_HEIGHT*((BOB_WIDTH+16)/8)
 
 
 ;****************************************************************
@@ -50,7 +51,9 @@ bob.width      rs.w       1                                    ; width
 bob.height     rs.w       1
 bob.src_addr   rs.l       1                                    ; source address
 bob.dest_addr  rs.l       1                                    ; destination address
-bob.bltsize    rs.w       1                                    ; blit size
+bob.bltsize    rs.w       1                                    ; blit 
+bob.buffer1    rs.b       BOB_PLANE_SZ*N_PLANES
+bob.buffer2    rs.b       BOB_PLANE_SZ*N_PLANES
 bob.length     rs.b       0
 
 
@@ -65,13 +68,38 @@ main:
                nop
                nop
                bsr        take_system                          ; takes the control of Amiga's hardware
-               move.l     #dbuffer1,d0                         ; address of bgnd image in d0
+               move.l     #dbuffer2,d0                         ; address of bgnd image in d0
                bsr        init_bplpointers                     ; initializes bitplane pointers to our image
              
+               lea        bob_ship,a1
+               move.w     bob.x(a1),d0                         ; x-coordinate of ship in px
+               move.w     #81,d1                               ; y-coordinate of ship in px
+               move.w     #128,d2                              ; ship width in px
+               move.w     #77,d3                               ; ship height in px
+               ;bsr        save_bob_bgnd
+
+               lea        bob_ship,a1                          ; bob strucure
+               move.w     #128,d2                              ; ship width in px
+               move.w     #77,d3                               ; ship height in px
+               ;bsr        restore_bob_bgnd
+
+               lea        bob_ship,a6
+               lea        ship,a0                              ; ship's image address
+               lea        ship_mask,a1                         ; ship's mask address
+               move.l     draw_buffer,a2                       ; destination video buffer address
+               move.w     bob.x(a6),d0                         ; x-coordinate of ship in px
+               move.w     #81,d1                               ; y-coordinate of ship in px
+               move.w     #128,d2                              ; ship width in px
+               move.w     #77,d3                               ; ship height in px
+               move.w     #0,d4                                ; spritesheet column of ship
+               move.w     #0,d5                                ; spritesheet row of ship
+               move.w     #128,a3                              ; spritesheet width
+               move.w     #77,a4                               ; spritesheet height
+               ;bsr        draw_bob                             ; draws player ship
 
 mainloop: 
                bsr        wait_vblank                          ; waits for vertical blank
-               bsr        swap_buffers
+               ;bsr        swap_buffers
 
                lea        bob_ship,a1                          ; bob strucure
                bsr        update_bob
@@ -373,6 +401,18 @@ save_bob_bgnd:
                movem.l    d0-a6,-(sp)
 
                move.l     draw_buffer,a0                       ; source address
+               move.l     a1,d4
+               cmp.l      dbuffer1,a0
+               beq        .set_buffer1
+               add.l      #bob.buffer2,d4
+               move.l     d4,bob.dest_addr(a1)
+               bra        .set_dest
+.set_buffer1:
+               add.l      #bob.buffer1,d4
+               move.l     d4,bob.dest_addr(a1)
+.set_dest:
+               move.l     bob.dest_addr(a1),a2
+
                mulu.w     #DISPLAY_ROW_SIZE,d1                 ; offset_y = y * DISPLAY_ROW_SIZE
                add.l      d1,a0                                ; adds offset_y to source address
                move.w     d0,d6                                ; copies x
@@ -402,11 +442,14 @@ save_bob_bgnd:
                move.w     #$ffff,BLTAFWM(a5)                   ; first word of channel A: no mask
                move.w     #$ffff,BLTALWM(a5)                   ; last word of channel A: no mask
                move.w     #0,BLTCON1(a5)
-               move.w     $09f0,BLTCON0(a5)                    ; copies A to D
+               move.w     #$09f0,BLTCON0(a5)                   ; copies A to D
                move.w     d4,BLTAMOD(a5)                       ; modulus for channel A
                move.w     #0,BLTDMOD(a5)                       ; modulus for channel D
                moveq      #N_PLANES-1,d7                       ; number of cycle repetitions
-               move.l     bob.dest_addr(a1),a2
+               
+
+               
+               
 
 ; copy cycle for each bitplane
 .plane_loop:
@@ -451,7 +494,7 @@ restore_bob_bgnd:
                move.w     #$ffff,BLTAFWM(a5)                   ; first word of channel A: no mask
                move.w     #$ffff,BLTALWM(a5)                   ; last word of channel A: no mask
                move.w     #0,BLTCON1(a5)
-               move.w     $09f0,BLTCON0(a5)                    ; copies A to D
+               move.w     #$09f0,BLTCON0(a5)                   ; copies A to D
                move.w     #0,BLTAMOD(a5)                       ; modulus for channel A
                move.w     d4,BLTDMOD(a5)                       ; modulus for channel D
                moveq      #N_PLANES-1,d7                       ; number of cycle repetitions
@@ -465,8 +508,8 @@ restore_bob_bgnd:
                move.l     a2,BLTDPT(a5)                        ; channel D: destination buffer
                move.w     bob.bltsize(a1),BLTSIZE(a5)          ; blit size and starts blit operation
 
-               add.l      d3,a2                                ; points to the next bitplane
-               add.l      #DISPLAY_PLANE_SZ,a0                                         
+               add.l      d3,a0                                ; points to the next bitplane
+               add.l      #DISPLAY_PLANE_SZ,a2                                         
                dbra       d7,.plane_loop                       ; repeats the cycle for each bitplane    
 
 .return:
@@ -514,10 +557,11 @@ bob_ship       dc.w       0                                    ; bob.valid
                dc.w       81                                   ; y position
                dc.w       128                                  ; width
                dc.w       77                                   ; height  
-               dc.l       0                                    ; source address
+               dc.l       0                                    ; source 
                dc.l       bob_buffer                           ; destination address
                dc.w       0                                    ; blit size
-
+               dcb.b      BOB_PLANE_SZ*N_PLANES,0
+               dcb.b      BOB_PLANE_SZ*N_PLANES,0
 
 ;************************************************************************
 ; Graphics data
