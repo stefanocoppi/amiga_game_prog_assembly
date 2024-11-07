@@ -55,14 +55,14 @@ main:
               move.w     #SPRITE_HEIGHT,d2                 ; sprite height
               bsr        set_sprite_position
 
-              lea        ship_sprite+1152,a1
+              lea        ship_sprite+SPRITE_SIZE,a1
               bsr        set_sprite_position
 
-              lea        ship_sprite+1152*2,a1
+              lea        ship_sprite+SPRITE_SIZE*2,a1
               add.w      #SPRITE_WIDTH,d1
               bsr        set_sprite_position
 
-              lea        ship_sprite+1152*3,a1
+              lea        ship_sprite+SPRITE_SIZE*3,a1
               bsr        set_sprite_position
 
 mainloop: 
