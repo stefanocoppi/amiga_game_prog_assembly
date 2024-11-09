@@ -46,8 +46,6 @@ main:
              nop
              nop
              bsr        take_system                    ; takes the control of Amiga's hardware
-            ;  lea        palette,a0                     ; pointer to palette data in memory
-            ;  bsr        load_palette                   ; loads palette into copperlist
              move.l     #img_space6,d0                 ; address of image in d0
              bsr        init_bplpointers               ; initializes bitplane pointers to our image
 
@@ -113,34 +111,6 @@ release_system:
 
 
 ;************************************************************************
-; Load palette into copperlist.
-;
-; parameters:
-; a0 - address of palette
-;************************************************************************
-load_palette:
-             movem      d0-a6,-(sp)                    ; saves registers into stack
-
-             moveq      #16-1,d6                       ; number of external loop iterations
-             lea        palette_coplist,a1             ; pointer to palette data in copperlist
-             add.l      #2,a0                          ; points to first color value
-             add.l      #2,a1 
-.ext_loop:
-             add.l      #4,a0                          ; points to first color value
-             add.l      #4,a1 
-             moveq      #32-1,d7                       ; number of loop iterations
-.loop:       
-             move.w     (a0),(a1)                      ; copy color value from memory to copperlist
-             add.l      #4,a0                          ; points to next color value in the palette
-             add.l      #4,a1                          ; point to the next value in the copperlist
-             dbra       d7,.loop                       ; repeats the loop for all 32 colors of the color bank
-             dbra       d6,.ext_loop                   ; repeats the loop for all banks, for high and low nibbles
-
-             movem      (sp)+,d0-a6                    ; restores registers from stack
-             rts
-
-
-;************************************************************************
 ; Initializes bitplane pointers
 ;
 ; parameters:
@@ -198,7 +168,6 @@ copperlist:
   ; bit 12-14: least significant bits of bitplane number
   ;                              5432109876543210
              dc.w       BPLCON0,%0000001000010001
-             dc.w       FMODE,0                        ; 16 bit fetch mode
 
 bplpointers:
              dc.w       $e0,0,$e2,0                    ; plane 1
@@ -211,183 +180,6 @@ bplpointers:
              dc.w       $fc,0,$fe,0                    ; plane 8
 
 palette      incbin     "gfx/space.pal"                ; palette
-
-palette_coplist:
-;              ; colors 0-31 , high nibbles
-;              dc.w       BPLCON3,$000
-;              dc.w       $180,0,$182,0,$184,0,$186,0
-;              dc.w       $188,0,$18a,0,$18c,0,$18e,0
-;              dc.w       $190,0,$192,0,$194,0,$196,0
-;              dc.w       $198,0,$19a,0,$19c,0,$19e,0
-;              dc.w       $1a0,0,$1a2,0,$1a4,0,$1a6,0
-;              dc.w       $1a8,0,$1aa,0,$1ac,0,$1ae,0
-;              dc.w       $1b0,0,$1b2,0,$1b4,0,$1b6,0
-;              dc.w       $1b8,0,$1ba,0,$1bc,0,$1be,0
-
-;              ; colors 0-31 , low nibbles
-;              dc.w       BPLCON3,$200
-;              dc.w       $180,0,$182,0,$184,0,$186,0
-;              dc.w       $188,0,$18a,0,$18c,0,$18e,0
-;              dc.w       $190,0,$192,0,$194,0,$196,0
-;              dc.w       $198,0,$19a,0,$19c,0,$19e,0
-;              dc.w       $1a0,0,$1a2,0,$1a4,0,$1a6,0
-;              dc.w       $1a8,0,$1aa,0,$1ac,0,$1ae,0
-;              dc.w       $1b0,0,$1b2,0,$1b4,0,$1b6,0
-;              dc.w       $1b8,0,$1ba,0,$1bc,0,$1be,0
-
-;              ; colors 32-63 , high nibbles
-;              dc.w       BPLCON3,$2C00
-;              dc.w       $180,0,$182,0,$184,0,$186,0
-;              dc.w       $188,0,$18a,0,$18c,0,$18e,0
-;              dc.w       $190,0,$192,0,$194,0,$196,0
-;              dc.w       $198,0,$19a,0,$19c,0,$19e,0
-;              dc.w       $1a0,0,$1a2,0,$1a4,0,$1a6,0
-;              dc.w       $1a8,0,$1aa,0,$1ac,0,$1ae,0
-;              dc.w       $1b0,0,$1b2,0,$1b4,0,$1b6,0
-;              dc.w       $1b8,0,$1ba,0,$1bc,0,$1be,0
-
-;              ; colors 32-63 , low nibbles
-;              dc.w       BPLCON3,$2E00
-;              dc.w       $180,0,$182,0,$184,0,$186,0
-;              dc.w       $188,0,$18a,0,$18c,0,$18e,0
-;              dc.w       $190,0,$192,0,$194,0,$196,0
-;              dc.w       $198,0,$19a,0,$19c,0,$19e,0
-;              dc.w       $1a0,0,$1a2,0,$1a4,0,$1a6,0
-;              dc.w       $1a8,0,$1aa,0,$1ac,0,$1ae,0
-;              dc.w       $1b0,0,$1b2,0,$1b4,0,$1b6,0
-;              dc.w       $1b8,0,$1ba,0,$1bc,0,$1be,0
-
-;              ; colors 64-95 , high nibbles
-;              dc.w       BPLCON3,$4C00
-;              dc.w       $180,0,$182,0,$184,0,$186,0
-;              dc.w       $188,0,$18a,0,$18c,0,$18e,0
-;              dc.w       $190,0,$192,0,$194,0,$196,0
-;              dc.w       $198,0,$19a,0,$19c,0,$19e,0
-;              dc.w       $1a0,0,$1a2,0,$1a4,0,$1a6,0
-;              dc.w       $1a8,0,$1aa,0,$1ac,0,$1ae,0
-;              dc.w       $1b0,0,$1b2,0,$1b4,0,$1b6,0
-;              dc.w       $1b8,0,$1ba,0,$1bc,0,$1be,0
-
-;              ; colors 64-95 , low nibbles
-;              dc.w       BPLCON3,$4E00
-;              dc.w       $180,0,$182,0,$184,0,$186,0
-;              dc.w       $188,0,$18a,0,$18c,0,$18e,0
-;              dc.w       $190,0,$192,0,$194,0,$196,0
-;              dc.w       $198,0,$19a,0,$19c,0,$19e,0
-;              dc.w       $1a0,0,$1a2,0,$1a4,0,$1a6,0
-;              dc.w       $1a8,0,$1aa,0,$1ac,0,$1ae,0
-;              dc.w       $1b0,0,$1b2,0,$1b4,0,$1b6,0
-;              dc.w       $1b8,0,$1ba,0,$1bc,0,$1be,0
-
-;              ; colors 96-127 , high nibbles
-;              dc.w       BPLCON3,$6C00
-;              dc.w       $180,0,$182,0,$184,0,$186,0
-;              dc.w       $188,0,$18a,0,$18c,0,$18e,0
-;              dc.w       $190,0,$192,0,$194,0,$196,0
-;              dc.w       $198,0,$19a,0,$19c,0,$19e,0
-;              dc.w       $1a0,0,$1a2,0,$1a4,0,$1a6,0
-;              dc.w       $1a8,0,$1aa,0,$1ac,0,$1ae,0
-;              dc.w       $1b0,0,$1b2,0,$1b4,0,$1b6,0
-;              dc.w       $1b8,0,$1ba,0,$1bc,0,$1be,0
-
-;              ; colors 96-127 , low nibbles
-;              dc.w       BPLCON3,$6E00
-;              dc.w       $180,0,$182,0,$184,0,$186,0
-;              dc.w       $188,0,$18a,0,$18c,0,$18e,0
-;              dc.w       $190,0,$192,0,$194,0,$196,0
-;              dc.w       $198,0,$19a,0,$19c,0,$19e,0
-;              dc.w       $1a0,0,$1a2,0,$1a4,0,$1a6,0
-;              dc.w       $1a8,0,$1aa,0,$1ac,0,$1ae,0
-;              dc.w       $1b0,0,$1b2,0,$1b4,0,$1b6,0
-;              dc.w       $1b8,0,$1ba,0,$1bc,0,$1be,0
-
-;              ; colors 128-159 , high nibbles
-;              dc.w       BPLCON3,$8C00
-;              dc.w       $180,0,$182,0,$184,0,$186,0
-;              dc.w       $188,0,$18a,0,$18c,0,$18e,0
-;              dc.w       $190,0,$192,0,$194,0,$196,0
-;              dc.w       $198,0,$19a,0,$19c,0,$19e,0
-;              dc.w       $1a0,0,$1a2,0,$1a4,0,$1a6,0
-;              dc.w       $1a8,0,$1aa,0,$1ac,0,$1ae,0
-;              dc.w       $1b0,0,$1b2,0,$1b4,0,$1b6,0
-;              dc.w       $1b8,0,$1ba,0,$1bc,0,$1be,0
-
-;              ; colors 128-159 , low nibbles
-;              dc.w       BPLCON3,$8E00
-;              dc.w       $180,0,$182,0,$184,0,$186,0
-;              dc.w       $188,0,$18a,0,$18c,0,$18e,0
-;              dc.w       $190,0,$192,0,$194,0,$196,0
-;              dc.w       $198,0,$19a,0,$19c,0,$19e,0
-;              dc.w       $1a0,0,$1a2,0,$1a4,0,$1a6,0
-;              dc.w       $1a8,0,$1aa,0,$1ac,0,$1ae,0
-;              dc.w       $1b0,0,$1b2,0,$1b4,0,$1b6,0
-;              dc.w       $1b8,0,$1ba,0,$1bc,0,$1be,0
-
-;              ; colors 160-191 , high nibbles
-;              dc.w       BPLCON3,$AC00
-;              dc.w       $180,0,$182,0,$184,0,$186,0
-;              dc.w       $188,0,$18a,0,$18c,0,$18e,0
-;              dc.w       $190,0,$192,0,$194,0,$196,0
-;              dc.w       $198,0,$19a,0,$19c,0,$19e,0
-;              dc.w       $1a0,0,$1a2,0,$1a4,0,$1a6,0
-;              dc.w       $1a8,0,$1aa,0,$1ac,0,$1ae,0
-;              dc.w       $1b0,0,$1b2,0,$1b4,0,$1b6,0
-;              dc.w       $1b8,0,$1ba,0,$1bc,0,$1be,0
-
-;              ; colors 160-191 , low nibbles
-;              dc.w       BPLCON3,$AE00
-;              dc.w       $180,0,$182,0,$184,0,$186,0
-;              dc.w       $188,0,$18a,0,$18c,0,$18e,0
-;              dc.w       $190,0,$192,0,$194,0,$196,0
-;              dc.w       $198,0,$19a,0,$19c,0,$19e,0
-;              dc.w       $1a0,0,$1a2,0,$1a4,0,$1a6,0
-;              dc.w       $1a8,0,$1aa,0,$1ac,0,$1ae,0
-;              dc.w       $1b0,0,$1b2,0,$1b4,0,$1b6,0
-;              dc.w       $1b8,0,$1ba,0,$1bc,0,$1be,0
-
-;              ; colors 192-223 , high nibbles
-;              dc.w       BPLCON3,$CC00
-;              dc.w       $180,0,$182,0,$184,0,$186,0
-;              dc.w       $188,0,$18a,0,$18c,0,$18e,0
-;              dc.w       $190,0,$192,0,$194,0,$196,0
-;              dc.w       $198,0,$19a,0,$19c,0,$19e,0
-;              dc.w       $1a0,0,$1a2,0,$1a4,0,$1a6,0
-;              dc.w       $1a8,0,$1aa,0,$1ac,0,$1ae,0
-;              dc.w       $1b0,0,$1b2,0,$1b4,0,$1b6,0
-;              dc.w       $1b8,0,$1ba,0,$1bc,0,$1be,0
-
-;              ; colors 192-223 , low nibbles
-;              dc.w       BPLCON3,$CE00
-;              dc.w       $180,0,$182,0,$184,0,$186,0
-;              dc.w       $188,0,$18a,0,$18c,0,$18e,0
-;              dc.w       $190,0,$192,0,$194,0,$196,0
-;              dc.w       $198,0,$19a,0,$19c,0,$19e,0
-;              dc.w       $1a0,0,$1a2,0,$1a4,0,$1a6,0
-;              dc.w       $1a8,0,$1aa,0,$1ac,0,$1ae,0
-;              dc.w       $1b0,0,$1b2,0,$1b4,0,$1b6,0
-;              dc.w       $1b8,0,$1ba,0,$1bc,0,$1be,0
-
-;              ; colors 224-255 , high nibbles
-;              dc.w       BPLCON3,$EC00
-;              dc.w       $180,0,$182,0,$184,0,$186,0
-;              dc.w       $188,0,$18a,0,$18c,0,$18e,0
-;              dc.w       $190,0,$192,0,$194,0,$196,0
-;              dc.w       $198,0,$19a,0,$19c,0,$19e,0
-;              dc.w       $1a0,0,$1a2,0,$1a4,0,$1a6,0
-;              dc.w       $1a8,0,$1aa,0,$1ac,0,$1ae,0
-;              dc.w       $1b0,0,$1b2,0,$1b4,0,$1b6,0
-;              dc.w       $1b8,0,$1ba,0,$1bc,0,$1be,0
-
-;              ; colors 224-255 , low nibbles
-;              dc.w       BPLCON3,$EE00
-;              dc.w       $180,0,$182,0,$184,0,$186,0
-;              dc.w       $188,0,$18a,0,$18c,0,$18e,0
-;              dc.w       $190,0,$192,0,$194,0,$196,0
-;              dc.w       $198,0,$19a,0,$19c,0,$19e,0
-;              dc.w       $1a0,0,$1a2,0,$1a4,0,$1a6,0
-;              dc.w       $1a8,0,$1aa,0,$1ac,0,$1ae,0
-;              dc.w       $1b0,0,$1b2,0,$1b4,0,$1b6,0
-;              dc.w       $1b8,0,$1ba,0,$1bc,0,$1be,0
 
              dc.w       $ffff,$fffe                    ; end of copperlist
 
