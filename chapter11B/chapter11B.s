@@ -426,13 +426,15 @@ sprite_pointers:
 
 
 bgnd_palette  incbin     "gfx/bgnd_256.pal"
-palette       incbin     "gfx/ship.pal"
+;palette       incbin     "gfx/ship.pal"
+palette       incbin     "gfx/player_ship.pal"
 
 
               dc.w       $ffff,$fffe                       ; end of copperlist
               
               CNOP       0,8                               ; 64-bit alignment
-ship_sprite   incbin     "gfx/ship.raw"
+;ship_sprite   incbin     "gfx/ship.raw"
+ship_sprite   incbin     "gfx/player_ship.raw"
 
               CNOP       0,8                               ; 64-bit alignment
 bgnd          incbin     "gfx/bgnd_256.raw"                ; background image
