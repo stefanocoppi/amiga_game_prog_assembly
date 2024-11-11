@@ -1,7 +1,6 @@
-.\amigeconv.exe -f palette -p pal8 -c 256 -x .\shooter_tiles2.png  shooter.pal
-PS C:\Users\stefano.coppi\Downloads\amiga\amiga_game_prog_assembly\chapter14\gfx> .\amigeconv.exe -f bitplane -d 8 ship.png ship.raw
-PS C:\Users\stefano.coppi\Downloads\amiga\amiga_game_prog_assembly\chapter14\gfx> .\amigeconv.exe -f bitplane -m -d 1 ship.png ship.mask
-PS C:\Users\stefano.coppi\Downloads\amiga\amiga_game_prog_assembly\chapter14\gfx> .\amigeconv.exe -f bitplane -d 8 .\ship_engine.png ship_engine.raw
-PS C:\Users\stefano.coppi\Downloads\amiga\amiga_game_prog_assembly\chapter14\gfx> .\amigeconv.exe -f bitplane -m -d 1 .\ship_engine.png ship_engine.mask
-PS C:\Users\stefano.coppi\Downloads\amiga\amiga_game_prog_assembly\chapter14\gfx> .\amigeconv.exe -f bitplane -d 8 .\shooter_tiles2.png shooter_tiles2.raw
-PS C:\Users\stefano.coppi\Downloads\amiga\amiga_game_prog_assembly\chapter14\gfx>
+amigeconv.exe -f palette -p pal8 -c 256 -x shooter_tiles.png  shooter.pal
+amigeconv.exe -f bitplane -d 8 ship.png ship.raw
+amigeconv.exe -f bitplane -m -d 1 ship.png ship.mask
+amigeconv.exe -f bitplane -d 8 .\ship_engine.png ship_engine.raw
+amigeconv.exe -f bitplane -m -d 1 .\ship_engine.png ship_engine.mask
+amigeconv.exe -f bitplane -d 8 shooter_tiles.png shooter_tiles.raw
