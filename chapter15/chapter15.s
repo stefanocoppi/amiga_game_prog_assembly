@@ -24,12 +24,13 @@ CIAAPRA              equ $bfe001
 ; enables blitter DMA (bit 6)
 ; enables copper DMA (bit 7)
 ; enables bitplanes DMA (bit 8)
-                     ;5432109876543210
+                         ;5432109876543210
 DMASET               equ %1000001111000000             
 
 ; display
 N_PLANES             equ 8
-DISPLAY_WIDTH        equ 320
+CLIP_WIDTH           equ 128
+DISPLAY_WIDTH        equ 320+2*CLIP_WIDTH
 DISPLAY_HEIGHT       equ 256
 DISPLAY_PLANE_SZ     equ DISPLAY_HEIGHT*(DISPLAY_WIDTH/8)
 DISPLAY_ROW_SIZE     equ (DISPLAY_WIDTH/8)
@@ -59,10 +60,10 @@ SCROLL_SPEED         equ 1
 
 PLSHIP_WIDTH         equ 64
 PLSHIP_HEIGHT        equ 28
-PLSHIP_X0            equ 24
+PLSHIP_X0            equ CLIP_WIDTH+24
 PLSHIP_Y0            equ 81
-PLSHIP_XMIN          equ 20
-PLSHIP_XMAX          equ VIEWPORT_WIDTH-PLSHIP_WIDTH
+PLSHIP_XMIN          equ CLIP_WIDTH+20
+PLSHIP_XMAX          equ CLIP_WIDTH+VIEWPORT_WIDTH-PLSHIP_WIDTH
 PLSHIP_YMIN          equ 0
 PLSHIP_YMAX          equ VIEWPORT_HEIGHT-PLSHIP_HEIGHT
 
@@ -70,6 +71,7 @@ ENEMY_CMD_LIST_SIZE  equ 40
 NUM_ENEMIES          equ 1
 ENEMY_STATE_INACTIVE equ 0
 ENEMY_STATE_ACTIVE   equ 1
+ENEMY_STATE_PAUSE    equ 2
 ENEMY_CMD_END        equ 0
 ENEMY_CMD_GOTO       equ 1
 ENEMY_CMD_PAUSE      equ 2
@@ -121,7 +123,8 @@ enemy.visible        rs.w       1
 enemy.map_position   rs.w       1                                                        ; when the camera reaches this position on the map, the enemy will activate
 enemy.tx             rs.w       1                                                        ; target x coordinate
 enemy.ty             rs.w       1                                                        ; target y coordinate
-enemy.cmd_pointer    rs.l       1                                                        ; pointer to the next command
+enemy.cmd_pointer    rs.w       1                                                        ; pointer to the next command
+enemy.pause_timer    rs.w       1
 enemy.cmd_list       rs.b       ENEMY_CMD_LIST_SIZE                                      ; commands list
 enemy.length         rs.b       0
 
@@ -227,7 +230,7 @@ release_system:
 init_bplpointers:
                      movem.l    d0-a6,-(sp)
                    
-                     move.l     #dbuffer1,d0                                             ; address of visible screen buffer
+                     move.l     #dbuffer1+16,d0                                          ; address of visible screen buffer
                      lea        bplpointers,a1                                           ; bitplane pointers in a1
                      move.l     #(N_PLANES-1),d1                                         ; number of loop iterations in d1
 .loop:
@@ -295,6 +298,7 @@ swap_buffers:
                      move.l     draw_buffer,d0                                           ; swaps the values ​​of draw_buffer and view_buffer
                      move.l     view_buffer,draw_buffer
                      move.l     d0,view_buffer
+                     add.l      #CLIP_WIDTH/8,d0
                      lea        bplpointers,a1                                           ; sets the bitplane pointers to the view_buffer 
                      moveq      #N_PLANES-1,d1                                            
 .loop:
@@ -449,6 +453,7 @@ init_background:
 draw_background:
                      movem.l    d0-a6,-(sp)
 
+                     add.l      #CLIP_WIDTH/8,a1
                      moveq      #N_PLANES-1,d7
                      lea        bgnd_surface,a0
 ; calculates the source image address
@@ -850,17 +855,21 @@ enemies_execute_command:
                      movem.l    d0-a6,-(sp)
 
                      lea        enemies_array,a0
-                     move.l     #NUM_ENEMIES-1,d7                                        ; number of iterations-1
+                     move.l     #NUM_ENEMIES-1,d7                                        ; iterates over the array of enemies
 
 .loop:
                      cmp.w      #ENEMY_STATE_INACTIVE,enemy.state(a0)                    ; if the enemy state is inactive, goes to next element
                      beq        .next_element
                     
                      lea        enemy.cmd_list(a0),a1
-                     add.l      enemy.cmd_pointer(a0),a1
+                     add.w      enemy.cmd_pointer(a0),a1
                      move.w     (a1),d0                                                  ; fetches current command
-                     cmp.w      #ENEMY_CMD_GOTO,d0
+                     cmp.w      #ENEMY_CMD_GOTO,d0                                       ; interprets the command and executes it
                      beq        .exec_goto
+                     cmp.w      #ENEMY_CMD_END,d0
+                     beq        .exec_end
+                     cmp.w      #ENEMY_CMD_PAUSE,d0
+                     beq        .exec_pause
                      bra        .next_element
 .exec_goto:
                      move.w     2(a1),enemy.tx(a0)                                       ; gets target coordinates
@@ -868,28 +877,55 @@ enemies_execute_command:
                      move.w     enemy.speed(a0),d1
                      move.w     enemy.tx(a0),d0
                      cmp.w      enemy.x(a0),d0
-                     beq        .compare_y
-                     blt        .decr_x
-                     bgt        .incr_x
+                     beq        .same_x                                                  ; if tx = x, then sets a flag
+                     blt        .decr_x                                                  ; if tx < x, then decreases x
+                     bgt        .incr_x                                                  ; if tx > x, then increases x
                      bra        .compare_y
 .decr_x:
                      sub.w      d1,enemy.x(a0)
                      bra        .compare_y
 .incr_x:
                      add.w      d1,enemy.x(a0)
+                     bra        .compare_y
+.same_x:
+                     move.w     #%1,d2                                                   ; bit 0 of d2 indicates that x is equal to tx
 .compare_y:
                      move.w     enemy.ty(a0),d0
                      cmp.w      enemy.y(a0),d0
-                     beq        .command_executed
-                     blt        .decr_y
-                     bgt        .incr_y
+                     beq        .same_y                                                  ; if ty = y then sets a flag
+                     blt        .decr_y                                                  ; if ty < y then decreases y
+                     bgt        .incr_y                                                  ; if ty > y then increases y
                      bra        .command_executed
 .decr_y:
                      sub.w      d1,enemy.y(a0)
                      bra        .command_executed
 .incr_y:
                      add.w      d1,enemy.y(a0)
+                     bra        .command_executed
+.same_y:
+                     or.w       #%10,d2                                                  ; bit 1 of d2 indicates that y is equal to ty
 .command_executed:
+                     cmp.w      #%11,d2                                                  ; (tx=x) and (ty=y) ?
+                     bne        .next_element                                            ; if not goes to next array element
+                     add.w      #3*2,enemy.cmd_pointer(a0)                               ; else points to next command
+                     bra        .next_element
+.exec_end:
+                     move.w     #ENEMY_STATE_INACTIVE,enemy.state(a0)                    ; change state to inactive
+                     bra        .next_element
+.exec_pause:
+                     cmp.w      #ENEMY_STATE_PAUSE,enemy.state(a0)                       ; state = pause?
+                     beq        .state_pause
+                     move.w     2(a1),d0                                                 ; gets pause duration in frames
+                     move.w     d0,enemy.pause_timer(a0)                                 ; initializes pause timer
+                     move.w     #ENEMY_STATE_PAUSE,enemy.state(a0)                       ; change state to pause
+                     bra        .next_element
+.state_pause:
+                     sub.w      #1,enemy.pause_timer(a0)                                 ; updates pause timer
+                     beq        .end_pause                                               ; pause timer = 0?
+                     bra        .next_element
+.end_pause:
+                     move.w     #ENEMY_STATE_ACTIVE,enemy.state(a0)                      ; change state to active
+                     add.w      #2*2,enemy.cmd_pointer(a0)                               ; points to next command                     
 .next_element:
                      add.l      #enemy.length,a0                                         ; points to next enemy in the array
                      dbra       d7,.loop
@@ -945,7 +981,7 @@ bob_ship_engine      dc.w       0                                               
                      dc.w       5                                                        ; bob.anim_timer
 
 enemies_array:
-enemy1               dc.w       320-128                                                  ; enemy.x
+enemy1               dc.w       CLIP_WIDTH+320                                           ; enemy.x
                      dc.w       53                                                       ; enemy.y
                      dc.w       2                                                        ; enemy.speed
                      dc.w       128                                                      ; enemy.width
@@ -963,12 +999,18 @@ enemy1               dc.w       320-128                                         
                      dc.w       100                                                      ; enemy.score
                      dc.w       10                                                       ; enemy.energy
                      dc.w       1                                                        ; enemy.visible
-                     dc.w       64                                                      ; enemy.map_position
+                     dc.w       64                                                       ; enemy.map_position
                      dc.w       0                                                        ; enemy.tx
                      dc.w       0                                                        ; enemy.ty
-                     dc.l       0                                                        ; enemy.cmd_pointer
-                     dc.w       ENEMY_CMD_GOTO,100,53,ENEMY_CMD_END
-                     dcb.b      ENEMY_CMD_LIST_SIZE-8,0                                  ; enemy.cmd_list
+                     dc.w       0                                                        ; enemy.cmd_pointer
+                     dc.w       0                                                        ; enemy.pause_timer
+                     dc.w       ENEMY_CMD_GOTO,228,53
+                     dc.w       ENEMY_CMD_PAUSE,50
+                     dc.w       ENEMY_CMD_GOTO,228,101
+                     dc.w       ENEMY_CMD_PAUSE,25
+                     dc.w       ENEMY_CMD_GOTO,0,101
+                     dc.w       ENEMY_CMD_END
+                     dcb.b      ENEMY_CMD_LIST_SIZE-28,0                                 ; enemy.cmd_list
 
 
 ;************************************************************************
@@ -986,8 +1028,8 @@ copperlist:
                      dc.w       DDFSTOP,$d0                                              ; display data fetch stop at $d0
                      dc.w       BPLCON1,0                                          
                      dc.w       BPLCON2,0                                             
-                     dc.w       BPL1MOD,0                                            
-                     dc.w       BPL2MOD,0
+                     dc.w       BPL1MOD,(DISPLAY_WIDTH-VIEWPORT_WIDTH)/8                                            
+                     dc.w       BPL2MOD,(DISPLAY_WIDTH-VIEWPORT_WIDTH)/8
             
 
   ; BPLCON0 ($100)
