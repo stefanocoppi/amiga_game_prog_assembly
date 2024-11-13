@@ -65,7 +65,7 @@ PLSHIP_YMIN          equ 0
 PLSHIP_YMAX          equ VIEWPORT_HEIGHT-PLSHIP_HEIGHT
 
 ENEMY_CMD_LIST_SIZE  equ 40
-NUM_ENEMIES          equ 1
+NUM_ENEMIES          equ 6
 ENEMY_STATE_INACTIVE equ 0
 ENEMY_STATE_ACTIVE   equ 1
 ENEMY_STATE_PAUSE    equ 2
@@ -871,6 +871,7 @@ enemies_execute_command:
                      move.w     2(a1),enemy.tx(a0)                                       ; gets target coordinates tx,ty
                      move.w     4(a1),enemy.ty(a0)
                      move.w     enemy.speed(a0),d1
+                     clr.w      d2
                      move.w     enemy.tx(a0),d0
                      cmp.w      enemy.x(a0),d0
                      beq        .same_x                                                  ; if tx = x, then sets a flag
@@ -994,19 +995,144 @@ enemy1               dc.w       CLIP_WIDTH+320                                  
                      dc.w       ENEMY_STATE_INACTIVE                                     ; enemy.state
                      dc.w       100                                                      ; enemy.score
                      dc.w       10                                                       ; enemy.energy
-                     dc.w       64                                                       ; enemy.map_position
+                     dc.w       192                                                      ; enemy.map_position
                      dc.w       0                                                        ; enemy.tx
                      dc.w       0                                                        ; enemy.ty
                      dc.w       0                                                        ; enemy.cmd_pointer
                      dc.w       0                                                        ; enemy.pause_timer
-                     dc.w       ENEMY_CMD_GOTO,228,53                                    ; enemy.cmd_list
-                     dc.w       ENEMY_CMD_PAUSE,50
-                     dc.w       ENEMY_CMD_GOTO,228,101
-                     dc.w       ENEMY_CMD_PAUSE,25
-                     dc.w       ENEMY_CMD_GOTO,0,101
+                     dc.w       ENEMY_CMD_GOTO,0,53                                      ; enemy.cmd_list
                      dc.w       ENEMY_CMD_END
-                     dcb.b      ENEMY_CMD_LIST_SIZE-28,0                                 
-
+                     dcb.b      ENEMY_CMD_LIST_SIZE-8,0                                 
+enemy2               dc.w       CLIP_WIDTH+320                                           ; enemy.x
+                     dc.w       53                                                       ; enemy.y
+                     dc.w       2                                                        ; enemy.speed
+                     dc.w       128                                                      ; enemy.width
+                     dc.w       86                                                       ; enemy.height
+                     dc.w       0                                                        ; enemy.ssheet_c
+                     dc.w       0                                                        ; enemy.ssheet_r
+                     dc.w       768                                                      ; enemy.ssheet_w 
+                     dc.w       86                                                       ; enemy.ssheet_h
+                     dc.l       enemies                                                  ; enemy.imgdata
+                     dc.l       enemies_m                                                ; enemy.mask
+                     dc.w       0                                                        ; enemy.anim_duration
+                     dc.w       0                                                        ; enemy.anim_timer
+                     dc.w       0                                                        ; enemy.num_frames
+                     dc.w       ENEMY_STATE_INACTIVE                                     ; enemy.state
+                     dc.w       100                                                      ; enemy.score
+                     dc.w       10                                                       ; enemy.energy
+                     dc.w       192                                                      ; enemy.map_position
+                     dc.w       0                                                        ; enemy.tx
+                     dc.w       0                                                        ; enemy.ty
+                     dc.w       0                                                        ; enemy.cmd_pointer
+                     dc.w       0                                                        ; enemy.pause_timer
+                     dc.w       ENEMY_CMD_PAUSE,40                                       ; enemy.cmd_list
+                     dc.w       ENEMY_CMD_GOTO,0,53                                      ; enemy.cmd_list
+                     dc.w       ENEMY_CMD_END
+                     dcb.b      ENEMY_CMD_LIST_SIZE-6*2,0 
+enemy3               dc.w       CLIP_WIDTH+320                                           ; enemy.x
+                     dc.w       53                                                       ; enemy.y
+                     dc.w       2                                                        ; enemy.speed
+                     dc.w       128                                                      ; enemy.width
+                     dc.w       86                                                       ; enemy.height
+                     dc.w       0                                                        ; enemy.ssheet_c
+                     dc.w       0                                                        ; enemy.ssheet_r
+                     dc.w       768                                                      ; enemy.ssheet_w 
+                     dc.w       86                                                       ; enemy.ssheet_h
+                     dc.l       enemies                                                  ; enemy.imgdata
+                     dc.l       enemies_m                                                ; enemy.mask
+                     dc.w       0                                                        ; enemy.anim_duration
+                     dc.w       0                                                        ; enemy.anim_timer
+                     dc.w       0                                                        ; enemy.num_frames
+                     dc.w       ENEMY_STATE_INACTIVE                                     ; enemy.state
+                     dc.w       100                                                      ; enemy.score
+                     dc.w       10                                                       ; enemy.energy
+                     dc.w       192                                                      ; enemy.map_position
+                     dc.w       0                                                        ; enemy.tx
+                     dc.w       0                                                        ; enemy.ty
+                     dc.w       0                                                        ; enemy.cmd_pointer
+                     dc.w       0                                                        ; enemy.pause_timer
+                     dc.w       ENEMY_CMD_PAUSE,80                                       ; enemy.cmd_list
+                     dc.w       ENEMY_CMD_GOTO,0,53                                      ; enemy.cmd_list
+                     dc.w       ENEMY_CMD_END
+                     dcb.b      ENEMY_CMD_LIST_SIZE-6*2,0 
+enemy4               dc.w       CLIP_WIDTH+320                                           ; enemy.x
+                     dc.w       53                                                       ; enemy.y
+                     dc.w       2                                                        ; enemy.speed
+                     dc.w       128                                                      ; enemy.width
+                     dc.w       86                                                       ; enemy.height
+                     dc.w       0                                                        ; enemy.ssheet_c
+                     dc.w       0                                                        ; enemy.ssheet_r
+                     dc.w       768                                                      ; enemy.ssheet_w 
+                     dc.w       86                                                       ; enemy.ssheet_h
+                     dc.l       enemies                                                  ; enemy.imgdata
+                     dc.l       enemies_m                                                ; enemy.mask
+                     dc.w       0                                                        ; enemy.anim_duration
+                     dc.w       0                                                        ; enemy.anim_timer
+                     dc.w       0                                                        ; enemy.num_frames
+                     dc.w       ENEMY_STATE_INACTIVE                                     ; enemy.state
+                     dc.w       100                                                      ; enemy.score
+                     dc.w       10                                                       ; enemy.energy
+                     dc.w       192                                                      ; enemy.map_position
+                     dc.w       0                                                        ; enemy.tx
+                     dc.w       0                                                        ; enemy.ty
+                     dc.w       0                                                        ; enemy.cmd_pointer
+                     dc.w       0                                                        ; enemy.pause_timer
+                     dc.w       ENEMY_CMD_PAUSE,120                                      ; enemy.cmd_list
+                     dc.w       ENEMY_CMD_GOTO,0,53                                      ; enemy.cmd_list
+                     dc.w       ENEMY_CMD_END
+                     dcb.b      ENEMY_CMD_LIST_SIZE-6*2,0 
+enemy5               dc.w       CLIP_WIDTH+320                                           ; enemy.x
+                     dc.w       129                                                      ; enemy.y
+                     dc.w       2                                                        ; enemy.speed
+                     dc.w       128                                                      ; enemy.width
+                     dc.w       86                                                       ; enemy.height
+                     dc.w       1                                                        ; enemy.ssheet_c
+                     dc.w       0                                                        ; enemy.ssheet_r
+                     dc.w       768                                                      ; enemy.ssheet_w 
+                     dc.w       86                                                       ; enemy.ssheet_h
+                     dc.l       enemies                                                  ; enemy.imgdata
+                     dc.l       enemies_m                                                ; enemy.mask
+                     dc.w       0                                                        ; enemy.anim_duration
+                     dc.w       0                                                        ; enemy.anim_timer
+                     dc.w       0                                                        ; enemy.num_frames
+                     dc.w       ENEMY_STATE_INACTIVE                                     ; enemy.state
+                     dc.w       100                                                      ; enemy.score
+                     dc.w       10                                                       ; enemy.energy
+                     dc.w       704                                                      ; enemy.map_position
+                     dc.w       0                                                        ; enemy.tx
+                     dc.w       0                                                        ; enemy.ty
+                     dc.w       0                                                        ; enemy.cmd_pointer
+                     dc.w       0                                                        ; enemy.pause_timer
+                     dc.w       ENEMY_CMD_GOTO,0,129                                     ; enemy.cmd_list
+                     dc.w       ENEMY_CMD_END
+                     dcb.b      ENEMY_CMD_LIST_SIZE-4*2,0
+enemy6               dc.w       CLIP_WIDTH+320                                           ; enemy.x
+                     dc.w       40                                                       ; enemy.y
+                     dc.w       2                                                        ; enemy.speed
+                     dc.w       128                                                      ; enemy.width
+                     dc.w       86                                                       ; enemy.height
+                     dc.w       3                                                        ; enemy.ssheet_c
+                     dc.w       0                                                        ; enemy.ssheet_r
+                     dc.w       768                                                      ; enemy.ssheet_w 
+                     dc.w       86                                                       ; enemy.ssheet_h
+                     dc.l       enemies                                                  ; enemy.imgdata
+                     dc.l       enemies_m                                                ; enemy.mask
+                     dc.w       0                                                        ; enemy.anim_duration
+                     dc.w       0                                                        ; enemy.anim_timer
+                     dc.w       0                                                        ; enemy.num_frames
+                     dc.w       ENEMY_STATE_INACTIVE                                     ; enemy.state
+                     dc.w       100                                                      ; enemy.score
+                     dc.w       10                                                       ; enemy.energy
+                     dc.w       1088                                                     ; enemy.map_position
+                     dc.w       0                                                        ; enemy.tx
+                     dc.w       0                                                        ; enemy.ty
+                     dc.w       0                                                        ; enemy.cmd_pointer
+                     dc.w       0                                                        ; enemy.pause_timer
+                     dc.w       ENEMY_CMD_GOTO,288,40                                    ; enemy.cmd_list
+                     dc.w       ENEMY_CMD_PAUSE,25
+                     dc.w       ENEMY_CMD_GOTO,0,40
+                     dc.w       ENEMY_CMD_END
+                     dcb.b      ENEMY_CMD_LIST_SIZE-9*2,0
 
 ;************************************************************************
 ; Graphics data
