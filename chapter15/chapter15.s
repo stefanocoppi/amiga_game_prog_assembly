@@ -16,9 +16,6 @@
 ; CONSTANTS
 ;************************************************************************
 
-; O.S. subroutines
-ExecBase             equ $4
-CIAAPRA              equ $bfe001
 
 ; DMACON register settings
 ; enables blitter DMA (bit 6)
@@ -82,22 +79,22 @@ ENEMY_CMD_FIRE       equ 3
 ; DATA STRUCTURES
 ;****************************************************************
 
-; bob
+; player's ship
                      rsreset
-bob.x                rs.w       1                            
-bob.y                rs.w       1
-bob.speed            rs.w       1
-bob.width            rs.w       1
-bob.height           rs.w       1
-bob.ssheet_c         rs.w       1                                                        ; spritesheet column of the bob
-bob.ssheet_r         rs.w       1                                                        ; spritesheet row of the bob
-bob.ssheet_w         rs.w       1                                                        ; spritesheet width in pixels
-bob.ssheet_h         rs.w       1                                                        ; spritesheet height in pixels
-bob.imgdata          rs.l       1                                                        ; image data address
-bob.mask             rs.l       1                                                        ; mask address
-bob.anim_duration    rs.w       1                                                        ; duration of animation in frames
-bob.anim_timer       rs.w       1                                                        ; timer for animation
-bob.length           rs.b       0 
+ship.x               rs.w       1                            
+ship.y               rs.w       1
+ship.speed           rs.w       1
+ship.width           rs.w       1
+ship.height          rs.w       1
+ship.ssheet_c        rs.w       1                                                        ; spritesheet column of the ship
+ship.ssheet_r        rs.w       1                                                        ; spritesheet row of the ship
+ship.ssheet_w        rs.w       1                                                        ; spritesheet width in pixels
+ship.ssheet_h        rs.w       1                                                        ; spritesheet height in pixels
+ship.imgdata         rs.l       1                                                        ; image data address
+ship.mask            rs.l       1                                                        ; mask address
+ship.anim_duration   rs.w       1                                                        ; duration of animation in frames
+ship.anim_timer      rs.w       1                                                        ; timer for animation
+ship.length          rs.b       0 
 
 
 ; enemy
@@ -119,7 +116,6 @@ enemy.num_frames     rs.w       1                                               
 enemy.state          rs.w       1
 enemy.score          rs.w       1                                                        ; score given when enemy is destroyed by the player
 enemy.energy         rs.w       1                                                        ; amount of energy. When reaches zero, the alien is destroyed.
-enemy.visible        rs.w       1
 enemy.map_position   rs.w       1                                                        ; when the camera reaches this position on the map, the enemy will activate
 enemy.tx             rs.w       1                                                        ; target x coordinate
 enemy.ty             rs.w       1                                                        ; target y coordinate
@@ -546,48 +542,48 @@ draw_bob:
                      movem.l    d0-a6,-(sp)
 
     ; calculates destination address (D channel)
-                     move.w     bob.y(a3),d1
+                     move.w     ship.y(a3),d1
                      mulu.w     #DISPLAY_ROW_SIZE,d1                                     ; offset_y = y * DISPLAY_ROW_SIZE
                      add.l      d1,a2                                                    ; adds offset_y to destination address
-                     move.w     bob.x(a3),d0
+                     move.w     ship.x(a3),d0
                      lsr.w      #3,d0                                                    ; offset_x = x/8
                      and.w      #$fffe,d0                                                ; makes offset_x even
                      add.w      d0,a2                                                    ; adds offset_x to destination address
     
     ; calculates source address (channels A,B)
-                     move.l     bob.imgdata(a3),a0
-                     move.l     bob.mask(a3),a1
-                     move.w     bob.width(a3),d1             
+                     move.l     ship.imgdata(a3),a0
+                     move.l     ship.mask(a3),a1
+                     move.w     ship.width(a3),d1             
                      lsr.w      #3,d1                                                    ; bob width in bytes (bob_width/8)
-                     move.w     bob.ssheet_c(a3),d4
+                     move.w     ship.ssheet_c(a3),d4
                      mulu       d1,d4                                                    ; offset_x = column * (bob_width/8)
                      add.w      d4,a0                                                    ; adds offset_x to the base address of bob's image
                      add.w      d4,a1                                                    ; and bob's mask
-                     move.w     bob.height(a3),d3
-                     move.w     bob.ssheet_r(a3),d5
+                     move.w     ship.height(a3),d3
+                     move.w     ship.ssheet_r(a3),d5
                      mulu       d3,d5                                                    ; bob_height * row
-                     move.w     bob.ssheet_w(a3),d1
+                     move.w     ship.ssheet_w(a3),d1
                      asr.w      #3,d1                                                    ; spritesheet_row_size = spritesheet_width / 8
                      mulu       d1,d5                                                    ; offset_y = row * bob_height * spritesheet_row_size
                      add.w      d5,a0                                                    ; adds offset_y to the base address of bob's image
                      add.w      d5,a1                                                    ; and bob's mask
 
     ; calculates the modulus of channels A,B
-                     move.w     bob.ssheet_w(a3),d1                                      ; copies spritesheet_width in d1
-                     move.w     bob.width(a3),d2
+                     move.w     ship.ssheet_w(a3),d1                                     ; copies spritesheet_width in d1
+                     move.w     ship.width(a3),d2
                      sub.w      d2,d1                                                    ; spritesheet_width - bob_width
                      sub.w      #16,d1                                                   ; spritesheet_width - bob_width -16
                      asr.w      #3,d1                                                    ; (spritesheet_width - bob_width -16)/8
 
     ; calculates the modulus of channels C,D
-                     move.w     bob.width(a3),d2
+                     move.w     ship.width(a3),d2
                      lsr        #3,d2                                                    ; bob_width/8
                      add.w      #2,d2                                                    ; adds 2 to the sprite width in bytes, due to the shift
                      move.w     #DISPLAY_ROW_SIZE,d4                                     ; screen width in bytes
                      sub.w      d2,d4                                                    ; modulus (d4) = screen_width - bob_width
     
     ; calculates the shift value for channels A,B (d6) and value of BLTCON0 (d5)
-                     move.w     bob.x(a3),d6
+                     move.w     ship.x(a3),d6
                      and.w      #$000f,d6                                                ; selects the first 4 bits of x
                      lsl.w      #8,d6                                                    ; moves the shift value to the upper nibble
                      lsl.w      #4,d6                                                    ; so as to have the value to insert in BLTCON1
@@ -596,16 +592,16 @@ draw_bob:
                                                        ; logic function LF = $ca
 
     ; calculates the blit size (d3)
-                     move.w     bob.height(a3),d3
+                     move.w     ship.height(a3),d3
                      lsl.w      #6,d3                                                    ; bob_height<<6
                      lsr.w      #1,d2                                                    ; bob_width/2 (in word)
                      or         d2,d3                                                    ; combines the dimensions into the value to be inserted into BLTSIZE
 
     ; calculates the size of a BOB spritesheet bitplane
-                     move.w     bob.ssheet_w(a3),d2                                      ; copies spritesheet_width in d2
+                     move.w     ship.ssheet_w(a3),d2                                     ; copies spritesheet_width in d2
                      lsr.w      #3,d2                                                    ; spritesheet_width/8
                      and.w      #$fffe,d2                                                ; makes even
-                     move.w     bob.ssheet_h(a3),d0                                      ; spritesheet_height
+                     move.w     ship.ssheet_h(a3),d0                                     ; spritesheet_height
                      mulu       d0,d2                                                    ; multiplies by the height
 
     ; initializes the registers that remain constant
@@ -643,17 +639,17 @@ draw_bob:
 plship_init:
                      movem.l    d0-a6,-(sp)
 
-                     lea        bob_ship,a0
-                     move.w     #PLSHIP_X0,bob.x(a0)
-                     move.w     #PLSHIP_Y0,bob.y(a0)
-                     clr.w      bob.ssheet_c(a0)
-                     move.w     bob.anim_duration(a0),bob.anim_timer(a0)
+                     lea        player_ship,a0
+                     move.w     #PLSHIP_X0,ship.x(a0)
+                     move.w     #PLSHIP_Y0,ship.y(a0)
+                     clr.w      ship.ssheet_c(a0)
+                     move.w     ship.anim_duration(a0),ship.anim_timer(a0)
 
-                     lea        bob_ship_engine,a1
-                     move.w     #PLSHIP_X0-17,bob.x(a1)
-                     move.w     #PLSHIP_Y0+9,bob.y(a1)
-                     clr.w      bob.ssheet_c(a1)
-                     move.w     bob.anim_duration(a1),bob.anim_timer(a1)
+                     lea        pl_ship_engine,a1
+                     move.w     #PLSHIP_X0-17,ship.x(a1)
+                     move.w     #PLSHIP_Y0+9,ship.y(a1)
+                     clr.w      ship.ssheet_c(a1)
+                     move.w     ship.anim_duration(a1),ship.anim_timer(a1)
                   
 .return:
                      movem.l    (sp)+,d0-a6
@@ -666,11 +662,11 @@ plship_init:
 plship_draw:
                      movem.l    d0-a6,-(sp)
 
-                     lea        bob_ship,a3
+                     lea        player_ship,a3
                      move.l     draw_buffer,a2
                      bsr        draw_bob                                                 ; draws ship
 
-                     lea        bob_ship_engine,a3
+                     lea        pl_ship_engine,a3
                      move.l     draw_buffer,a2
                      bsr        draw_bob                                                 ; draws engine fire                   
                   
@@ -689,17 +685,17 @@ plship_move_with_joystick:
                      movem.l    d0-a6,-(sp)
 
                      move.w     JOY1DAT(a5),d0
-                     move.w     bob.speed(a0),d2
+                     move.w     ship.speed(a0),d2
                      btst.l     #1,d0                                                    ; joy right?
                      bne        .set_right
                      btst.l     #9,d0                                                    ; joy left?
                      bne        .set_left
                      bra        .check_up
 .set_right:
-                     add.w      d2,bob.x(a0)                                             ; bob.x += bob.speed 
+                     add.w      d2,ship.x(a0)                                            ; ship.x += ship.speed 
                      bra        .check_up
 .set_left:
-                     sub.w      d2,bob.x(a0)                                             ; bob.x -= bob.speed
+                     sub.w      d2,ship.x(a0)                                            ; ship.x -= ship.speed
 .check_up:
                      move.w     d0,d1
                      lsr.w      #1,d1
@@ -710,10 +706,10 @@ plship_move_with_joystick:
                      bne        .set_down
                      bra        .return
 .set_up:
-                     sub.w      d2,bob.y(a0)                                             ; bob.y -= bob.speed
+                     sub.w      d2,ship.y(a0)                                            ; ship.y -= ship.speed
                      bra        .return
 .set_down:
-                     add.w      d2,bob.y(a0)                                             ; bob.y += bob.speed
+                     add.w      d2,ship.y(a0)                                            ; ship.y += ship.speed
 
 .return:
                      movem.l    (sp)+,d0-a6
@@ -726,33 +722,33 @@ plship_move_with_joystick:
 plship_update:
                      movem.l    d0-a6,-(sp)
 
-                     lea        bob_ship,a0
+                     lea        player_ship,a0
                      bsr        plship_move_with_joystick
                      bsr        plship_limit_movement
 
 ; sets engine fire bob position
-                     lea        bob_ship_engine,a1
-                     move.w     bob.x(a0),d0
+                     lea        pl_ship_engine,a1
+                     move.w     ship.x(a0),d0
                      sub.w      #17,d0
-                     move.w     d0,bob.x(a1)                                             ; engine.x = ship.x - 17
-                     move.w     bob.y(a0),d0
+                     move.w     d0,ship.x(a1)                                            ; engine.x = ship.x - 17
+                     move.w     ship.y(a0),d0
                      add.w      #9,d0
-                     move.w     d0,bob.y(a1)                                             ; engine.y = ship.y + 9
+                     move.w     d0,ship.y(a1)                                            ; engine.y = ship.y + 9
 
 ; animates engine fire
-                     sub.w      #1,bob.anim_timer(a1)
-                     tst.w      bob.anim_timer(a1)                                       ; anim_timer = 0?
+                     sub.w      #1,ship.anim_timer(a1)
+                     tst.w      ship.anim_timer(a1)                                      ; anim_timer = 0?
                      beq        .incr_frame
                      bra        .return
 .incr_frame:
-                     add.w      #1,bob.ssheet_c(a1)                                      ; increases animation frame
-                     cmp.w      #4,bob.ssheet_c(a1)                                      ; ssheet_c >= 4?
+                     add.w      #1,ship.ssheet_c(a1)                                     ; increases animation frame
+                     cmp.w      #4,ship.ssheet_c(a1)                                     ; ssheet_c >= 4?
                      bge        .reset_frame
                      bra        .reset_timer
 .reset_frame:
-                     clr.w      bob.ssheet_c(a1)                                         ; resets animation frame
+                     clr.w      ship.ssheet_c(a1)                                        ; resets animation frame
 .reset_timer:
-                     move.w     bob.anim_duration(a1),bob.anim_timer(a1)                 ; resets anim_timer
+                     move.w     ship.anim_duration(a1),ship.anim_timer(a1)               ; resets anim_timer
 .return:
                      movem.l    (sp)+,d0-a6
                      rts
@@ -767,49 +763,49 @@ plship_update:
 plship_limit_movement:
                      movem.l    d0-a6,-(sp)
 
-                     move.w     bob.x(a0),d0
+                     move.w     ship.x(a0),d0
                      cmp.w      #PLSHIP_XMIN,d0                                          ; x < PLSHIP_XMIN?
                      blt        .limit_xmin
                      bra        .check_xmax
 .limit_xmin:
-                     move.w     #PLSHIP_XMIN,bob.x(a0)                                   ; x = PLSHIP_XMIN
+                     move.w     #PLSHIP_XMIN,ship.x(a0)                                  ; x = PLSHIP_XMIN
                      bra        .check_ymin
 .check_xmax:
                      cmp.w      #PLSHIP_XMAX,d0                                          ; x > PLSHIP_XMAX?
                      bgt        .limit_xmax
                      bra        .check_ymin
 .limit_xmax:
-                     move.w     #PLSHIP_XMAX,bob.x(a0)                                   ; x = PLSHIP_XMAX
+                     move.w     #PLSHIP_XMAX,ship.x(a0)                                  ; x = PLSHIP_XMAX
 .check_ymin:
-                     move.w     bob.y(a0),d0
+                     move.w     ship.y(a0),d0
                      cmp.w      #PLSHIP_YMIN,d0                                          ; y < PLSHIP_YMIN?
                      blt        .limit_ymin
                      bra        .check_ymax
 .limit_ymin:
-                     move.w     #PLSHIP_YMIN,bob.y(a0)                                   ; y = PLSHIP_YMIN
+                     move.w     #PLSHIP_YMIN,ship.y(a0)                                  ; y = PLSHIP_YMIN
                      bra        .return
 .check_ymax:
                      cmp.w      #PLSHIP_YMAX,d0                                          ; y > PLSHIP_YMAX?
                      bgt        .limit_ymax
                      bra        .return
 .limit_ymax:
-                     move.w     #PLSHIP_YMAX,bob.y(a0)                                   ; y = PLSHIP_YMAX
+                     move.w     #PLSHIP_YMAX,ship.y(a0)                                  ; y = PLSHIP_YMAX
 .return:
                      movem.l    (sp)+,d0-a6
                      rts
 
 
 ;****************************************************************
-; Draw the enemies that aren't inactive
+; Draws the enemies.
 ;****************************************************************
 enemies_draw:
                      movem.l    d0-a6,-(sp)
 
-                     lea        enemies_array,a3
-                     move.l     #NUM_ENEMIES-1,d7                                        ; number of iterations-1
+                     lea        enemies_array,a3                                         
+                     move.l     #NUM_ENEMIES-1,d7                                        ; iterates over enemies array
 
 .loop:
-                     cmp.w      #ENEMY_STATE_INACTIVE,enemy.state(a3)                    ; if the enemy state is inactive, skips the draw
+                     cmp.w      #ENEMY_STATE_INACTIVE,enemy.state(a3)                    ; enemy state is inactive?
                      beq        .skip_draw
 
                      move.l     draw_buffer,a2
@@ -824,21 +820,21 @@ enemies_draw:
 
 
 ;****************************************************************
-; Activates enemies based on their location on the map
+; Activates enemies based on their map location.
 ;****************************************************************
 enemies_activate:
                      movem.l    d0-a6,-(sp)
 
                      lea        enemies_array,a0
-                     move.l     #NUM_ENEMIES-1,d7                                        ; number of iterations-1
+                     move.l     #NUM_ENEMIES-1,d7                                        ; iterates over enemies array
 
 .loop:
                      move.w     enemy.map_position(a0),d0
-                     cmp.w      camera_x,d0                                              ; enemy.map_position = map_ptr?
+                     cmp.w      camera_x,d0                                              ; enemy.map_position = camera_x?
                      beq        .activate
                      bra        .next_element
 .activate:
-                     move.w     #ENEMY_STATE_ACTIVE,enemy.state(a0)
+                     move.w     #ENEMY_STATE_ACTIVE,enemy.state(a0)                      ; changes state to active
 .next_element:
                      add.l      #enemy.length,a0                                         ; points to next enemy in the array
                      dbra       d7,.loop
@@ -849,16 +845,16 @@ enemies_activate:
 
 
 ;****************************************************************
-; Executes commands for active enemies.
+; Executes commands for controlling active enemies.
 ;****************************************************************
 enemies_execute_command:
                      movem.l    d0-a6,-(sp)
 
                      lea        enemies_array,a0
-                     move.l     #NUM_ENEMIES-1,d7                                        ; iterates over the array of enemies
+                     move.l     #NUM_ENEMIES-1,d7                                        ; iterates over the enemies array  
 
 .loop:
-                     cmp.w      #ENEMY_STATE_INACTIVE,enemy.state(a0)                    ; if the enemy state is inactive, goes to next element
+                     cmp.w      #ENEMY_STATE_INACTIVE,enemy.state(a0)                    ; enemy state is inactive?
                      beq        .next_element
                     
                      lea        enemy.cmd_list(a0),a1
@@ -872,7 +868,7 @@ enemies_execute_command:
                      beq        .exec_pause
                      bra        .next_element
 .exec_goto:
-                     move.w     2(a1),enemy.tx(a0)                                       ; gets target coordinates
+                     move.w     2(a1),enemy.tx(a0)                                       ; gets target coordinates tx,ty
                      move.w     4(a1),enemy.ty(a0)
                      move.w     enemy.speed(a0),d1
                      move.w     enemy.tx(a0),d0
@@ -910,14 +906,14 @@ enemies_execute_command:
                      add.w      #3*2,enemy.cmd_pointer(a0)                               ; else points to next command
                      bra        .next_element
 .exec_end:
-                     move.w     #ENEMY_STATE_INACTIVE,enemy.state(a0)                    ; change state to inactive
+                     move.w     #ENEMY_STATE_INACTIVE,enemy.state(a0)                    ; changes state to inactive
                      bra        .next_element
 .exec_pause:
                      cmp.w      #ENEMY_STATE_PAUSE,enemy.state(a0)                       ; state = pause?
                      beq        .state_pause
                      move.w     2(a1),d0                                                 ; gets pause duration in frames
                      move.w     d0,enemy.pause_timer(a0)                                 ; initializes pause timer
-                     move.w     #ENEMY_STATE_PAUSE,enemy.state(a0)                       ; change state to pause
+                     move.w     #ENEMY_STATE_PAUSE,enemy.state(a0)                       ; changes state to pause
                      bra        .next_element
 .state_pause:
                      sub.w      #1,enemy.pause_timer(a0)                                 ; updates pause timer
@@ -944,7 +940,7 @@ gfx_base             dc.l       0                                               
 old_dma              dc.w       0                                                        ; saved state of DMACON
 sys_coplist          dc.l       0                                                        ; address of system copperlist                                     
 
-camera_x             dc.w       0 
+camera_x             dc.w       0                                                        ; x position of camera
 map_ptr              dc.w       0                                                        ; current map column
 bgnd_x               dc.w       0                                                        ; current x coordinate of camera into background surface
 map                  include    "gfx/shooter_map.i"
@@ -952,9 +948,9 @@ map                  include    "gfx/shooter_map.i"
 view_buffer          dc.l       dbuffer1                                                 ; buffer displayed on screen
 draw_buffer          dc.l       dbuffer2                                                 ; drawing buffer (not visible)
 
-bob_ship             dc.w       0                                                        ; x position
+player_ship          dc.w       0                                                        ; x position
                      dc.w       0                                                        ; y position
-                     dc.w       1                                                        ; bob.speed
+                     dc.w       1                                                        ; ship.speed
                      dc.w       64                                                       ; width
                      dc.w       28                                                       ; height  
                      dc.w       0                                                        ; spritesheet column of the bob
@@ -963,12 +959,12 @@ bob_ship             dc.w       0                                               
                      dc.w       28                                                       ; spritesheet height in pixels
                      dc.l       ship                                                     ; image data address
                      dc.l       ship_mask                                                ; mask address
-                     dc.w       0                                                        ; bob.anim_duration
-                     dc.w       0                                                        ; bob.anim_timer
+                     dc.w       0                                                        ; ship.anim_duration
+                     dc.w       0                                                        ; ship.anim_timer
 
-bob_ship_engine      dc.w       0                                                        ; x position
+pl_ship_engine       dc.w       0                                                        ; x position
                      dc.w       0                                                        ; y position
-                     dc.w       1                                                        ; bob.speed
+                     dc.w       1                                                        ; ship.speed
                      dc.w       32                                                       ; width
                      dc.w       16                                                       ; height  
                      dc.w       0                                                        ; spritesheet column of the bob
@@ -977,8 +973,8 @@ bob_ship_engine      dc.w       0                                               
                      dc.w       16                                                       ; spritesheet height in pixels
                      dc.l       ship_engine                                              ; image data address
                      dc.l       ship_engine_m                                            ; mask address
-                     dc.w       5                                                        ; bob.anim_duration
-                     dc.w       5                                                        ; bob.anim_timer
+                     dc.w       5                                                        ; ship.anim_duration
+                     dc.w       5                                                        ; ship.anim_timer
 
 enemies_array:
 enemy1               dc.w       CLIP_WIDTH+320                                           ; enemy.x
@@ -998,19 +994,18 @@ enemy1               dc.w       CLIP_WIDTH+320                                  
                      dc.w       ENEMY_STATE_INACTIVE                                     ; enemy.state
                      dc.w       100                                                      ; enemy.score
                      dc.w       10                                                       ; enemy.energy
-                     dc.w       1                                                        ; enemy.visible
                      dc.w       64                                                       ; enemy.map_position
                      dc.w       0                                                        ; enemy.tx
                      dc.w       0                                                        ; enemy.ty
                      dc.w       0                                                        ; enemy.cmd_pointer
                      dc.w       0                                                        ; enemy.pause_timer
-                     dc.w       ENEMY_CMD_GOTO,228,53
+                     dc.w       ENEMY_CMD_GOTO,228,53                                    ; enemy.cmd_list
                      dc.w       ENEMY_CMD_PAUSE,50
                      dc.w       ENEMY_CMD_GOTO,228,101
                      dc.w       ENEMY_CMD_PAUSE,25
                      dc.w       ENEMY_CMD_GOTO,0,101
                      dc.w       ENEMY_CMD_END
-                     dcb.b      ENEMY_CMD_LIST_SIZE-28,0                                 ; enemy.cmd_list
+                     dcb.b      ENEMY_CMD_LIST_SIZE-28,0                                 
 
 
 ;************************************************************************
@@ -1022,7 +1017,6 @@ enemy1               dc.w       CLIP_WIDTH+320                                  
 
 copperlist:
                      dc.w       DIWSTRT,$2c91                                            ; display window start at ($91,$2c)
-              ;dc.w       DIWSTRT,$2c81                                            ; display window start at ($81,$2c)
                      dc.w       DIWSTOP,$2cc1                                            ; display window stop at ($1c1,$12c)
                      dc.w       DDFSTRT,$38                                              ; display data fetch start at $38
                      dc.w       DDFSTOP,$d0                                              ; display data fetch stop at $d0
@@ -1038,7 +1032,7 @@ copperlist:
   ; bit 9: set to 1 to enable composite video output
   ; bit 12-14: least significant bits of bitplane number
   ; bitplane number: 8 => %1000
-  ;                               5432109876543210
+  ;                                      5432109876543210
                      dc.w       BPLCON0,%0000001000010001
                      dc.w       FMODE,0                                                  ; 16 bit fetch mode
 
