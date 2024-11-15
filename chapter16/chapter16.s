@@ -1,7 +1,7 @@
 ;************************************************************************
 ; Amiga Assembly Game Programming Book
 ; 
-; Chapter 16 -
+; Chapter 16 - Firing shots
 ;
 ; (c) 2024 Stefano Coppi
 ;************************************************************************
@@ -62,8 +62,8 @@ PLSHIP_Y0            equ 81
 PLSHIP_XMIN          equ CLIP_WIDTH+20
 PLSHIP_XMAX          equ CLIP_WIDTH+VIEWPORT_WIDTH-PLSHIP_WIDTH
 PLSHIP_YMIN          equ 0
-PLSHIP_YMAX          equ VIEWPORT_HEIGHT-PLSHIP_HEIGHT
-PLSHIP_MAX_SHOTS     equ 6
+PLSHIP_YMAX          equ VIEWPORT_HEIGHT-PLSHIP_HEIGHT-11
+
 
 ENEMY_CMD_LIST_SIZE  equ 40
 NUM_ENEMIES          equ 18
@@ -75,14 +75,22 @@ ENEMY_CMD_GOTO       equ 1
 ENEMY_CMD_PAUSE      equ 2
 ENEMY_CMD_FIRE       equ 3
 
-BASE_FIRE_INTERVAL   equ 7
+BASE_FIRE_INTERVAL   equ 7                                                               ; time interval between two shots
 SHIP_SHOT_SPEED      equ 10
-SHIP_SHOT_WIDTH      equ 0
-SHIP_SHOT_HEIGHT     equ 0
+SHIP_SHOT_WIDTH      equ 64
+SHIP_SHOT_HEIGHT     equ 64
 SHIP_SHOT_DAMAGE     equ 5
-SHOT_STATE_IDLE      equ 0
-SHOT_STATE_ACTIVE    equ 1
-SHOT_MAX_X           equ DISPLAY_WIDTH+CLIP_WIDTH
+SHOT_STATE_IDLE      equ 0                                                               ; state where a shot isn't drawn and isn't updated
+SHOT_STATE_ACTIVE    equ 1                                                               ; state where a shot is drawn and updated
+SHOT_STATE_LAUNCH    equ 2                                                               ; state where a shot throwing animation is played
+SHOT_MAX_X           equ VIEWPORT_WIDTH+CLIP_WIDTH
+SHOT_MIN_X           equ 0
+PLSHIP_MAX_SHOTS     equ 6
+ENEMY_MAX_SHOTS      equ 5
+ENEMY_SHOT_SPEED     equ 10
+ENEMY_SHOT_WIDTH     equ 64
+ENEMY_SHOT_HEIGHT    equ 32
+
 
 ;****************************************************************
 ; DATA STRUCTURES
@@ -153,7 +161,6 @@ shot.state           rs.w       1                                               
 shot.num_frames      rs.w       1                                                        ; number of animation frames
 shot.anim_duration   rs.w       1                                                        ; animation duration (in frames)
 shot.anim_timer      rs.w       1                                                        ; animation timer
-shot.type            rs.w       1                                                        ; type of shot
 shot.damage          rs.w       1                                                        ; amount of damage dealt
 shot.length          rs.b       0
 
@@ -182,12 +189,17 @@ mainloop:
                      bsr        scroll_background
               
                      bsr        plship_update
-                     bsr        ship_shoot_shot
+                     bsr        ship_fire_shot                                           ; fires shots from player's ship
+                     bsr        ship_shots_update                                        ; updates player's ship shots state
+                     bsr        enemy_shots_update                                       ; updates enemy shots state
                      bsr        enemies_activate
                      bsr        enemies_execute_command
 
-                     bsr        plship_draw
                      bsr        enemies_draw
+                     bsr        plship_draw
+                     bsr        ship_shots_draw                                          ; draws player's ship shots
+                     bsr        enemy_shots_draw                                         ; draws enemy shots
+                     
 
                      btst       #6,CIAAPRA                                               ; left mouse button pressed?
                      bne.s      mainloop                                                 ; if not, repeats the loop
@@ -900,6 +912,8 @@ enemies_execute_command:
                      beq        .exec_end
                      cmp.w      #ENEMY_CMD_PAUSE,d0
                      beq        .exec_pause
+                     cmp.w      #ENEMY_CMD_FIRE,d0
+                     beq        .exec_fire
                      bra        .next_element
 .exec_goto:
                      move.w     2(a1),enemy.tx(a0)                                       ; gets target coordinates tx,ty
@@ -956,7 +970,13 @@ enemies_execute_command:
                      bra        .next_element
 .end_pause:
                      move.w     #ENEMY_STATE_ACTIVE,enemy.state(a0)                      ; change state to active
-                     add.w      #2*2,enemy.cmd_pointer(a0)                               ; points to next command                     
+                     add.w      #2*2,enemy.cmd_pointer(a0)                               ; points to next command
+                     bra        .next_element
+.exec_fire:
+                     move.l     a0,a1
+                     bsr        enemy_shot_create                                        ; creates a new instance of enemy shot
+                     add.w      #2,enemy.cmd_pointer(a0)                                 ; points to next command
+                     bra        .next_element
 .next_element:
                      add.l      #enemy.length,a0                                         ; points to next enemy in the array
                      dbra       d7,.loop
@@ -967,9 +987,9 @@ enemies_execute_command:
 
 
 ;****************************************************************
-; Shoots a shot from the ship.
+; Fires a shot from the ship.
 ;****************************************************************
-ship_shoot_shot:
+ship_fire_shot:
                      movem.l    d0-a6,-(sp)
 
                      lea        player_ship,a0
@@ -990,9 +1010,6 @@ ship_shoot_shot:
 .check_timer:    
                      tst.w      ship.fire_timer(a0)                                      ; fire_timer = 0?
                      beq        .create_shot
-                     move.w     ship.fire_timer(a0),d0
-                     cmp.w      ship.fire_delay(a0),d0                                   ; ship fire timer >= fire delay ?
-                     bge        .create_shot
                      bra        .prev_frame                             
 .create_shot:
                      move.w     ship.fire_delay(a0),d0                                   ; fire_timer = fire_delay
@@ -1016,36 +1033,36 @@ ship_shot_create:
                      movem.l    d0-a6,-(sp)
 
                      lea        ship_shots,a0
+; finds the first free element in the array
                      move.l     #PLSHIP_MAX_SHOTS-1,d7
-
 .loop:
                      tst.w      shot.state(a0)                                           ; shot.state is idle?
                      beq        .insert_new_shot
                      add.l      #shot.length,a0                                          ; goes to next element
                      dbra       d7,.loop
                      bra        .return
+; creates a new shot instance and inserts in the first free element of the array
 .insert_new_shot:
                      lea        player_ship,a1
                      move.w     ship.x(a1),d0
-                     add.w      ship.width(a1),d0
+                     add.w      #47,d0
                      move.w     d0,shot.x(a0)                                            ; shot.x = ship.x + ship.width
                      move.w     ship.y(a1),d0
-                     add.w      #10,d0
+                     sub.w      #9,d0
                      move.w     d0,shot.y(a0)                                            ; shot.y = ship.y + 10
                      move.w     #SHIP_SHOT_SPEED,shot.speed(a0)                          ; shot.speed = SHOT_SPEED
                      move.w     #SHIP_SHOT_WIDTH,shot.width(a0)
                      move.w     #SHIP_SHOT_HEIGHT,shot.height(a0)
                      move.w     #0,shot.ssheet_c(a0)
                      move.w     #0,shot.ssheet_r(a0)
-                     move.w     #SHIP_SHOT_WIDTH,shot.ssheet_w(a0)
-                     move.w     #SHIP_SHOT_HEIGHT,shot.ssheet_h(a0)
-                     move.l     0,shot.imgdata(a0)
-                     move.l     0,shot.mask(a0)
-                     move.w     #SHOT_STATE_ACTIVE,shot.state(a0)
-                     move.w     #0,shot.num_frames(a0)
-                     move.w     #0,shot.anim_duration(a0)
-                     move.w     #0,shot.anim_timer(a0)
-                     move.w     #0,shot.type(a0)
+                     move.w     #448,shot.ssheet_w(a0)
+                     move.w     #128,shot.ssheet_h(a0)
+                     move.l     #ship_shots_gfx,shot.imgdata(a0)
+                     move.l     #ship_shots_mask,shot.mask(a0)
+                     move.w     #SHOT_STATE_LAUNCH,shot.state(a0)
+                     move.w     #6,shot.num_frames(a0)
+                     move.w     #3,shot.anim_duration(a0)
+                     move.w     #3,shot.anim_timer(a0)
                      move.w     #SHIP_SHOT_DAMAGE,shot.damage(a0)
 .return:
                      movem.l    (sp)+,d0-a6
@@ -1060,7 +1077,7 @@ ship_shots_draw:
 
                      lea        ship_shots,a0
                      move.l     #PLSHIP_MAX_SHOTS-1,d7
-
+; iterates over the ship_shots array
 .loop:
                      tst.w      shot.state(a0)                                           ; shot.state is idle?
                      beq        .next
@@ -1086,15 +1103,159 @@ ship_shots_update:
 
                      lea        ship_shots,a0
                      move.l     #PLSHIP_MAX_SHOTS-1,d7
-
+; iterates over the ship_shots array
 .loop:
                      tst.w      shot.state(a0)                                           ; shot.state is idle?
                      beq        .next
                      
+                     cmp.w      #SHOT_STATE_LAUNCH,shot.state(a0)                        ; shot.state is launch?
+                     beq        .launch
+                     cmp.w      #SHOT_STATE_ACTIVE,shot.state(a0)                        ; shot.state is active?
+                     beq        .active
+                     bra        .next
+.launch:
+                     sub.w      #1,shot.anim_timer(a0)                                   ; decreases anim_timer
+                     beq        .inc_frame                                               ; anim_timer = 0?
+                     bra        .next
+.inc_frame:
+                     add.w      #1,shot.ssheet_c(a0)                                     ; increases animation frame
+                     move.w     shot.anim_duration(a0),shot.anim_timer(a0)               ; resets anim_timer
+                     move.w     shot.ssheet_c(a0),d0
+                     cmp.w      shot.num_frames(a0),d0                                   ; current frame > num frames?
+                     bgt        .end_anim
+                     bra        .next
+.end_anim:
+                     move.w     #6,shot.ssheet_c(a0)                                     ; sets shot flight frame
+                     move.w     #SHOT_STATE_ACTIVE,shot.state(a0)                        ; changes shot state to active
+                     bra        .next
+.active:
                      move.w     shot.speed(a0),d0
                      add.w      d0,shot.x(a0)                                            ; shot.x += shot.speed
                      cmp.w      #SHOT_MAX_X,shot.x(a0)                                   ; shot.x >= SHOT_MAX_X ?
                      bge        .deactivate
+                     bra        .next
+.deactivate          move.w     #SHOT_STATE_IDLE,shot.state(a0)
+
+.next                add.l      #shot.length,a0                                          ; goes to next element
+                     dbra       d7,.loop
+                     bra        .return
+
+.return:
+                     movem.l    (sp)+,d0-a6
+                     rts
+
+
+;****************************************************************
+; Creates a new enemy shot.
+;
+; parameters:
+; a1 - enemy instance
+;****************************************************************
+enemy_shot_create:
+                     movem.l    d0-a6,-(sp)
+
+                     lea        enemy_shots,a0
+; finds the first free element in the array
+                     move.l     #ENEMY_MAX_SHOTS-1,d7
+.loop:
+                     tst.w      shot.state(a0)                                           ; shot.state is idle?
+                     beq        .insert_new_shot
+                     add.l      #shot.length,a0                                          ; goes to next element
+                     dbra       d7,.loop
+                     bra        .return
+; creates a new shot instance and inserts in the first free element of the array
+.insert_new_shot:
+                     move.w     enemy.x(a1),d0
+                     sub.w      #21,d0
+                     move.w     d0,shot.x(a0)                                            ; shot.x = enemy.x + 47
+                     move.w     enemy.y(a1),d0
+                     add.w      #20,d0
+                     move.w     d0,shot.y(a0)                                            ; shot.y = enemy.y - 9
+                     move.w     #ENEMY_SHOT_SPEED,shot.speed(a0)                         ; shot.speed = SHOT_SPEED
+                     move.w     #ENEMY_SHOT_WIDTH,shot.width(a0)
+                     move.w     #ENEMY_SHOT_HEIGHT,shot.height(a0)
+                     move.w     #0,shot.ssheet_c(a0)
+                     move.w     #0,shot.ssheet_r(a0)
+                     move.w     #384,shot.ssheet_w(a0)
+                     move.w     #32,shot.ssheet_h(a0)
+                     move.l     #enemy_shots_gfx,shot.imgdata(a0)
+                     move.l     #enemy_shots_mask,shot.mask(a0)
+                     move.w     #SHOT_STATE_LAUNCH,shot.state(a0)
+                     move.w     #5,shot.num_frames(a0)
+                     move.w     #3,shot.anim_duration(a0)
+                     move.w     #3,shot.anim_timer(a0)
+                     move.w     #SHIP_SHOT_DAMAGE,shot.damage(a0)
+.return:
+                     movem.l    (sp)+,d0-a6
+                     rts
+
+
+;****************************************************************
+; Draws the enemy shots.
+;****************************************************************
+enemy_shots_draw:
+                     movem.l    d0-a6,-(sp)
+
+                     lea        enemy_shots,a0
+                     move.l     #ENEMY_MAX_SHOTS-1,d7
+
+; iterates over the enemy_shots array
+.loop:
+                     tst.w      shot.state(a0)                                           ; shot.state is idle?
+                     beq        .next
+                     
+                     move.l     a0,a3
+                     move.l     draw_buffer,a2
+                     bsr        draw_bob                                                 ; draws shot
+
+.next                add.l      #shot.length,a0                                          ; goes to next element
+                     dbra       d7,.loop
+                     bra        .return
+
+.return:
+                     movem.l    (sp)+,d0-a6
+                     rts
+
+
+;****************************************************************
+; Updates the enemy shots state.
+;****************************************************************
+enemy_shots_update:
+                     movem.l    d0-a6,-(sp)
+
+                     lea        enemy_shots,a0
+                     move.l     #ENEMY_MAX_SHOTS-1,d7
+
+; iterates over the enemy_shots array
+.loop:
+                     tst.w      shot.state(a0)                                           ; shot.state is idle?
+                     beq        .next
+                     
+                     cmp.w      #SHOT_STATE_LAUNCH,shot.state(a0)                        ; shot.state is launch?
+                     beq        .launch
+                     cmp.w      #SHOT_STATE_ACTIVE,shot.state(a0)                        ; shot.state is active?
+                     beq        .active
+                     bra        .next
+.launch:
+                     sub.w      #1,shot.anim_timer(a0)                                   ; decreases anim_timer
+                     beq        .inc_frame                                               ; anim_timer = 0?
+                     bra        .next
+.inc_frame:
+                     add.w      #1,shot.ssheet_c(a0)                                     ; increases animation frame
+                     move.w     shot.anim_duration(a0),shot.anim_timer(a0)               ; resets anim_timer
+                     move.w     shot.ssheet_c(a0),d0
+                     cmp.w      shot.num_frames(a0),d0                                   ; current frame > num frames?
+                     bgt        .end_anim
+                     bra        .next
+.end_anim:
+                     move.w     #5,shot.ssheet_c(a0)                                     ; sets shot flight frame
+                     move.w     #SHOT_STATE_ACTIVE,shot.state(a0)                        ; changes shot state to active
+                     bra        .next
+.active:
+                     move.w     shot.speed(a0),d0
+                     sub.w      d0,shot.x(a0)                                            ; shot.x -= shot.speed
+                     cmp.w      #SHOT_MIN_X,shot.x(a0)                                   ; shot.x <= SHOT_MIN_X ?
+                     ble        .deactivate
                      bra        .next
 .deactivate          move.w     #SHOT_STATE_IDLE,shot.state(a0)
 
@@ -1115,7 +1276,7 @@ gfx_base             dc.l       0                                               
 old_dma              dc.w       0                                                        ; saved state of DMACON
 sys_coplist          dc.l       0                                                        ; address of system copperlist                                     
 
-camera_x             dc.w       0                                                        ; x position of camera
+camera_x             dc.w       0*64                                                     ; x position of camera
 map_ptr              dc.w       0                                                        ; current map column
 bgnd_x               dc.w       0                                                        ; current x coordinate of camera into background surface
 map                  include    "gfx/shooter_map.i"
@@ -1209,8 +1370,14 @@ ship_mask            incbin     "gfx/ship.mask"
 ship_engine          incbin     "gfx/ship_engine.raw"
 ship_engine_m        incbin     "gfx/ship_engine.mask"
 
+ship_shots_gfx       incbin     "gfx/ship_shots.raw"
+ship_shots_mask      incbin     "gfx/ship_shots.mask"
+
 enemies              incbin     "gfx/enemies.raw"
 enemies_m            incbin     "gfx/enemies.mask"
+
+enemy_shots_gfx      incbin     "gfx/enemy_shots.raw"
+enemy_shots_mask     incbin     "gfx/enemy_shots.mask"
 
 
 ;************************************************************************
@@ -1225,5 +1392,7 @@ dbuffer2             ds.b       (DISPLAY_PLANE_SZ*N_PLANES)
 bgnd_surface         ds.b       (BGND_PLANE_SIZE*N_PLANES)                               ; invisible surface used for scrolling background
 
 ship_shots           ds.b       (shot.length*PLSHIP_MAX_SHOTS)                           ; ship's shots array
+
+enemy_shots          ds.b       (shot.length*ENEMY_MAX_SHOTS)                            ; enemy shots array
 
                      END
