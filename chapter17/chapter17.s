@@ -70,6 +70,7 @@ NUM_ENEMIES          equ 18
 ENEMY_STATE_INACTIVE equ 0
 ENEMY_STATE_ACTIVE   equ 1
 ENEMY_STATE_PAUSE    equ 2
+ENEMY_STATE_HIT      equ 3                                                               ; the enemy has been hit by a shot
 ENEMY_CMD_END        equ 0
 ENEMY_CMD_GOTO       equ 1
 ENEMY_CMD_PAUSE      equ 2
@@ -90,7 +91,8 @@ ENEMY_MAX_SHOTS      equ 5
 ENEMY_SHOT_SPEED     equ 10
 ENEMY_SHOT_WIDTH     equ 64
 ENEMY_SHOT_HEIGHT    equ 32
-
+ENEMY_FLASH_DURATION equ 2
+ENEMY_HIT_DURATION   equ 20
 
 ;****************************************************************
 ; DATA STRUCTURES
@@ -141,6 +143,9 @@ enemy.ty             rs.w       1                                               
 enemy.cmd_pointer    rs.w       1                                                        ; pointer to the next command
 enemy.pause_timer    rs.w       1
 enemy.bbox           rs.b       rect.length                                              ; bounding box
+enemy.flash_timer    rs.w       1
+enemy.hit_timer      rs.w       1                                                        ; timer used to measure hit state duration
+enemy.visible        rs.w       1
 enemy.cmd_list       rs.b       ENEMY_CMD_LIST_SIZE                                      ; commands list
 enemy.length         rs.b       0
 
@@ -867,6 +872,9 @@ enemies_draw:
                      cmp.w      #ENEMY_STATE_INACTIVE,enemy.state(a3)                    ; enemy state is inactive?
                      beq        .skip_draw
 
+                     tst.w      enemy.visible(a3)                                        ; enemy visible?
+                     beq        .skip_draw                                               ; if not, skip draw
+
                      move.l     draw_buffer,a2
                      bsr        draw_bob                                                 ; draws enemy                
 .skip_draw:
@@ -916,6 +924,22 @@ enemies_execute_command:
                      cmp.w      #ENEMY_STATE_INACTIVE,enemy.state(a0)                    ; enemy state is inactive?
                      beq        .next_element
                     
+                     cmp.w      #ENEMY_STATE_HIT,enemy.state(a0)                         ; enemy state is hit?
+                     beq        .state_hit
+                     bra        .parse_command
+.state_hit:
+                     sub.w      #1,enemy.flash_timer(a0)
+                     beq        .toggle_visibility
+                     bra        .decrease_hit_timer
+.toggle_visibility:
+                     not.w      enemy.visible(a0)
+                     move.w     #ENEMY_FLASH_DURATION,enemy.flash_timer(a0)
+.decrease_hit_timer:
+                     sub.w      #1,enemy.hit_timer(a0)
+                     bne        .parse_command
+                     move.w     #ENEMY_STATE_ACTIVE,enemy.state(a0)
+                     move.w     #$ffff,enemy.visible(a0)
+.parse_command:
                      lea        enemy.cmd_list(a0),a1
                      add.w      enemy.cmd_pointer(a0),a1
                      move.w     (a1),d0                                                  ; fetches current command
@@ -1406,22 +1430,34 @@ coll_response_shots_enemies:
                      tst.w      d0                                                       ; if d0 = 0 there is no collision
                      beq        .return                                                  ; and therefore returns
 .collision:
-                     move.w     #$F00,COLOR00(a5)                                        ; changes background color to red
+                     ;move.w     #$F00,COLOR00(a5)                                        ; changes background color to red
                      move.w     #SHOT_STATE_IDLE,shot.state(a0)                          ; makes the current shot inactive
+                     move.w     #ENEMY_STATE_HIT,enemy.state(a1)
+                     move.w     #ENEMY_FLASH_DURATION,enemy.flash_timer(a1)
+                     move.w     #ENEMY_HIT_DURATION,enemy.hit_timer(a1)
+                     move.w     shot.damage(a0),d0
+                     sub.w      d0,enemy.energy(a1)
+                     ble        .explode
+                     bra        .return
+.explode:
+                     bsr        enemy_explode
+.return:
+                     ;movem.l    (sp)+,d0-a6
+                     rts
+
+
+;****************************************************************
+; Blows up the enemy.
+;
+; parameters:
+; a0 - shot instance
+; a1 - enemy instance
+;****************************************************************
+enemy_explode:
+                     ;movem.l    d0-a6,-(sp)
+                     
                      move.w     #ENEMY_STATE_INACTIVE,enemy.state(a1)
-; .dont_deactivate:
-;                      move.w     #ALIEN_HIT,alien.state(a1)                               ; change the current alien state to HIT
-;                      move.w     #ALIEN_FLASH_DURATION,alien.flash_timer(a1)              ; sets flash timer
-;                      move.w     #ALIEN_HIT_DURATION,alien.hit_timer(a1)                  ; sets hit timer
-;                      move.w     bullet.damage(a0),d0
-;                      sub.w      d0,alien.energy(a1)                                      ; subtracts damage of bullet from alien energy
-;                      ble        .explode                                                 ; if alien energy is <= 0, explode the alien
-;                      move.w     #SFX_ID_HIT,d0                                           ; else plays sound effect
-;                      clr.w      d1                                                       ; no loop
-;                      bsr        play_sfx 
-;                      bra        .return 
-; .explode:
-;                      bsr        explode_alien
+                    
 .return:
                      ;movem.l    (sp)+,d0-a6
                      rts
