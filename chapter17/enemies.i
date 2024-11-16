@@ -22,9 +22,9 @@ enemy1   dc.w     CLIP_WIDTH+320                ; enemy.x
          dc.w     0                             ; enemy.cmd_pointer
          dc.w     0                             ; enemy.pause_timer
          dc.w     0                             ; rect.x
-         dc.w     0                             ; rect.y
-         dc.w     64                            ; rect.width
-         dc.w     31                            ; rect.height
+         dc.w     27                            ; rect.y
+         dc.w     68                            ; rect.width
+         dc.w     32                            ; rect.height
          dc.w     0                             ; enemy.flash_timer
          dc.w     0                             ; enemy.hit_timer
          dc.w     $ffff                         ; enemy.visible
@@ -54,9 +54,9 @@ enemy2   dc.w     CLIP_WIDTH+320                ; enemy.x
          dc.w     0                             ; enemy.cmd_pointer
          dc.w     0                             ; enemy.pause_timer
          dc.w     0                             ; rect.x
-         dc.w     0                             ; rect.y
-         dc.w     64                            ; rect.width
-         dc.w     31                            ; rect.height
+         dc.w     27                            ; rect.y
+         dc.w     68                            ; rect.width
+         dc.w     32                            ; rect.height
          dc.w     0                             ; enemy.flash_timer
          dc.w     0                             ; enemy.hit_timer
          dc.w     $ffff                         ; enemy.visible
@@ -87,9 +87,9 @@ enemy3   dc.w     CLIP_WIDTH+320                ; enemy.x
          dc.w     0                             ; enemy.cmd_pointer
          dc.w     0                             ; enemy.pause_timer
          dc.w     0                             ; rect.x
-         dc.w     0                             ; rect.y
-         dc.w     64                            ; rect.width
-         dc.w     31                            ; rect.height
+         dc.w     27                            ; rect.y
+         dc.w     68                            ; rect.width
+         dc.w     32                            ; rect.height
          dc.w     0                             ; enemy.flash_timer
          dc.w     0                             ; enemy.hit_timer
          dc.w     $ffff                         ; enemy.visible
@@ -120,9 +120,9 @@ enemy4   dc.w     CLIP_WIDTH+320                ; enemy.x
          dc.w     0                             ; enemy.cmd_pointer
          dc.w     0                             ; enemy.pause_timer
          dc.w     0                             ; rect.x
-         dc.w     0                             ; rect.y
-         dc.w     64                            ; rect.width
-         dc.w     31                            ; rect.height
+         dc.w     27                            ; rect.y
+         dc.w     68                            ; rect.width
+         dc.w     32                            ; rect.height
          dc.w     0                             ; enemy.flash_timer
          dc.w     0                             ; enemy.hit_timer
          dc.w     $ffff                         ; enemy.visible

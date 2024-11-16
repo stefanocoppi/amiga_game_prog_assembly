@@ -11,4 +11,5 @@ amigeconv.exe -f bitplane -d 8 .\ship_shots.png ship_shots.raw
 amigeconv.exe -f bitplane -m -d 1 .\ship_shots.png ship_shots.mask
 amigeconv.exe -f bitplane -d 8 .\enemy_shots.png enemy_shots.raw
 amigeconv.exe -f bitplane -m -d 1 .\enemy_shots.png enemy_shots.mask
-
+amigeconv.exe -f bitplane -d 8 .\enemy_explosion.png enemy_explosion.raw
+amigeconv.exe -f bitplane -m -d 1 .\enemy_explosion.png enemy_explosion.mask
