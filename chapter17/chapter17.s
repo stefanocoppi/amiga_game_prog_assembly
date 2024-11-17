@@ -22,80 +22,85 @@
 ; enables copper DMA (bit 7)
 ; enables bitplanes DMA (bit 8)
                          ;5432109876543210
-DMASET                equ %1000001111000000             
+DMASET                 equ %1000001111000000             
 
 ; display
-N_PLANES              equ 8
-CLIP_WIDTH            equ 128
-DISPLAY_WIDTH         equ 320+2*CLIP_WIDTH
-DISPLAY_HEIGHT        equ 256
-DISPLAY_PLANE_SZ      equ DISPLAY_HEIGHT*(DISPLAY_WIDTH/8)
-DISPLAY_ROW_SIZE      equ (DISPLAY_WIDTH/8)
+N_PLANES               equ 8
+CLIP_WIDTH             equ 128
+DISPLAY_WIDTH          equ 320+2*CLIP_WIDTH
+DISPLAY_HEIGHT         equ 256
+DISPLAY_PLANE_SZ       equ DISPLAY_HEIGHT*(DISPLAY_WIDTH/8)
+DISPLAY_ROW_SIZE       equ (DISPLAY_WIDTH/8)
 
 ; tiles
-TILE_WIDTH            equ 64
-TILE_HEIGHT           equ 64
-TILE_PLANE_SZ         equ TILE_HEIGHT*(TILE_WIDTH/8)
-TILESET_WIDTH         equ 640
-TILESET_HEIGHT        equ 512
-TILESET_ROW_SIZE      equ (TILESET_WIDTH/8)
-TILESET_PLANE_SZ      equ (TILESET_HEIGHT*TILESET_ROW_SIZE)
-TILESET_COLS          equ 10          
-TILEMAP_WIDTH         equ 100
-TILEMAP_ROW_SIZE      equ TILEMAP_WIDTH*2
+TILE_WIDTH             equ 64
+TILE_HEIGHT            equ 64
+TILE_PLANE_SZ          equ TILE_HEIGHT*(TILE_WIDTH/8)
+TILESET_WIDTH          equ 640
+TILESET_HEIGHT         equ 512
+TILESET_ROW_SIZE       equ (TILESET_WIDTH/8)
+TILESET_PLANE_SZ       equ (TILESET_HEIGHT*TILESET_ROW_SIZE)
+TILESET_COLS           equ 10          
+TILEMAP_WIDTH          equ 100
+TILEMAP_ROW_SIZE       equ TILEMAP_WIDTH*2
 
 ; background
-BGND_WIDTH            equ 2*DISPLAY_WIDTH+2*TILE_WIDTH
-BGND_HEIGHT           equ 192
-BGND_PLANE_SIZE       equ BGND_HEIGHT*(BGND_WIDTH/8)
-BGND_ROW_SIZE         equ (BGND_WIDTH/8)
+BGND_WIDTH             equ 2*DISPLAY_WIDTH+2*TILE_WIDTH
+BGND_HEIGHT            equ 192
+BGND_PLANE_SIZE        equ BGND_HEIGHT*(BGND_WIDTH/8)
+BGND_ROW_SIZE          equ (BGND_WIDTH/8)
 
 ; scroll
-VIEWPORT_HEIGHT       equ 192
-VIEWPORT_WIDTH        equ 320
-SCROLL_SPEED          equ 1
+VIEWPORT_HEIGHT        equ 192
+VIEWPORT_WIDTH         equ 320
+SCROLL_SPEED           equ 1
 
-PLSHIP_WIDTH          equ 64
-PLSHIP_HEIGHT         equ 28
-PLSHIP_X0             equ CLIP_WIDTH+24
-PLSHIP_Y0             equ 81
-PLSHIP_XMIN           equ CLIP_WIDTH+20
-PLSHIP_XMAX           equ CLIP_WIDTH+VIEWPORT_WIDTH-PLSHIP_WIDTH
-PLSHIP_YMIN           equ 0
-PLSHIP_YMAX           equ VIEWPORT_HEIGHT-PLSHIP_HEIGHT-11
+PLSHIP_WIDTH           equ 64
+PLSHIP_HEIGHT          equ 28
+PLSHIP_X0              equ CLIP_WIDTH+24
+PLSHIP_Y0              equ 81
+PLSHIP_XMIN            equ CLIP_WIDTH+20
+PLSHIP_XMAX            equ CLIP_WIDTH+VIEWPORT_WIDTH-PLSHIP_WIDTH
+PLSHIP_YMIN            equ 0
+PLSHIP_YMAX            equ VIEWPORT_HEIGHT-PLSHIP_HEIGHT-11
+PLSHIP_STATE_NORMAL    equ 0
+PLSHIP_STATE_HIT       equ 1
+PLSHIP_STATE_EXPLOSION equ 2
+PLSHIP_FLASH_DURATION  equ 1
+PLSHIP_HIT_DURATION    equ 10
 
+ENEMY_CMD_LIST_SIZE    equ 40
+NUM_ENEMIES            equ 18
+ENEMY_STATE_INACTIVE   equ 0                                                              ; the enemy isn't drawn and its state isn't updated
+ENEMY_STATE_ACTIVE     equ 1                                                              ; the enemy is drawn and its state is updated
+ENEMY_STATE_PAUSE      equ 2                                                              ; the enemy pauses its movement
+ENEMY_STATE_HIT        equ 3                                                              ; the enemy has been hit by a shot
+ENEMY_STATE_EXPLOSION  equ 4                                                              ; the enemy explodes
+ENEMY_STATE_GOTOXY     equ 5                                                              ; the enemy moves toward a target point
+ENEMY_CMD_END          equ 0
+ENEMY_CMD_GOTO         equ 1
+ENEMY_CMD_PAUSE        equ 2
+ENEMY_CMD_FIRE         equ 3
+ENEMY_FLASH_DURATION   equ 2
+ENEMY_HIT_DURATION     equ 20
 
-ENEMY_CMD_LIST_SIZE   equ 40
-NUM_ENEMIES           equ 18
-ENEMY_STATE_INACTIVE  equ 0                                                               ; the enemy isn't drawn and its state isn't updated
-ENEMY_STATE_ACTIVE    equ 1                                                               ; the enemy is drawn and its state is updated
-ENEMY_STATE_PAUSE     equ 2                                                               ; the enemy pauses its movement
-ENEMY_STATE_HIT       equ 3                                                               ; the enemy has been hit by a shot
-ENEMY_STATE_EXPLOSION equ 4                                                               ; the enemy explodes
-ENEMY_STATE_GOTOXY    equ 5                                                               ; the enemy moves toward a target point
-ENEMY_CMD_END         equ 0
-ENEMY_CMD_GOTO        equ 1
-ENEMY_CMD_PAUSE       equ 2
-ENEMY_CMD_FIRE        equ 3
+BASE_FIRE_INTERVAL     equ 7                                                              ; time interval between two shots
+SHIP_SHOT_SPEED        equ 10
+SHIP_SHOT_WIDTH        equ 64
+SHIP_SHOT_HEIGHT       equ 64
+SHIP_SHOT_DAMAGE       equ 5
+SHOT_STATE_IDLE        equ 0                                                              ; state where a shot isn't drawn and isn't updated
+SHOT_STATE_ACTIVE      equ 1                                                              ; state where a shot is drawn and updated
+SHOT_STATE_LAUNCH      equ 2                                                              ; state where a shot throwing animation is played
+SHOT_STATE_HIT         equ 3                                                              ; the shot hits the target
+SHOT_MAX_X             equ VIEWPORT_WIDTH+CLIP_WIDTH
+SHOT_MIN_X             equ 0
+PLSHIP_MAX_SHOTS       equ 6
+ENEMY_MAX_SHOTS        equ 5
+ENEMY_SHOT_SPEED       equ 10
+ENEMY_SHOT_WIDTH       equ 64
+ENEMY_SHOT_HEIGHT      equ 32
 
-BASE_FIRE_INTERVAL    equ 7                                                               ; time interval between two shots
-SHIP_SHOT_SPEED       equ 10
-SHIP_SHOT_WIDTH       equ 64
-SHIP_SHOT_HEIGHT      equ 64
-SHIP_SHOT_DAMAGE      equ 5
-SHOT_STATE_IDLE       equ 0                                                               ; state where a shot isn't drawn and isn't updated
-SHOT_STATE_ACTIVE     equ 1                                                               ; state where a shot is drawn and updated
-SHOT_STATE_LAUNCH     equ 2                                                               ; state where a shot throwing animation is played
-SHOT_STATE_HIT        equ 3                                                               ; the shot hits the target
-SHOT_MAX_X            equ VIEWPORT_WIDTH+CLIP_WIDTH
-SHOT_MIN_X            equ 0
-PLSHIP_MAX_SHOTS      equ 6
-ENEMY_MAX_SHOTS       equ 5
-ENEMY_SHOT_SPEED      equ 10
-ENEMY_SHOT_WIDTH      equ 64
-ENEMY_SHOT_HEIGHT     equ 32
-ENEMY_FLASH_DURATION  equ 2
-ENEMY_HIT_DURATION    equ 20
 
 ;****************************************************************
 ; DATA STRUCTURES
@@ -119,6 +124,11 @@ ship.anim_timer       rs.w       1                                              
 ship.fire_timer       rs.w       1                                                        ; timer to measure the interval between two shots
 ship.fire_delay       rs.w       1                                                        ; time interval betweeen two shots (in frames)
 ship.bbox             rs.b       rect.length                                              ; bounding box for collisions
+ship.visible          rs.w       1                                                        ; 0 not visible, $ffff visible
+ship.flash_timer      rs.w       1                                                        ; measures flashing duration
+ship.hit_timer        rs.w       1                                                        ; timer used to measure hit state duration
+ship.energy           rs.w       1                                                        ; amount of energy. When reaches zero, the ship is destroyed.
+ship.state            rs.w       1
 ship.length           rs.b       0 
 
 
@@ -734,6 +744,10 @@ plship_draw:
                       movem.l    d0-a6,-(sp)
 
                       lea        player_ship,a3
+
+                      tst.w      ship.visible(a3)                                         ; if visible = 0, doesn't draw the ship
+                      beq        .return
+
                       move.l     draw_buffer,a2
                       bsr        draw_bob                                                 ; draws ship
 
@@ -820,6 +834,24 @@ plship_update:
                       clr.w      ship.ssheet_c(a1)                                        ; resets animation frame
 .reset_timer:
                       move.w     ship.anim_duration(a1),ship.anim_timer(a1)               ; resets anim_timer
+                      ;bra        .return
+
+                      cmp.w      #PLSHIP_STATE_HIT,ship.state(a0)                         ; state = hit?
+                      beq        .hit_state
+                      bra        .return
+.hit_state:
+                      sub.w      #1,ship.hit_timer(a0)
+                      beq        .hit_state_end
+                      sub.w      #1,ship.flash_timer(a0)
+                      beq        .toggle_visibility
+                      bra        .return
+.hit_state_end:
+                      move.w     #$ffff,ship.visible(a0)                                  ; makes ship visible
+                      move.w     #PLSHIP_STATE_NORMAL,ship.state(a0)
+                      bra        .return
+.toggle_visibility:          
+                      not.w      ship.visible(a0)                                         ; toggles visibility
+                      move.w     #PLSHIP_FLASH_DURATION,ship.flash_timer(a0)
 .return:
                       movem.l    (sp)+,d0-a6
                       rts
@@ -1616,29 +1648,30 @@ check_coll_shots_plship:
 ; parameters:
 ; d0.w - collision result: 1 if there is a collision, 0 otherwise
 ; a0 - pointer to shot instance
-; a1 - pointer to enemy instance
+; a1 - pointer to player's ship instance
 ;****************************************************************
 coll_response_shots_plship:
                      ;movem.l    d0-a6,-(sp)
 
-                      tst.w      d0                                                       ; if d0 = 0 there is no collision
-                      beq        .return                                                  ; and therefore returns
+; if d0 = 0 there is no collision and therefore returns
+                      tst.w      d0                                                       
+                      beq        .return                                                
 .collision:
-                      move.w     #$F00,COLOR00(a5)                                        ; changes background color to red
-;                       move.w     shot.anim_duration(a0),shot.anim_timer(a0)               ; resets anim timer
-;                       move.w     #0,shot.ssheet_c(a0)                                     ; sets hit animation frame
-;                       move.w     #1,shot.ssheet_r(a0)
-;                       move.w     #SHOT_STATE_HIT,shot.state(a0)                           ; changes state to hit
-                
-;                       move.w     #ENEMY_STATE_HIT,enemy.state(a1)
-;                       move.w     #ENEMY_FLASH_DURATION,enemy.flash_timer(a1)
-;                       move.w     #ENEMY_HIT_DURATION,enemy.hit_timer(a1)
-;                       move.w     shot.damage(a0),d0
-;                       sub.w      d0,enemy.energy(a1)
-;                       ble        .explode
-;                       bra        .return
-; .explode:
-;                       bsr        enemy_explode
+                      ;move.w     #$F00,COLOR00(a5)
+; changes the shot state to idle
+                      move.w     #SHOT_STATE_IDLE,shot.state(a0)                          
+; changes player's ship state to hit
+                      move.w     #PLSHIP_STATE_HIT,ship.state(a1)                         
+                      move.w     #PLSHIP_FLASH_DURATION,ship.flash_timer(a1)
+                      move.w     #PLSHIP_HIT_DURATION,ship.hit_timer(a1)
+; subtracts energy from the player's ship
+                      move.w     shot.damage(a0),d0
+                      sub.w      d0,ship.energy(a1)
+; if energy <= 0 then makes explode the player's ship
+                      ble        .explode
+                      bra        .return
+.explode:
+                      ;bsr        enemy_explode
 .return:
                      ;movem.l    (sp)+,d0-a6
                       rts
@@ -1679,6 +1712,11 @@ player_ship           dc.w       0                                              
                       dc.w       0                                                        ; bbox.rect.y
                       dc.w       64                                                       ; bbox.rect.width
                       dc.w       28                                                       ; bbox.rect.height
+                      dc.w       $ffff                                                    ; visible
+                      dc.w       0                                                        ; flash_timer
+                      dc.w       0                                                        ; hit_timer
+                      dc.w       10                                                       ; energy
+                      dc.w       PLSHIP_STATE_NORMAL                                      ; state
 
 pl_ship_engine        dc.w       0                                                        ; x position
                       dc.w       0                                                        ; y position
