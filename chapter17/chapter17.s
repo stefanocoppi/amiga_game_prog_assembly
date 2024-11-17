@@ -118,6 +118,7 @@ ship.anim_duration    rs.w       1                                              
 ship.anim_timer       rs.w       1                                                        ; timer for animation
 ship.fire_timer       rs.w       1                                                        ; timer to measure the interval between two shots
 ship.fire_delay       rs.w       1                                                        ; time interval betweeen two shots (in frames)
+ship.bbox             rs.b       rect.length                                              ; bounding box for collisions
 ship.length           rs.b       0 
 
 
@@ -149,6 +150,8 @@ enemy.bbox            rs.b       rect.length                                    
 enemy.flash_timer     rs.w       1
 enemy.hit_timer       rs.w       1                                                        ; timer used to measure hit state duration
 enemy.visible         rs.w       1
+enemy.fire_offx       rs.w       1                                                        ; x offset where to place the fire shot
+enemy.fire_offy       rs.w       1                                                        ; y offset where to place the fire shot
 enemy.cmd_list        rs.b       ENEMY_CMD_LIST_SIZE                                      ; commands list
 enemy.length          rs.b       0
 
@@ -215,7 +218,8 @@ mainloop:
                       bsr        enemies_update
 
                       bsr        check_coll_shots_enemies
-
+                      bsr        check_coll_shots_plship
+        
                       bsr        enemies_draw
                       bsr        plship_draw
                       bsr        ship_shots_draw                                          ; draws player's ship shots
@@ -1278,11 +1282,11 @@ enemy_shot_create:
 ; creates a new shot instance and inserts in the first free element of the array
 .insert_new_shot:
                       move.w     enemy.x(a1),d0
-                      sub.w      #21,d0
-                      move.w     d0,shot.x(a0)                                            ; shot.x = enemy.x + 47
+                      add.w      enemy.fire_offx(a1),d0
+                      move.w     d0,shot.x(a0)                                            ; shot.x = enemy.x + enemy.fire_offx
                       move.w     enemy.y(a1),d0
-                      add.w      #20,d0
-                      move.w     d0,shot.y(a0)                                            ; shot.y = enemy.y - 9
+                      add.w      enemy.fire_offy(a1),d0
+                      move.w     d0,shot.y(a0)                                            ; shot.y = enemy.y + enemy.fire_offy
                       move.w     #ENEMY_SHOT_SPEED,shot.speed(a0)                         ; shot.speed = SHOT_SPEED
                       move.w     #ENEMY_SHOT_WIDTH,shot.width(a0)
                       move.w     #ENEMY_SHOT_HEIGHT,shot.height(a0)
@@ -1294,8 +1298,8 @@ enemy_shot_create:
                       move.l     #enemy_shots_mask,shot.mask(a0)
                       move.w     #SHOT_STATE_LAUNCH,shot.state(a0)
                       move.w     #5,shot.num_frames(a0)
-                      move.w     #3,shot.anim_duration(a0)
-                      move.w     #3,shot.anim_timer(a0)
+                      move.w     #2,shot.anim_duration(a0)
+                      move.w     #2,shot.anim_timer(a0)
                       move.w     #SHIP_SHOT_DAMAGE,shot.damage(a0)
 .return:
                       movem.l    (sp)+,d0-a6
@@ -1551,6 +1555,95 @@ enemy_explode:
                       rts
 
 
+;****************************************************************
+; Checks for collisions between enemy shots and player's ship.
+;****************************************************************
+check_coll_shots_plship:
+                      movem.l    d0-a6,-(sp)
+
+; iterates over all active enemy shots
+;     checks collision between current shot and player's ship
+;         collision response
+
+                      lea        enemy_shots,a0
+                      move.l     #ENEMY_MAX_SHOTS-1,d7
+; iterates over enemy shots
+.shots_loop:
+                      cmp.w      #SHOT_STATE_ACTIVE,shot.state(a0)                        ; is current shot active?
+                      bne        .next_shot                                               ; if not, move on the next shot
+    
+; setups bounding rectangle for current shot
+                      lea        rect1,a3
+                      lea        shot.bbox(a0),a4
+                      move.w     shot.x(a0),rect.x(a3)
+                      move.w     rect.x(a4),d0
+                      add.w      d0,rect.x(a3)
+                      move.w     shot.y(a0),rect.y(a3)
+                      move.w     rect.y(a4),d0
+                      add.w      d0,rect.y(a3)
+                      move.w     rect.width(a4),rect.width(a3)
+                      move.w     rect.height(a4),rect.height(a3)
+
+; setups bounding rectangle for player's ship
+                      lea        player_ship,a1
+                      lea        rect2,a2
+                      lea        ship.bbox(a1),a4
+                      move.w     ship.x(a1),rect.x(a2)
+                      move.w     rect.x(a4),d0                 
+                      add.w      d0,rect.x(a2)     
+                      move.w     ship.y(a1),rect.y(a2)
+                      move.w     rect.y(a4),d0                 
+                      add.w      d0,rect.y(a2)
+                      move.w     rect.width(a4),rect.width(a2)
+                      move.w     rect.height(a4),rect.height(a2)
+; checks if player's ship bounding rectangle intersects with current shot bounding rectangle
+                      bsr        rect_intersects                                          
+; response to collision
+                      bsr        coll_response_shots_plship                                         
+
+.next_shot:
+                      add.l      #shot.length,a0
+                      dbra       d7,.shots_loop
+
+.return:
+                      movem.l    (sp)+,d0-a6
+                      rts
+
+
+;****************************************************************
+; Responds to collisions between enemy shots and player's ship.
+;
+; parameters:
+; d0.w - collision result: 1 if there is a collision, 0 otherwise
+; a0 - pointer to shot instance
+; a1 - pointer to enemy instance
+;****************************************************************
+coll_response_shots_plship:
+                     ;movem.l    d0-a6,-(sp)
+
+                      tst.w      d0                                                       ; if d0 = 0 there is no collision
+                      beq        .return                                                  ; and therefore returns
+.collision:
+                      move.w     #$F00,COLOR00(a5)                                        ; changes background color to red
+;                       move.w     shot.anim_duration(a0),shot.anim_timer(a0)               ; resets anim timer
+;                       move.w     #0,shot.ssheet_c(a0)                                     ; sets hit animation frame
+;                       move.w     #1,shot.ssheet_r(a0)
+;                       move.w     #SHOT_STATE_HIT,shot.state(a0)                           ; changes state to hit
+                
+;                       move.w     #ENEMY_STATE_HIT,enemy.state(a1)
+;                       move.w     #ENEMY_FLASH_DURATION,enemy.flash_timer(a1)
+;                       move.w     #ENEMY_HIT_DURATION,enemy.hit_timer(a1)
+;                       move.w     shot.damage(a0),d0
+;                       sub.w      d0,enemy.energy(a1)
+;                       ble        .explode
+;                       bra        .return
+; .explode:
+;                       bsr        enemy_explode
+.return:
+                     ;movem.l    (sp)+,d0-a6
+                      rts
+
+
 ;************************************************************************
 ; VARIABLES
 ;************************************************************************
@@ -1559,8 +1652,8 @@ gfx_base              dc.l       0                                              
 old_dma               dc.w       0                                                        ; saved state of DMACON
 sys_coplist           dc.l       0                                                        ; address of system copperlist                                     
 
-camera_x              dc.w       0*64                                                     ; x position of camera
-map_ptr               dc.w       0                                                        ; current map column
+camera_x              dc.w       16*64                                                    ; x position of camera
+map_ptr               dc.w       16                                                       ; current map column
 bgnd_x                dc.w       0                                                        ; current x coordinate of camera into background surface
 map                   include    "gfx/shooter_map.i"
 
@@ -1582,6 +1675,10 @@ player_ship           dc.w       0                                              
                       dc.w       0                                                        ; ship.anim_timer
                       dc.w       0                                                        ; ship.fire_timer
                       dc.w       BASE_FIRE_INTERVAL                                       ; ship.fire_delay
+                      dc.w       0                                                        ; bbox.rect.x
+                      dc.w       0                                                        ; bbox.rect.y
+                      dc.w       64                                                       ; bbox.rect.width
+                      dc.w       28                                                       ; bbox.rect.height
 
 pl_ship_engine        dc.w       0                                                        ; x position
                       dc.w       0                                                        ; y position
