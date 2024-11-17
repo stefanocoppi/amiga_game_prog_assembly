@@ -67,11 +67,12 @@ PLSHIP_YMAX           equ VIEWPORT_HEIGHT-PLSHIP_HEIGHT-11
 
 ENEMY_CMD_LIST_SIZE   equ 40
 NUM_ENEMIES           equ 18
-ENEMY_STATE_INACTIVE  equ 0
-ENEMY_STATE_ACTIVE    equ 1
-ENEMY_STATE_PAUSE     equ 2
+ENEMY_STATE_INACTIVE  equ 0                                                               ; the enemy isn't drawn and its state isn't updated
+ENEMY_STATE_ACTIVE    equ 1                                                               ; the enemy is drawn and its state is updated
+ENEMY_STATE_PAUSE     equ 2                                                               ; the enemy pauses its movement
 ENEMY_STATE_HIT       equ 3                                                               ; the enemy has been hit by a shot
-ENEMY_STATE_EXPLOSION equ 4
+ENEMY_STATE_EXPLOSION equ 4                                                               ; the enemy explodes
+ENEMY_STATE_GOTOXY    equ 5                                                               ; the enemy moves toward a target point
 ENEMY_CMD_END         equ 0
 ENEMY_CMD_GOTO        equ 1
 ENEMY_CMD_PAUSE       equ 2
@@ -85,6 +86,7 @@ SHIP_SHOT_DAMAGE      equ 5
 SHOT_STATE_IDLE       equ 0                                                               ; state where a shot isn't drawn and isn't updated
 SHOT_STATE_ACTIVE     equ 1                                                               ; state where a shot is drawn and updated
 SHOT_STATE_LAUNCH     equ 2                                                               ; state where a shot throwing animation is played
+SHOT_STATE_HIT        equ 3                                                               ; the shot hits the target
 SHOT_MAX_X            equ VIEWPORT_WIDTH+CLIP_WIDTH
 SHOT_MIN_X            equ 0
 PLSHIP_MAX_SHOTS      equ 6
@@ -922,38 +924,73 @@ enemies_update:
                       move.l     #NUM_ENEMIES-1,d7                                          
 ; iterates over the enemies array
 .loop:
+                      cmp.w      #ENEMY_STATE_INACTIVE,enemy.state(a0)                    ; enemy state is inactive?
+                      beq        .next_element                                            ; if yes, doesn't update state and skips to next enemy
                       cmp.w      #ENEMY_STATE_HIT,enemy.state(a0)                         ; enemy state is hit?
                       beq        .state_hit
                       cmp.w      #ENEMY_STATE_EXPLOSION,enemy.state(a0)                   ; enemy state is explosion?
                       beq        .state_explosion
-                      bra        .parse_command
+                      cmp.w      #ENEMY_STATE_GOTOXY,enemy.state(a0)                      ; enemy state is gotoxy?
+                      beq        .state_gotoxy
+                      bra        .exec_command
 .state_hit:
+                ;       move.w     enemy.speed(a0),d1
+                ;       sub.w      d1,enemy.x(a0)
                       sub.w      #1,enemy.flash_timer(a0)
-                      beq        .toggle_visibility
+                      beq        .toggle_visibility                                       ; if flash_timer=0, toggles visibility
                       bra        .decrease_hit_timer
 .toggle_visibility:
                       not.w      enemy.visible(a0)
-                      move.w     #ENEMY_FLASH_DURATION,enemy.flash_timer(a0)
+                      move.w     #ENEMY_FLASH_DURATION,enemy.flash_timer(a0)              ; resets flash_timer
 .decrease_hit_timer:
-                      sub.w      #1,enemy.hit_timer(a0)
-                      bne        .parse_command
-                      move.w     #ENEMY_STATE_ACTIVE,enemy.state(a0)
-                      move.w     #$ffff,enemy.visible(a0)
-                      bra        .parse_command
+                      sub.w      #1,enemy.hit_timer(a0)                                   ; decreases hit_timer
+                      bne        .next_element                                            ; if hit_timer <> 0, goes to next element
+                      move.w     #ENEMY_STATE_ACTIVE,enemy.state(a0)                      ; else changes state to active
+                      move.w     #$ffff,enemy.visible(a0)                                 ; makes the enemy visible
+                      bra        .exec_command
 .state_explosion:
-                      sub.w      #1,enemy.anim_timer(a0)                                  ; decreases animation timer
-                      beq        .frame_advance
-                      bra        .parse_command
+                ;       move.w     enemy.speed(a0),d1
+                ;       sub.w      d1,enemy.x(a0)
+                      sub.w      #1,enemy.anim_timer(a0)                                  ; decreases anim_timer
+                      beq        .frame_advance                                           ; if anim_timer = 0, advances animation frame
+                      bra        .next_element
 .frame_advance:
                       add.w      #1,enemy.ssheet_c(a0)                                    ; advances to next frame
                       move.w     enemy.anim_duration(a0),enemy.anim_timer(a0)             ; resets anim timer
                       move.w     enemy.ssheet_c(a0),d0
                       cmp.w      enemy.num_frames(a0),d0                                  ; ssheet_c >= num_frames?
                       bge        .end_animation
-                      bra        .parse_command
+                      bra        .next_element
 .end_animation:
                       move.w     #ENEMY_STATE_INACTIVE,enemy.state(a0)
-.parse_command:
+                      bra        .next_element
+.state_gotoxy:
+                      move.w     enemy.speed(a0),d1
+                      move.w     enemy.tx(a0),d0
+                      cmp.w      enemy.x(a0),d0
+                      blt        .decr_x                                                  ; if tx < x, then decreases x
+                      bgt        .incr_x                                                  ; if tx > x, then increases x
+                      bra        .compare_y
+.decr_x:
+                      sub.w      d1,enemy.x(a0)
+                      bra        .compare_y
+.incr_x:
+                      add.w      d1,enemy.x(a0)
+                      bra        .compare_y
+.compare_y:
+                      move.w     enemy.ty(a0),d0
+                      cmp.w      enemy.y(a0),d0
+                      blt        .decr_y                                                  ; if ty < y then decreases y
+                      bgt        .incr_y                                                  ; if ty > y then increases y
+                      bra        .exec_command
+.decr_y:
+                      sub.w      d1,enemy.y(a0)
+                      bra        .exec_command
+.incr_y:
+                      add.w      d1,enemy.y(a0)
+                      bra        .exec_command
+
+.exec_command:
                       bsr        enemies_execute_command
 .next_element:
                       add.l      #enemy.length,a0                                         ; points to next enemy in the array
@@ -992,43 +1029,23 @@ enemies_execute_command:
                       beq        .exec_fire
                       bra        .return
 .exec_goto:
+                      move.w     #ENEMY_STATE_GOTOXY,enemy.state(a0)                      ; changes state to gotoxy
                       move.w     2(a1),enemy.tx(a0)                                       ; gets target coordinates tx,ty
                       move.w     4(a1),enemy.ty(a0)
-                      move.w     enemy.speed(a0),d1
-                      clr.w      d2
+                      
                       move.w     enemy.tx(a0),d0
-                      cmp.w      enemy.x(a0),d0
-                      beq        .same_x                                                  ; if tx = x, then sets a flag
-                      blt        .decr_x                                                  ; if tx < x, then decreases x
-                      bgt        .incr_x                                                  ; if tx > x, then increases x
-                      bra        .compare_y
-.decr_x:
-                      sub.w      d1,enemy.x(a0)
-                      bra        .compare_y
-.incr_x:
-                      add.w      d1,enemy.x(a0)
-                      bra        .compare_y
-.same_x:
-                      move.w     #%1,d2                                                   ; bit 0 of d2 indicates that x is equal to tx
-.compare_y:
+                      cmp.w      enemy.x(a0),d0                                           ; tx- x
+                      beq        .check_ty                                                ; if tx = x, checks ty
+                      bra        .return
+.check_ty:
                       move.w     enemy.ty(a0),d0
                       cmp.w      enemy.y(a0),d0
-                      beq        .same_y                                                  ; if ty = y then sets a flag
-                      blt        .decr_y                                                  ; if ty < y then decreases y
-                      bgt        .incr_y                                                  ; if ty > y then increases y
-                      bra        .command_executed
-.decr_y:
-                      sub.w      d1,enemy.y(a0)
-                      bra        .command_executed
-.incr_y:
-                      add.w      d1,enemy.y(a0)
-                      bra        .command_executed
-.same_y:
-                      or.w       #%10,d2                                                  ; bit 1 of d2 indicates that y is equal to ty
+                      beq        .command_executed                                        ; if ty = y, then enemy reached target, so the command has been executed
+                      bra        .return
+
 .command_executed:
-                      cmp.w      #%11,d2                                                  ; (tx=x) and (ty=y) ?
-                      bne        .return                                                  ; if not goes to next array element
-                      add.w      #3*2,enemy.cmd_pointer(a0)                               ; else points to next command
+                      move.w     #ENEMY_STATE_ACTIVE,enemy.state(a0)                      ; changes state to active
+                      add.w      #3*2,enemy.cmd_pointer(a0)                               ; points to next command
                       bra        .return
 .exec_end:
                       move.w     #ENEMY_STATE_INACTIVE,enemy.state(a0)                    ; changes state to inactive
@@ -1134,8 +1151,8 @@ ship_shot_create:
                       move.l     #ship_shots_mask,shot.mask(a0)
                       move.w     #SHOT_STATE_LAUNCH,shot.state(a0)
                       move.w     #6,shot.num_frames(a0)
-                      move.w     #3,shot.anim_duration(a0)
-                      move.w     #3,shot.anim_timer(a0)
+                      move.w     #2,shot.anim_duration(a0)
+                      move.w     #2,shot.anim_timer(a0)
                       move.w     #SHIP_SHOT_DAMAGE,shot.damage(a0)
 ; setups bounding box for collisions
                       lea        shot.bbox(a0),a2
@@ -1191,6 +1208,8 @@ ship_shots_update:
                       beq        .launch
                       cmp.w      #SHOT_STATE_ACTIVE,shot.state(a0)                        ; shot.state is active?
                       beq        .active
+                      cmp.w      #SHOT_STATE_HIT,shot.state(a0)                           ; shot.state is hit?
+                      beq        .hit
                       bra        .next
 .launch:
                       sub.w      #1,shot.anim_timer(a0)                                   ; decreases anim_timer
@@ -1214,7 +1233,21 @@ ship_shots_update:
                       bge        .deactivate
                       bra        .next
 .deactivate           move.w     #SHOT_STATE_IDLE,shot.state(a0)
-
+                      bra        .next
+.hit:
+                      sub.w      #1,shot.anim_timer(a0)                                   ; decreases anim_timer
+                      beq        .inc_frame2                                              ; anim_timer = 0?
+                      bra        .next
+.inc_frame2:
+                      add.w      #1,shot.ssheet_c(a0)                                     ; increases animation frame
+                      move.w     shot.anim_duration(a0),shot.anim_timer(a0)               ; resets anim_timer
+                      move.w     shot.ssheet_c(a0),d0
+                      cmp.w      shot.num_frames(a0),d0                                   ; current frame > num frames?
+                      bgt        .end_anim2
+                      bra        .next
+.end_anim2:
+                      move.w     #SHOT_STATE_IDLE,shot.state(a0)                          ; changes shot state to idle
+                      bra        .next
 .next                 add.l      #shot.length,a0                                          ; goes to next element
                       dbra       d7,.loop
                       bra        .return
@@ -1457,8 +1490,10 @@ check_coll_shots_enemies:
 ;****************************************************************
 ; Responds to collisions between player's ship shots and enemies.
 ;
-; Input:
+; parameters:
 ; d0.w - collision result: 1 if there is a collision, 0 otherwise
+; a0 - pointer to shot instance
+; a1 - pointer to enemy instance
 ;****************************************************************
 coll_response_shots_enemies:
                      ;movem.l    d0-a6,-(sp)
@@ -1467,7 +1502,11 @@ coll_response_shots_enemies:
                       beq        .return                                                  ; and therefore returns
 .collision:
                      ;move.w     #$F00,COLOR00(a5)                                        ; changes background color to red
-                      move.w     #SHOT_STATE_IDLE,shot.state(a0)                          ; makes the current shot inactive
+                      move.w     shot.anim_duration(a0),shot.anim_timer(a0)               ; resets anim timer
+                      move.w     #0,shot.ssheet_c(a0)                                     ; sets hit animation frame
+                      move.w     #1,shot.ssheet_r(a0)
+                      move.w     #SHOT_STATE_HIT,shot.state(a0)                           ; changes state to hit
+                
                       move.w     #ENEMY_STATE_HIT,enemy.state(a1)
                       move.w     #ENEMY_FLASH_DURATION,enemy.flash_timer(a1)
                       move.w     #ENEMY_HIT_DURATION,enemy.hit_timer(a1)
@@ -1495,6 +1534,7 @@ enemy_explode:
                       move.w     #ENEMY_STATE_EXPLOSION,enemy.state(a1)
                       move.l     #enemy_explosion_gfx,enemy.imgdata(a1)
                       move.l     #enemy_explosion_mask,enemy.mask(a1)
+                      sub.w      #32,enemy.x(a1)
                       sub.w      #22,enemy.y(a1)
                       move.w     #128,enemy.width(a1)
                       move.w     #128,enemy.height(a1)

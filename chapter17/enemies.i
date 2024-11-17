@@ -15,7 +15,7 @@ enemy1   dc.w     CLIP_WIDTH+320                ; enemy.x
          dc.w     0                             ; enemy.num_frames
          dc.w     ENEMY_STATE_INACTIVE          ; enemy.state
          dc.w     100                           ; enemy.score
-         dc.w     5                             ; enemy.energy
+         dc.w     10                             ; enemy.energy
          dc.w     192                           ; enemy.map_position
          dc.w     0                             ; enemy.tx
          dc.w     0                             ; enemy.ty
@@ -153,9 +153,9 @@ enemy5   dc.w     CLIP_WIDTH+320                ; enemy.x
          dc.w     0                             ; enemy.cmd_pointer
          dc.w     0                             ; enemy.pause_timer
          dc.w     0                             ; rect.x
-         dc.w     0                             ; rect.y
-         dc.w     0                             ; rect.width
-         dc.w     0                             ; rect.height
+         dc.w     24                            ; rect.y
+         dc.w     83                            ; rect.width
+         dc.w     29                            ; rect.height
          dc.w     0                             ; enemy.flash_timer
          dc.w     0                             ; enemy.hit_timer
          dc.w     $ffff                         ; enemy.visible
