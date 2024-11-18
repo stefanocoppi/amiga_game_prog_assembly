@@ -751,6 +751,13 @@ plship_draw:
                       move.l     draw_buffer,a2
                       bsr        draw_bob                                                 ; draws ship
 
+                      cmp.w      #PLSHIP_STATE_NORMAL,ship.state(a3)
+                      beq        .draw_engine_fire                                        ; if state is normal
+                      cmp.w      #PLSHIP_STATE_HIT,ship.state(a3)
+                      beq        .draw_engine_fire                                        ; or hit, draws engine fire
+                      bra        .return
+
+.draw_engine_fire:
                       lea        pl_ship_engine,a3
                       move.l     draw_buffer,a2
                       bsr        draw_bob                                                 ; draws engine fire                   
@@ -838,6 +845,8 @@ plship_update:
 
                       cmp.w      #PLSHIP_STATE_HIT,ship.state(a0)                         ; state = hit?
                       beq        .hit_state
+                      cmp.w      #PLSHIP_STATE_EXPLOSION,ship.state(a0)                   ; state = explosion?
+                      beq        .explosion_state
                       bra        .return
 .hit_state:
                       sub.w      #1,ship.hit_timer(a0)
@@ -852,6 +861,22 @@ plship_update:
 .toggle_visibility:          
                       not.w      ship.visible(a0)                                         ; toggles visibility
                       move.w     #PLSHIP_FLASH_DURATION,ship.flash_timer(a0)
+                      bra        .return
+
+.explosion_state:
+                      sub.w      #1,ship.anim_timer(a0)                                   ; decreases anim_timer
+                      beq        .frame_advance                                           ; if anim_timer = 0, advances animation frame
+                      bra        .return
+.frame_advance:
+                      add.w      #1,ship.ssheet_c(a0)                                     ; advances to next frame
+                      move.w     ship.anim_duration(a0),ship.anim_timer(a0)               ; resets anim timer
+                      move.w     ship.ssheet_c(a0),d0
+                      cmp.w      #10,d0                                                   ; ssheet_c >= 10?
+                      bge        .end_animation
+                      bra        .return
+.end_animation:
+                      move.w     #PLSHIP_STATE_NORMAL,ship.state(a0)
+                      bra        .return
 .return:
                       movem.l    (sp)+,d0-a6
                       rts
@@ -1671,7 +1696,34 @@ coll_response_shots_plship:
                       ble        .explode
                       bra        .return
 .explode:
-                      ;bsr        enemy_explode
+                      bsr        plship_explode
+.return:
+                     ;movem.l    (sp)+,d0-a6
+                      rts
+
+
+;****************************************************************
+; Blows up the player's ship.
+;
+; parameters:
+; a0 - shot instance
+; a1 - player's ship instance
+;****************************************************************
+plship_explode:
+                     ;movem.l    d0-a6,-(sp)
+                     
+                      move.w     #PLSHIP_STATE_EXPLOSION,ship.state(a1)
+                      move.l     #ship_explosion_gfx,ship.imgdata(a1)
+                      move.l     #ship_explosion_mask,ship.mask(a1)
+                      move.w     #64,ship.width(a1)
+                      move.w     #42,ship.height(a1)
+                      move.w     #0,ship.ssheet_c(a1)
+                      move.w     #0,ship.ssheet_r(a1)
+                      move.w     #640,ship.ssheet_w(a1)
+                      move.w     #42,ship.ssheet_h(a1)
+                      move.w     #1,ship.anim_duration(a1)
+                      move.w     #1,ship.anim_timer(a1)
+
 .return:
                      ;movem.l    (sp)+,d0-a6
                       rts
@@ -1715,7 +1767,7 @@ player_ship           dc.w       0                                              
                       dc.w       $ffff                                                    ; visible
                       dc.w       0                                                        ; flash_timer
                       dc.w       0                                                        ; hit_timer
-                      dc.w       10                                                       ; energy
+                      dc.w       5                                                        ; energy
                       dc.w       PLSHIP_STATE_NORMAL                                      ; state
 
 pl_ship_engine        dc.w       0                                                        ; x position
@@ -1790,6 +1842,9 @@ ship_engine_m         incbin     "gfx/ship_engine.mask"
 
 ship_shots_gfx        incbin     "gfx/ship_shots.raw"
 ship_shots_mask       incbin     "gfx/ship_shots.mask"
+
+ship_explosion_gfx    incbin     "gfx/ship_explosion.raw"
+ship_explosion_mask   incbin     "gfx/ship_explosion.mask"
 
 enemies               incbin     "gfx/enemies.raw"
 enemies_m             incbin     "gfx/enemies.mask"
