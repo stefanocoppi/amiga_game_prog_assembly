@@ -227,8 +227,9 @@ mainloop:
                       bsr        enemies_activate
                       bsr        enemies_update
 
-                      bsr        check_coll_shots_enemies
-                      bsr        check_coll_shots_plship
+                      bsr        check_coll_shots_enemies                                 ; checks collisions between player's shots and enemies
+                      bsr        check_coll_shots_plship                                  ; checks collisions between enemy shots and player's ship
+                      bsr        check_coll_enemy_plship                                  ; checks collisions between enemy and player's ship
         
                       bsr        enemies_draw
                       bsr        plship_draw
@@ -1729,6 +1730,93 @@ plship_explode:
                       rts
 
 
+;****************************************************************
+; Checks for collisions between enemy and player's ship.
+;****************************************************************
+check_coll_enemy_plship:
+                      movem.l    d0-a6,-(sp)
+
+; iterates over all active enemy
+;     checks collision between current enemy and player's ship
+;         collision response
+
+                      lea        player_ship,a1                                           ; bounding rectangle for player's ship
+                      cmp.w      #PLSHIP_STATE_NORMAL,ship.state(a1)                      ; state is normal?
+                      bne        .return                                                  ; if not, doesn't checks for collisions
+
+                      lea        enemies_array,a0
+                      move.l     #NUM_ENEMIES-1,d7
+
+.enemies_loop:
+                      cmp.w      #ENEMY_STATE_INACTIVE,enemy.state(a0)                    ; is current enemy inactive?
+                      beq        .next_enemy                                              ; if yes, move on the next enemy
+    
+                      lea        rect1,a3                                                 ; bounding rectangle for current enemy
+                      lea        enemy.bbox(a0),a4
+                      move.w     enemy.x(a0),rect.x(a3)
+                      move.w     rect.x(a4),d0                                            ; enemy.bbox.x
+                      add.w      d0,rect.x(a3)                                            ; rect.x = enemy.x + enemy.bbox.x
+                      move.w     enemy.y(a0),rect.y(a3)
+                      move.w     rect.y(a4),d0                                            ; enemy.bbox.y
+                      add.w      d0,rect.y(a3)                                            ; rect.y = enemy.y + enemy.bbox.y
+                      move.w     rect.width(a4),rect.width(a3)                            ; rect.width = enemy.bbox.width
+                      move.w     rect.height(a4),rect.height(a3)                          ; rect.height = enemy.bbox.height
+
+                      lea        rect2,a2
+                      lea        ship.bbox(a1),a4
+                      move.w     ship.x(a1),rect.x(a2)
+                      move.w     rect.x(a4),d0                 
+                      add.w      d0,rect.x(a2)                                            ; rect2.x = ship.x + ship.bbox.x
+                      move.w     ship.y(a1),rect.y(a2)
+                      move.w     rect.y(a4),d0                 
+                      add.w      d0,rect.y(a2)                                            ; rect2.y = ship.y + ship.bbox.y
+                      move.w     rect.width(a4),rect.width(a2)                            ; rect2.width = ship.bbox.width
+                      move.w     rect.height(a4),rect.height(a2)                          ; rect2.height = ship.bbox.height
+
+                      bsr        rect_intersects                                          ; checks if player's ship bbox intersects enemy bbox                                 
+
+                      bsr        coll_response_enemy_plship                               ; collision response                                 
+
+.next_enemy:
+                      add.l      #enemy.length,a0
+                      dbra       d7,.enemies_loop
+
+.return:
+                      movem.l    (sp)+,d0-a6
+                      rts
+
+
+;****************************************************************
+; Responds to collisions between enemy and player's ship.
+;
+; parameters:
+; d0.w - collision result: 1 if there is a collision, 0 otherwise
+; a0 - pointer to enemy instance
+; a1 - pointer to player's ship instance
+;****************************************************************
+coll_response_enemy_plship:
+                     ;movem.l    d0-a6,-(sp)
+
+                      tst.w      d0                                                       ; d0 = 0?                                      
+                      beq        .return                                                  ; if yes, there is no collision and therefore returns
+.collision:
+                      ;move.w     #$F00,COLOR00(a5)
+
+                      move.w     #PLSHIP_STATE_HIT,ship.state(a1)                         ; changes player's ship state to hit                 
+                      move.w     #PLSHIP_FLASH_DURATION,ship.flash_timer(a1)              ; resets flash timer
+                      move.w     #PLSHIP_HIT_DURATION,ship.hit_timer(a1)                  ; resets hit timer
+                                       
+                      sub.w      #5,ship.energy(a1)                                       ; subtracts energy from the player's ship
+
+                      ble        .explode                                                 ; if energy <= 0 then makes explode the player's ship
+                      bra        .return
+.explode:
+                      bsr        plship_explode
+.return:
+                     ;movem.l    (sp)+,d0-a6
+                      rts
+
+
 ;************************************************************************
 ; VARIABLES
 ;************************************************************************
@@ -1737,8 +1825,8 @@ gfx_base              dc.l       0                                              
 old_dma               dc.w       0                                                        ; saved state of DMACON
 sys_coplist           dc.l       0                                                        ; address of system copperlist                                     
 
-camera_x              dc.w       16*64                                                    ; x position of camera
-map_ptr               dc.w       16                                                       ; current map column
+camera_x              dc.w       0*64                                                     ; x position of camera
+map_ptr               dc.w       0                                                        ; current map column
 bgnd_x                dc.w       0                                                        ; current x coordinate of camera into background surface
 map                   include    "gfx/shooter_map.i"
 
@@ -1767,7 +1855,7 @@ player_ship           dc.w       0                                              
                       dc.w       $ffff                                                    ; visible
                       dc.w       0                                                        ; flash_timer
                       dc.w       0                                                        ; hit_timer
-                      dc.w       5                                                        ; energy
+                      dc.w       10                                                       ; energy
                       dc.w       PLSHIP_STATE_NORMAL                                      ; state
 
 pl_ship_engine        dc.w       0                                                        ; x position
