@@ -1,5 +1,6 @@
 @echo off
 amigeconv.exe -f bitplane -d 8 shooter_tiles.png shooter_tiles.raw
+amigeconv.exe -f bitplane -m -d 1 shooter_tiles.png shooter_tiles.mask
 amigeconv.exe -f palette -p pal8 -c 256 -x shooter_tiles.png  shooter.pal
 amigeconv.exe -f bitplane -d 8 ship.png ship.raw
 amigeconv.exe -f bitplane -m -d 1 ship.png ship.mask
