@@ -217,7 +217,7 @@ main:
                       move.w     #TILE_WIDTH,bgnd_x                                       ; x position of the part of background to draw
 
                       bsr        plship_init
-
+ 
 mainloop: 
                       bsr        wait_vblank                                              ; waits for vertical blank
                       bsr        swap_buffers
@@ -370,6 +370,7 @@ wait_vblank:
                       move.l     #304,d2                                                  ; line to wait: 304 236
                       bsr        wait_vline
                       movem.l    (sp)+,d0-a6                                              ; restores registers from the stack
+
                       rts
 
 
