@@ -3,7 +3,7 @@
 ; 
 ; Chapter 14C - Player's ship
 ;
-; optimized version using hardware scrolling
+; optimized version using hardware scrolling and dual playfield mode
 ;
 ; (c) 2024 Stefano Coppi
 ;************************************************************************
@@ -19,78 +19,80 @@
 ;************************************************************************
 
 ; O.S. subroutines
-ExecBase         equ $4
-Disable          equ -$78
-Forbid           equ -132
-Enable           equ -$7e
-Permit           equ -138
-OpenLibrary      equ -$198
-CloseLibrary     equ -$19e
-CIAAPRA          equ $bfe001
+ExecBase            equ $4
+Disable             equ -$78
+Forbid              equ -132
+Enable              equ -$7e
+Permit              equ -138
+OpenLibrary         equ -$198
+CloseLibrary        equ -$19e
+CIAAPRA             equ $bfe001
 
 ; DMACON register settings
 ; enables blitter DMA (bit 6)
 ; enables copper DMA (bit 7)
 ; enables bitplanes DMA (bit 8)
                      ;5432109876543210
-DMASET           equ %1000001111000000             
+DMASET              equ %1000001111000000             
 
 ; display
-N_PLANES         equ 4
-DISPLAY_WIDTH    equ 320
-DISPLAY_HEIGHT   equ 256
-DISPLAY_PLANE_SZ equ DISPLAY_HEIGHT*(DISPLAY_WIDTH/8)
-DISPLAY_ROW_SIZE equ (DISPLAY_WIDTH/8)
+N_PLANES            equ 4
+DISPLAY_WIDTH       equ 320
+DISPLAY_HEIGHT      equ 256
+DISPLAY_PLANE_SZ    equ DISPLAY_HEIGHT*(DISPLAY_WIDTH/8)
+DISPLAY_ROW_SIZE    equ (DISPLAY_WIDTH/8)
 
-BPP              equ 4
-WINDOW_WIDTH     equ 336
-WINDOW_HEIGHT    equ 192
-CLIP_WIDTH       equ 32
+BPP                 equ 4
+WINDOW_WIDTH        equ 336
+WINDOW_HEIGHT       equ 192
+CLIP_WIDTH          equ 32
 
 ; tiles
-TILE_WIDTH       equ 64
-TILE_HEIGHT      equ 64
-TILE_PLANE_SZ    equ TILE_HEIGHT*(TILE_WIDTH/8)
-TILESET_WIDTH    equ 640
-TILESET_HEIGHT   equ 512
-TILESET_ROW_SIZE equ (TILESET_WIDTH/8)
-TILESET_PLANE_SZ equ (TILESET_HEIGHT*TILESET_ROW_SIZE)
-TILESET_COLS     equ 10          
-TILEMAP_WIDTH    equ 100
-TILEMAP_ROW_SIZE equ TILEMAP_WIDTH*2
+TILE_WIDTH          equ 64
+TILE_HEIGHT         equ 64
+TILE_PLANE_SZ       equ TILE_HEIGHT*(TILE_WIDTH/8)
+TILESET_WIDTH       equ 640
+TILESET_HEIGHT      equ 512
+TILESET_ROW_SIZE    equ (TILESET_WIDTH/8)
+TILESET_PLANE_SZ    equ (TILESET_HEIGHT*TILESET_ROW_SIZE)
+TILESET_COLS        equ 10          
+TILEMAP_WIDTH       equ 100
+TILEMAP_ROW_SIZE    equ TILEMAP_WIDTH*2
 
 ; background
-BGND_WIDTH       equ 2*DISPLAY_WIDTH+2*TILE_WIDTH
-BGND_HEIGHT      equ 256
-BGND_PLANE_SIZE  equ BGND_HEIGHT*(BGND_WIDTH/8)
-BGND_ROW_SIZE    equ (BGND_WIDTH/8)
+BGND_WIDTH          equ 2*DISPLAY_WIDTH+2*TILE_WIDTH
+BGND_HEIGHT         equ 256
+BGND_PLANE_SIZE     equ BGND_HEIGHT*(BGND_WIDTH/8)
+BGND_ROW_SIZE       equ (BGND_WIDTH/8)
 
 ; playfield 1: scrolling background
-PF1_WIDTH        equ 2*DISPLAY_WIDTH+2*TILE_WIDTH
-PF1_HEIGHT       equ 256
-PF1_ROW_SIZE     equ PF1_WIDTH/8
-PF1_MOD          equ (PF1_WIDTH-VIEWPORT_WIDTH)/8
-PF1_PLANE_SZ     equ PF1_ROW_SIZE*PF1_HEIGHT
+PF1_WIDTH           equ 2*DISPLAY_WIDTH+2*TILE_WIDTH
+PF1_HEIGHT          equ 256
+PF1_ROW_SIZE        equ PF1_WIDTH/8
+PF1_MOD             equ (PF1_WIDTH-VIEWPORT_WIDTH)/8
+PF1_PLANE_SZ        equ PF1_ROW_SIZE*PF1_HEIGHT
 
 ; playfield2 used for BOBs rendering
-PF2_WIDTH        equ 320
-PF2_HEIGHT       equ 256
-PF2_ROW_SIZE     equ PF2_WIDTH/8
-PF2_MOD          equ (PF2_WIDTH-VIEWPORT_WIDTH)/8
-PF2_PLANE_SZ     equ PF2_ROW_SIZE*PF2_HEIGHT
+PF2_WIDTH           equ 320
+PF2_HEIGHT          equ 256
+PF2_ROW_SIZE        equ PF2_WIDTH/8
+PF2_MOD             equ (PF2_WIDTH-VIEWPORT_WIDTH)/8
+PF2_PLANE_SZ        equ PF2_ROW_SIZE*PF2_HEIGHT
+
+BGND_LIST_MAX_ITEMS equ 100
 
 ; scroll
-VIEWPORT_HEIGHT  equ 192
-VIEWPORT_WIDTH   equ 320
+VIEWPORT_HEIGHT     equ 192
+VIEWPORT_WIDTH      equ 320
 
-PLSHIP_WIDTH     equ 64
-PLSHIP_HEIGHT    equ 28
-PLSHIP_X0        equ 32
-PLSHIP_Y0        equ 81
-PLSHIP_XMIN      equ 32
-PLSHIP_XMAX      equ 32+VIEWPORT_WIDTH-PLSHIP_WIDTH
-PLSHIP_YMIN      equ 0
-PLSHIP_YMAX      equ VIEWPORT_HEIGHT-PLSHIP_HEIGHT
+PLSHIP_WIDTH        equ 64
+PLSHIP_HEIGHT       equ 28
+PLSHIP_X0           equ 32
+PLSHIP_Y0           equ 81
+PLSHIP_XMIN         equ 32
+PLSHIP_XMAX         equ 32+VIEWPORT_WIDTH-PLSHIP_WIDTH
+PLSHIP_YMIN         equ 0
+PLSHIP_YMAX         equ VIEWPORT_HEIGHT-PLSHIP_HEIGHT
 
 
 ;****************************************************************
@@ -112,6 +114,12 @@ bob.imgdata         rs.l       1                                             ; i
 bob.mask            rs.l       1                                             ; mask address
 bob.length          rs.b       0 
 
+; background of a bob, which needs to be cleared for moving the bob
+                    rsreset
+bob_bgnd.addr       rs.l       1                                             ; address in the playfield
+bob_bgnd.width      rs.w       1                                             ; width in pixel
+bob_bgnd.height     rs.w       1                                             ; height in pixel
+bob_bgnd.length     rs.b       0
 
 ; player's ship
                     rsreset
@@ -149,11 +157,14 @@ main:
 
 mainloop: 
                     bsr        wait_vblank                                   ; waits for vertical blank
-             
+                    bsr        swap_buffers
+
                     bsr        scroll_background
 
                     bsr        plship_update
 
+                    bsr        erase_bgnds
+                    
                     bsr        plship_draw
 
                     btst       #6,CIAAPRA                                    ; left mouse button pressed?
@@ -508,6 +519,18 @@ draw_bob:
                     and.w      #$fffe,d0                                     ; makes offset_x even
                     add.w      d0,a2                                         ; adds offset_x to destination address
     
+    ; saves background information to be cleared in a list
+                    cmp.w      #BGND_LIST_MAX_ITEMS-1,bgnd_list_counter      ; if the list is full
+                    beq        .skip_save_bgnd                               ; skips saving background
+                    move.l     bgnd_list_ptr,a0                              ; locates the first free element in the background list
+                    move.w     bgnd_list_counter,d0
+                    mulu.w     #bob_bgnd.length,d0
+                    add.l      d0,a0
+                    move.l     a2,bob_bgnd.addr(a0)                          ; saves background address in list
+                    move.w     bob.width(a3),bob_bgnd.width(a0)              ; saves width
+                    move.w     bob.height(a3),bob_bgnd.height(a0)            ; saves height
+                    add.w      #1,bgnd_list_counter
+.skip_save_bgnd:         
     ; calculates source address (channels A,B)
                     move.l     bob.imgdata(a3),a0
                     move.l     bob.mask(a3),a1
@@ -595,40 +618,64 @@ draw_bob:
 ; Erases the background of a bob.
 ;
 ; parameters:
-; a0 - indirizzo dello sfondo del bob
-; d2.w - larghezza in pixel
-; d3.w - altezza in pixel
+; a1 - bob_bgnd instance
 ;***************************************************************************
 erase_bob_bgnd:
-                          movem.l    d0-a6,-(sp)
+                    movem.l    d0-a6,-(sp)
 
-    ; calcolo modulo del canale D (d4)
-                          lsr.w      #3,d2                                               ; larghezza/8
-                          and.w      #$fffe,d2                                           ; rende pari
-                          addq.w     #2,d2                                               ; blittata larga 1 word in più a causa dello shift
-                          move.w     #PF2_ROW_SIZE,d4                                    ; larghezza schermo in byte
-                          sub.w      d2,d4                                               ; modulo = larg.schermo - larg.bob
+; calculates channel D module (d4)
+                    move.w     bob_bgnd.width(a1),d2
+                    lsr.w      #3,d2                                         ; width/8
+                    and.w      #$fffe,d2                                     ; makes it even
+                    addq.w     #2,d2                                         ; blit 1 word wider due to shift
+                    move.w     #PF2_ROW_SIZE,d4                              ; playfield2 width in bytes
+                    sub.w      d2,d4                                         ; modulus = pf2 width - bob width
 
-    ; calcolo dimensione della blittata (d3)
-                          lsl.w      #6,d3                                               ; altezza * 64
-                          lsr.w      #1,d2                                               ; larghezza in word
-                          or.w       d2,d3                                               ; mette insieme le dimensioni
+; calculates blit size (d3)
+                    move.w     bob_bgnd.height(a1),d3
+                    lsl.w      #6,d3                                         ; height * 64
+                    lsr.w      #1,d2                                         ; width in word
+                    or.w       d2,d3                                         ; puts the dimensions together
 
-    ; inizializza i registri che restano costanti
-                          bsr        wait_blitter
-                          move.w     #$0000,BLTCON1(a5)
-                          move.w     #$0100,BLTCON0(a5)                                  ; azzera la destinazione             
-                          move.w     d4,BLTDMOD(a5)
-                          moveq      #BPP-1,d7                                           ; numero di ripetizioni del loop
+; initializes the registers that remain constant during the loop
+                    bsr        wait_blitter
+                    move.w     #$0000,BLTCON1(a5)
+                    move.w     #$0100,BLTCON0(a5)                            ; resets the destination             
+                    move.w     d4,BLTDMOD(a5)
+                    move.l     bob_bgnd.addr(a1),a0
+                    moveq      #BPP-1,d7                                     ; number of loop iterations
 .plane_loop:
-                          bsr        wait_blitter
-                          move.l     a0,BLTDPT(a5)                                       ; canale D: indirizzo sfondo da cancellare
-                          move.w     d3,BLTSIZE(a5)                                      ; imposta la dimensione e avvia il blitter
-                          add.l      #PF2_PLANE_SZ,a0                                    ; punta al prossimo plane destinazione
-                          dbra       d7,.plane_loop                                      ; ripete il ciclo per ogni piano
+                    bsr        wait_blitter
+                    move.l     a0,BLTDPT(a5)                                 ; channel D: background address to delete
+                    move.w     d3,BLTSIZE(a5)                                ; sets the size and starts the blitter
+                    add.l      #PF2_PLANE_SZ,a0                              ; points to the next plane
+                    dbra       d7,.plane_loop                                ; repeats the loop for each plane
 
-                          movem.l    (sp)+,d0-a6
-                          rts
+                    movem.l    (sp)+,d0-a6
+                    rts
+
+
+;***************************************************************************
+; Clears backgrounds of bobs using a list.
+;***************************************************************************
+erase_bgnds:
+                    movem.l    d0-a6,-(sp)
+
+                    move.w     bgnd_list_counter,d7                          ; number of loop iterations
+                    tst.w      d7                                            ; if the list is empty, returns immediately
+                    beq        .return
+                    sub.w      #1,d7
+                    move.l     bgnd_list_ptr,a1                              ; points to the backgrounds list
+.loop:
+                    bsr        erase_bob_bgnd
+                    add.l      #bob_bgnd.length,a1                           ; points to the next item in the list
+                    dbra       d7,.loop
+
+                    clr.w      bgnd_list_counter
+
+.return:
+                    movem.l    (sp)+,d0-a6
+                    rts
 
 
 ;****************************************************************
@@ -661,7 +708,7 @@ plship_draw:
                     movem.l    d0-a6,-(sp)
 
                     lea        player_ship,a3
-                    move.l     #playfield2a,a2
+                    move.l     draw_buffer,a2
                     bsr        draw_bob                                      ; draws ship
 
                     ; lea        bob_ship_engine,a3
@@ -794,6 +841,38 @@ plship_limit_movement:
 
 
 ;************************************************************************
+; Swaps video buffers, causing draw_buffer to be displayed.
+;************************************************************************
+swap_buffers:
+                    movem.l    d0-a6,-(sp)                                   ; saves registers into the stack
+
+                    move.l     draw_buffer,d0                                ; swaps the values ​​of draw_buffer and view_buffer
+                    move.l     view_buffer,draw_buffer
+                    move.l     d0,view_buffer
+                    ;add.l      #CLIP_WIDTH/8,d0
+                    lea        bplpointers2,a1                               ; sets the bitplane pointers to the view_buffer 
+                    moveq      #BPP-1,d1                                            
+.loop:
+                    move.w     d0,6(a1)                                      ; copies low word
+                    swap       d0                                            ; swaps low and high word of d0
+                    move.w     d0,2(a1)                                      ; copies high word
+                    swap       d0                                            ; resets d0 to the initial condition
+                    add.l      #PF2_PLANE_SZ,d0                              ; points to the next bitplane
+                    add.l      #8,a1                                         ; points to next bplpointer
+                    dbra       d1,.loop                                      ; repeats the loop for all planes
+
+                    move.l     bgnd_list_ptr,d0                              ; swaps pointers to the list of bob backgrounds to delete
+                    move.l     bgnd_list_ptr2,bgnd_list_ptr
+                    move.l     d0,bgnd_list_ptr2
+                    move.w     bgnd_list_counter,d0                          ; swaps backgrounds list counters
+                    move.w     bgnd_list_counter2,bgnd_list_counter
+                    move.w     d0,bgnd_list_counter2
+
+                    movem.l    (sp)+,d0-a6                                   ; restores registers from the stack
+                    rts
+
+
+;************************************************************************
 ; VARIABLES
 ;************************************************************************
 gfx_name            dc.b       "graphics.library",0,0                        ; string containing the name of graphics.library
@@ -804,6 +883,15 @@ sys_coplist         dc.l       0                                             ; a
 map_ptr             dc.w       0                                             ; current map column
 bgnd_x              dc.w       0                                             ; current x coordinate of camera into background surface
 map                 include    "gfx/shooter_map.i"
+
+view_buffer         dc.l       playfield2a                                   ; buffer displayed on screen
+draw_buffer         dc.l       playfield2b                                   ; drawing buffer (not visible)
+
+bgnd_list_ptr       dc.l       bgnd_list1                                    ; points to the list of bob backgrounds to delete
+bgnd_list_ptr2      dc.l       bgnd_list2                                    ; two pointers to swap in swap_buffers due to double buffering
+
+bgnd_list_counter   dc.w       0                                             ; number of items in the backgrounds list
+bgnd_list_counter2  dc.w       0                                             ; doubled for double buffering
 
 player_ship         dc.w       0                                             ; bob.x
                     dc.w       0                                             ; bob.y
@@ -892,5 +980,8 @@ playfield1          ds.b       (PF1_PLANE_SZ*BPP)                            ; u
 
 playfield2a         ds.b       (PF2_PLANE_SZ*BPP)                            ; used to draw BOBs using double buffering
 playfield2b         ds.b       (PF2_PLANE_SZ*BPP)
+
+bgnd_list1          ds.b       (bob_bgnd.length*BGND_LIST_MAX_ITEMS)         ; list containing the backgrounds of the bobs to be deleted
+bgnd_list2          ds.b       (bob_bgnd.length*BGND_LIST_MAX_ITEMS)         ; we have two lists due to double buffering
 
                     END
