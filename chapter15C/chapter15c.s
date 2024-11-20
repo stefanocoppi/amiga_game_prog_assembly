@@ -88,9 +88,9 @@ SCROLL_SPEED         equ 1
 
 PLSHIP_WIDTH         equ 64
 PLSHIP_HEIGHT        equ 28
-PLSHIP_X0            equ 32
+PLSHIP_X0            equ 32+8
 PLSHIP_Y0            equ 81
-PLSHIP_XMIN          equ 32
+PLSHIP_XMIN          equ 32+8
 PLSHIP_XMAX          equ 32+VIEWPORT_WIDTH-PLSHIP_WIDTH
 PLSHIP_YMIN          equ 0
 PLSHIP_YMAX          equ VIEWPORT_HEIGHT-PLSHIP_HEIGHT
@@ -717,11 +717,11 @@ plship_init:
                      clr.w      bob.ssheet_c(a0)
                      move.w     ship.anim_duration(a0),ship.anim_timer(a0)
 
-                    ; lea        bob_ship_engine,a1
-                    ; move.w     #PLSHIP_X0-17,ship.x(a1)
-                    ; move.w     #PLSHIP_Y0+9,ship.y(a1)
-                    ; clr.w      ship.ssheet_c(a1)
-                    ; move.w     ship.anim_duration(a1),ship.anim_timer(a1)
+                     lea        player_ship_engine,a1
+                     move.w     #PLSHIP_X0-17,bob.x(a1)
+                     move.w     #PLSHIP_Y0+9,bob.y(a1)
+                     clr.w      bob.ssheet_c(a1)
+                     move.w     ship.anim_duration(a1),ship.anim_timer(a1)
                   
 .return:
                      movem.l    (sp)+,d0-a6
@@ -738,10 +738,10 @@ plship_draw:
                      move.l     draw_buffer,a2
                      bsr        draw_bob                                      ; draws ship
 
-                    ; lea        bob_ship_engine,a3
-                    ; move.l     draw_buffer,a2
-                    ; bsr        draw_bob                                                 ; draws engine fire                   
-                  
+                     lea        player_ship_engine,a3
+                     move.l     draw_buffer,a2
+                     bsr        draw_bob                                      ; draws engine fire
+
 .return:
                      movem.l    (sp)+,d0-a6
                      rts
@@ -799,28 +799,29 @@ plship_update:
                      bsr        plship_limit_movement
 
 ; sets engine fire bob position
-                    ; lea        bob_ship_engine,a1
-                    ; move.w     ship.x(a0),d0
-                    ; sub.w      #17,d0
-                    ; move.w     d0,ship.x(a1)                                 ; engine.x = ship.x - 17
-                    ; move.w     ship.y(a0),d0
-                    ; add.w      #9,d0
-                    ; move.w     d0,ship.y(a1)                                 ; engine.y = ship.y + 9
+                     lea        player_ship_engine,a1
+                     move.w     bob.x(a0),d0
+                     sub.w      #17,d0
+                     move.w     d0,bob.x(a1)                                  ; engine.x = ship.x - 17
+                     move.w     bob.y(a0),d0
+                     add.w      #9,d0
+                     move.w     d0,bob.y(a1)                                  ; engine.y = ship.y + 9
 
 ; animates engine fire
-;                     sub.w      #1,ship.anim_timer(a1)
-;                     tst.w      ship.anim_timer(a1)                           ; anim_timer = 0?
-;                     beq        .incr_frame
-;                     bra        .return
-; .incr_frame:
-;                     add.w      #1,ship.ssheet_c(a1)                          ; increases animation frame
-;                     cmp.w      #4,ship.ssheet_c(a1)                          ; ssheet_c >= 4?
-;                     bge        .reset_frame
-;                     bra        .reset_timer
-; .reset_frame:
-;                     clr.w      ship.ssheet_c(a1)                             ; resets animation frame
-; .reset_timer:
-;                     move.w     ship.anim_duration(a1),ship.anim_timer(a1)    ; resets anim_timer
+                     sub.w      #1,ship.anim_timer(a1)
+                     tst.w      ship.anim_timer(a1)                           ; anim_timer = 0?
+                     beq        .incr_frame
+                     bra        .return
+.incr_frame:
+                     add.w      #1,bob.ssheet_c(a1)                           ; increases animation frame
+                     cmp.w      #4,bob.ssheet_c(a1)                           ; ssheet_c >= 4?
+                     bge        .reset_frame
+                     bra        .reset_timer
+.reset_frame:
+                     clr.w      bob.ssheet_c(a1)                              ; resets animation frame
+.reset_timer:
+                     move.w     ship.anim_duration(a1),ship.anim_timer(a1)    ; resets anim_timer
+
 .return:
                      movem.l    (sp)+,d0-a6
                      rts
@@ -984,6 +985,20 @@ player_ship          dc.w       0                                             ; 
                      dc.w       0                                             ; ship.anim_duration 
                      dc.w       0                                             ; ship.anim_timer
 
+player_ship_engine   dc.w       0                                             ; x position
+                     dc.w       0                                             ; y position
+                     dc.w       1                                             ; speed
+                     dc.w       32                                            ; width
+                     dc.w       16                                            ; height  
+                     dc.w       0                                             ; spritesheet column of the bob
+                     dc.w       0                                             ; spritesheet row of the bob
+                     dc.w       128                                           ; spritesheet width in pixels
+                     dc.w       16                                            ; spritesheet height in pixels
+                     dc.l       ship_engine_gfx                               ; image data address
+                     dc.l       ship_engine_mask                              ; mask address
+                     dc.w       5                                             ; ship.anim_duration
+                     dc.w       5                                             ; ship.anim_timer
+
                      include    "enemies.i"                                   ; enemies array
 
 ;************************************************************************
@@ -1046,6 +1061,9 @@ tileset              incbin     "gfx/shooter_tiles_16.raw"                    ; 
 
 player_ship_gfx      incbin     "gfx/ship.raw"
 player_ship_mask     incbin     "gfx/ship.mask"
+
+ship_engine_gfx      incbin     "gfx/ship_engine.raw"
+ship_engine_mask     incbin     "gfx/ship_engine.mask"
 
 enemies_gfx          incbin     "gfx/enemies.raw"
 enemies_mask         incbin     "gfx/enemies.mask"
