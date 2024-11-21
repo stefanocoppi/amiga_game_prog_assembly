@@ -45,7 +45,6 @@ DISPLAY_ROW_SIZE     equ (DISPLAY_WIDTH/8)
 BPP                  equ 4
 WINDOW_WIDTH         equ 336
 WINDOW_HEIGHT        equ 192
-CLIP_WIDTH           equ 32
 
 ; tiles
 TILE_WIDTH           equ 64
@@ -73,11 +72,13 @@ PF1_MOD              equ (PF1_WIDTH-VIEWPORT_WIDTH)/8
 PF1_PLANE_SZ         equ PF1_ROW_SIZE*PF1_HEIGHT
 
 ; playfield2 used for BOBs rendering
-PF2_WIDTH            equ 320
+PF2_WIDTH            equ VIEWPORT_WIDTH+CLIP_LEFT+CLIP_RIGHT
 PF2_HEIGHT           equ 256
 PF2_ROW_SIZE         equ PF2_WIDTH/8
 PF2_MOD              equ (PF2_WIDTH-VIEWPORT_WIDTH)/8
 PF2_PLANE_SZ         equ PF2_ROW_SIZE*PF2_HEIGHT
+CLIP_LEFT            equ 64+32
+CLIP_RIGHT           equ 64
 
 BGND_LIST_MAX_ITEMS  equ 100
 
@@ -88,10 +89,10 @@ SCROLL_SPEED         equ 1
 
 PLSHIP_WIDTH         equ 64
 PLSHIP_HEIGHT        equ 28
-PLSHIP_X0            equ 32+8
+PLSHIP_X0            equ CLIP_LEFT+8
 PLSHIP_Y0            equ 81
-PLSHIP_XMIN          equ 32+8
-PLSHIP_XMAX          equ 32+VIEWPORT_WIDTH-PLSHIP_WIDTH
+PLSHIP_XMIN          equ CLIP_LEFT+8
+PLSHIP_XMAX          equ CLIP_LEFT+VIEWPORT_WIDTH-PLSHIP_WIDTH
 PLSHIP_YMIN          equ 0
 PLSHIP_YMAX          equ VIEWPORT_HEIGHT-PLSHIP_HEIGHT
 
@@ -100,6 +101,7 @@ NUM_ENEMIES          equ 18
 ENEMY_STATE_INACTIVE equ 0
 ENEMY_STATE_ACTIVE   equ 1
 ENEMY_STATE_PAUSE    equ 2
+ENEMY_STATE_GOTOXY   equ 5                                                    ; the enemy moves toward a target point
 ENEMY_CMD_END        equ 0
 ENEMY_CMD_GOTO       equ 1
 ENEMY_CMD_PAUSE      equ 2
@@ -189,9 +191,12 @@ mainloop:
                      bsr        scroll_background
 
                      bsr        plship_update
+                     bsr        enemies_activate
+                     bsr        enemies_update
 
                      bsr        erase_bgnds
                     
+                     bsr        enemies_draw
                      bsr        plship_draw
 
                      btst       #6,CIAAPRA                                    ; left mouse button pressed?
@@ -877,7 +882,7 @@ swap_buffers:
                      move.l     draw_buffer,d0                                ; swaps the values ​​of draw_buffer and view_buffer
                      move.l     view_buffer,draw_buffer
                      move.l     d0,view_buffer
-                    ;add.l      #CLIP_WIDTH/8,d0
+                     add.l      #(CLIP_LEFT-32)/8,d0
                      lea        bplpointers2,a1                               ; sets the bitplane pointers to the view_buffer 
                      moveq      #BPP-1,d1                                            
 .loop:
@@ -931,18 +936,145 @@ enemies_activate:
 enemies_draw:
                      movem.l    d0-a6,-(sp)
 
-;                      lea        enemies_array,a3                                         
-;                      move.l     #NUM_ENEMIES-1,d7                                        ; iterates over enemies array
+                     lea        enemies_array,a3                                         
+                     move.l     #NUM_ENEMIES-1,d7                             ; iterates over enemies array
 
-; .loop:
-;                      cmp.w      #ENEMY_STATE_INACTIVE,enemy.state(a3)                    ; enemy state is inactive?
-;                      beq        .skip_draw
+.loop:
+                     cmp.w      #ENEMY_STATE_INACTIVE,enemy.state(a3)         ; enemy state is inactive?
+                     beq        .skip_draw
 
-;                      move.l     draw_buffer,a2
-;                      bsr        draw_bob                                                 ; draws enemy                
-; .skip_draw:
-;                      add.l      #enemy.length,a3                                         ; points to next enemy in the array
-;                      dbra       d7,.loop
+                     move.l     draw_buffer,a2
+                     bsr        draw_bob                                      ; draws enemy                
+.skip_draw:
+                     add.l      #enemy.length,a3                              ; points to next enemy in the array
+                     dbra       d7,.loop
+
+.return:
+                     movem.l    (sp)+,d0-a6
+                     rts
+
+
+;****************************************************************
+; Updates the enemies state.
+;****************************************************************
+enemies_update:
+                     movem.l    d0-a6,-(sp)
+
+                     lea        enemies_array,a0
+                     move.l     #NUM_ENEMIES-1,d7                                          
+; iterates over the enemies array
+.loop:
+                     cmp.w      #ENEMY_STATE_INACTIVE,enemy.state(a0)         ; enemy state is inactive?
+                     beq        .next_element                                 ; if yes, doesn't update state and skips to next enemy
+                     cmp.w      #ENEMY_STATE_GOTOXY,enemy.state(a0)           ; enemy state is gotoxy?
+                     beq        .state_gotoxy
+                     bra        .exec_command
+.state_gotoxy:
+                     move.w     bob.speed(a0),d1
+                     move.w     enemy.tx(a0),d0
+                     cmp.w      bob.x(a0),d0
+                     blt        .decr_x                                       ; if tx < x, then decreases x
+                     bgt        .incr_x                                       ; if tx > x, then increases x
+                     bra        .compare_y
+.decr_x:
+                     sub.w      d1,bob.x(a0)
+                     bra        .compare_y
+.incr_x:
+                     add.w      d1,bob.x(a0)
+                     bra        .compare_y
+.compare_y:
+                     move.w     enemy.ty(a0),d0
+                     cmp.w      bob.y(a0),d0
+                     blt        .decr_y                                       ; if ty < y then decreases y
+                     bgt        .incr_y                                       ; if ty > y then increases y
+                     bra        .exec_command
+.decr_y:
+                     sub.w      d1,bob.y(a0)
+                     bra        .exec_command
+.incr_y:
+                     add.w      d1,bob.y(a0)
+                     bra        .exec_command
+
+.exec_command:
+                     bsr        enemies_execute_command
+.next_element:
+                     add.l      #enemy.length,a0                              ; points to next enemy in the array
+                     dbra       d7,.loop
+
+.return:
+                     movem.l    (sp)+,d0-a6
+                     rts
+
+
+;****************************************************************
+; Executes commands for controlling active enemies.
+;
+; parameters:
+; a0 - enemy instance
+;****************************************************************
+enemies_execute_command:
+                     movem.l    d0-a6,-(sp)
+
+                     cmp.w      #ENEMY_STATE_INACTIVE,enemy.state(a0)         ; enemy state is inactive?
+                     beq        .return
+                    ;  cmp.w      #ENEMY_STATE_EXPLOSION,enemy.state(a0)        ; enemy state is explosion?
+                    ;  beq        .return
+
+.parse_command:
+                     lea        enemy.cmd_list(a0),a1
+                     add.w      enemy.cmd_pointer(a0),a1
+                     move.w     (a1),d0                                       ; fetches current command
+                     cmp.w      #ENEMY_CMD_GOTO,d0                            ; interprets the command and executes it
+                     beq        .exec_goto
+                     cmp.w      #ENEMY_CMD_END,d0
+                     beq        .exec_end
+                     cmp.w      #ENEMY_CMD_PAUSE,d0
+                     beq        .exec_pause
+                     cmp.w      #ENEMY_CMD_FIRE,d0
+                     beq        .exec_fire
+                     bra        .return
+.exec_goto:
+                     move.w     #ENEMY_STATE_GOTOXY,enemy.state(a0)           ; changes state to gotoxy
+                     move.w     2(a1),enemy.tx(a0)                            ; gets target coordinates tx,ty
+                     move.w     4(a1),enemy.ty(a0)
+                      
+                     move.w     enemy.tx(a0),d0
+                     cmp.w      bob.x(a0),d0                                  ; tx- x
+                     beq        .check_ty                                     ; if tx = x, checks ty
+                     bra        .return
+.check_ty:
+                     move.w     enemy.ty(a0),d0
+                     cmp.w      bob.y(a0),d0
+                     beq        .command_executed                             ; if ty = y, then enemy reached target, so the command has been executed
+                     bra        .return
+
+.command_executed:
+                     move.w     #ENEMY_STATE_ACTIVE,enemy.state(a0)           ; changes state to active
+                     add.w      #3*2,enemy.cmd_pointer(a0)                    ; points to next command
+                     bra        .return
+.exec_end:
+                     move.w     #ENEMY_STATE_INACTIVE,enemy.state(a0)         ; changes state to inactive
+                     bra        .return
+.exec_pause:
+                     cmp.w      #ENEMY_STATE_PAUSE,enemy.state(a0)            ; state = pause?
+                     beq        .state_pause
+                     move.w     2(a1),d0                                      ; gets pause duration in frames
+                     move.w     d0,enemy.pause_timer(a0)                      ; initializes pause timer
+                     move.w     #ENEMY_STATE_PAUSE,enemy.state(a0)            ; changes state to pause
+                     bra        .return
+.state_pause:
+                     sub.w      #1,enemy.pause_timer(a0)                      ; updates pause timer
+                     beq        .end_pause                                    ; pause timer = 0?
+                     bra        .return
+.end_pause:
+                     move.w     #ENEMY_STATE_ACTIVE,enemy.state(a0)           ; change state to active
+                     add.w      #2*2,enemy.cmd_pointer(a0)                    ; points to next command
+                     bra        .return
+.exec_fire:
+                     move.l     a0,a1
+                     ;bsr        enemy_shot_create                             ; creates a new instance of enemy shot
+                     add.w      #2,enemy.cmd_pointer(a0)                      ; points to next command
+                     bra        .return
 
 .return:
                      movem.l    (sp)+,d0-a6
@@ -973,7 +1105,7 @@ bgnd_list_counter2   dc.w       0                                             ; 
 
 player_ship          dc.w       0                                             ; bob.x
                      dc.w       0                                             ; bob.y
-                     dc.w       1                                             ; bob.speed
+                     dc.w       2                                             ; bob.speed
                      dc.w       64                                            ; bob.width
                      dc.w       28                                            ; bob.height  
                      dc.w       0                                             ; bob.ssheet_c
