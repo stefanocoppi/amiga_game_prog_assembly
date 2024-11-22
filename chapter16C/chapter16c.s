@@ -1303,11 +1303,11 @@ enemy_shot_create:
 ; creates a new shot instance and inserts in the first free element of the array
 .insert_new_shot:
                      move.w     bob.x(a1),d0
-                     sub.w      #21,d0
-                     move.w     d0,shot.x(a0)                                 ; shot.x = enemy.x + 47
+                     sub.w      #34,d0
+                     move.w     d0,shot.x(a0)                                 ; shot.x = enemy.x -34
                      move.w     bob.y(a1),d0
-                     add.w      #20,d0
-                     move.w     d0,shot.y(a0)                                 ; shot.y = enemy.y - 9
+                     add.w      #15,d0
+                     move.w     d0,shot.y(a0)                                 ; shot.y = enemy.y + 15
                      move.w     #ENEMY_SHOT_SPEED,shot.speed(a0)              ; shot.speed = SHOT_SPEED
                      move.w     #ENEMY_SHOT_WIDTH,shot.width(a0)
                      move.w     #ENEMY_SHOT_HEIGHT,shot.height(a0)
@@ -1413,8 +1413,8 @@ gfx_base             dc.l       0                                             ; 
 old_dma              dc.w       0                                             ; saved state of DMACON
 sys_coplist          dc.l       0                                             ; address of system copperlist                                     
 
-camera_x             dc.w       16*64                                         ; x position of camera
-map_ptr              dc.w       16                                            ; current map column
+camera_x             dc.w       0*64                                          ; x position of camera
+map_ptr              dc.w       0                                             ; current map column
 bgnd_x               dc.w       0                                             ; current x coordinate of camera into background surface
 map                  include    "gfx/shooter_map.i"
 
