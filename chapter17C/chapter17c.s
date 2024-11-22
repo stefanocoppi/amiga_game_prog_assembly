@@ -32,7 +32,7 @@ CIAAPRA                equ $bfe001
 ; enables blitter DMA (bit 6)
 ; enables copper DMA (bit 7)
 ; enables bitplanes DMA (bit 8)
-                     ;5432109876543210
+                           ;5432109876543210
 DMASET                 equ %1000001111000000             
 
 ; display
@@ -267,7 +267,10 @@ mainloop:
                       bsr        enemies_update
 
                       bsr        check_coll_shots_enemies                        ; checks collisions between player's shots and enemies
-
+                      bsr        check_coll_shots_plship                         ; checks collisions between enemy shots and player's ship
+                      bsr        check_coll_enemy_plship                         ; checks collisions between enemy and player's ship
+                      bsr        check_coll_plship_map                           ; checks collision between player's ship and tilemap
+    
                       bsr        erase_bgnds
                     
                       bsr        enemies_draw
@@ -473,6 +476,64 @@ draw_tile:
 
 
 ;************************************************************************
+; Draws the tile mask on the collision plane.
+;
+; parameters:
+; d0.w - tile index
+; d2.w - x position of the screen where the tile will be drawn (multiple of 16)
+; d3.w - y position of the screen where the tile will be drawn
+;************************************************************************
+draw_tile_mask:
+                      movem.l    d0-a6,-(sp)                                     ; saves registers into the stack
+
+; calculates the address where to draw the tile
+                      lea        ship_coll_plane,a1                              ; destination surface is the collision plane
+                      mulu       #PF1_ROW_SIZE,d3                                ; y_offset = y * BGND_ROW_SIZE
+                      lsr.w      #3,d2                                           ; x_offset = x / 8
+                      ext.l      d2
+                      add.l      d3,a1                                           ; sums offsets to a1
+                      add.l      d2,a1
+
+; calculates row and column of tile in tileset starting from index
+                      ext.l      d0                                              ; extends d0 to a long because the destination operand if divu must be long
+                      divu       #TILESET_COLS,d0                                ; tile_index / TILESET_COLS
+                      swap       d0
+                      move.w     d0,d1                                           ; the remainder indicates the tile column
+                      swap       d0                                              ; the quotient indicates the tile row
+         
+; calculates the x,y coordinates of the tile in the tileset
+                      lsl.w      #6,d0                                           ; y = row * 64
+                      lsl.w      #6,d1                                           ; x = column * 64
+         
+; calculates the offset to add to a0 to get the address of the source image
+                      mulu       #TILESET_ROW_SIZE,d0                            ; offset_y = y * TILESET_ROW_SIZE
+                      lsr.w      #3,d1                                           ; offset_x = x / 8
+                      ext.l      d1
+
+                      lea        tileset_mask,a0                                 ; source is the tileset mask
+                      add.l      d0,a0                                           ; add y_offset
+                      add.l      d1,a0                                           ; add x_offset
+         
+                      bsr        wait_blitter
+                      move.w     #$ffff,BLTAFWM(a5)                              ; don't use mask
+                      move.w     #$ffff,BLTALWM(a5)
+                      move.w     #$09f0,BLTCON0(a5)                              ; enable channels A,D
+                                                                                          ; logical function = $f0, D = A
+                      move.w     #0,BLTCON1(a5)
+                      move.w     #(TILESET_WIDTH-TILE_WIDTH)/8,BLTAMOD(a5)       ; A channel modulus
+                      move.w     #(BGND_WIDTH-TILE_WIDTH)/8,BLTDMOD(a5)          ; D channel modulus
+
+                      bsr        wait_blitter
+                      move.l     a0,BLTAPT(a5)                                   ; source address
+                      move.l     a1,BLTDPT(a5)                                   ; destination address
+                      move.w     #64*64+4,BLTSIZE(a5)                            ; blit size: 64 rows for 4 word
+                      bsr        wait_blitter
+
+                      movem.l    (sp)+,d0-a6                                     ; restore registers from the stack
+                      rts
+
+
+;************************************************************************
 ; Draws a column of 3 tiles.
 ;
 ; parameters:
@@ -494,6 +555,7 @@ draw_tile_column:
 .loop:
                       move.w     (a0),d0                                         ; tile index
                       bsr        draw_tile
+                      bsr        draw_tile_mask
                       add.w      #TILE_HEIGHT,d3                                 ; increment y position
                       add.l      #TILEMAP_ROW_SIZE,a0                            ; move to the next row of the tilemap
                       dbra       d7,.loop
@@ -815,9 +877,20 @@ plship_draw:
                       movem.l    d0-a6,-(sp)
 
                       lea        player_ship,a3
+
+                      tst.w      ship.visible(a3)                                ; if visible = 0, doesn't draw the ship
+                      beq        .return
+                      
                       move.l     draw_buffer,a2
                       bsr        draw_bob                                        ; draws ship
 
+                      cmp.w      #PLSHIP_STATE_NORMAL,ship.state(a3)
+                      beq        .draw_engine_fire                               ; if state is normal
+                      cmp.w      #PLSHIP_STATE_HIT,ship.state(a3)
+                      beq        .draw_engine_fire                               ; or hit, draws engine fire
+                      bra        .return
+
+.draw_engine_fire:
                       lea        player_ship_engine,a3
                       move.l     draw_buffer,a2
                       bsr        draw_bob                                        ; draws engine fire
@@ -902,6 +975,40 @@ plship_update:
 .reset_timer:
                       move.w     ship.anim_duration(a0),ship.anim_timer(a0)      ; resets anim_timer
 
+                      cmp.w      #PLSHIP_STATE_HIT,ship.state(a0)                ; state = hit?
+                      beq        .hit_state
+                      cmp.w      #PLSHIP_STATE_EXPLOSION,ship.state(a0)          ; state = explosion?
+                      beq        .explosion_state
+                      bra        .return
+.hit_state:
+                      sub.w      #1,ship.hit_timer(a0)
+                      beq        .hit_state_end
+                      sub.w      #1,ship.flash_timer(a0)
+                      beq        .toggle_visibility
+                      bra        .return
+.hit_state_end:
+                      move.w     #$ffff,ship.visible(a0)                         ; makes ship visible
+                      move.w     #PLSHIP_STATE_NORMAL,ship.state(a0)
+                      bra        .return
+.toggle_visibility:          
+                      not.w      ship.visible(a0)                                ; toggles visibility
+                      move.w     #PLSHIP_FLASH_DURATION,ship.flash_timer(a0)
+                      bra        .return
+
+.explosion_state:
+                      sub.w      #1,ship.anim_timer(a0)                          ; decreases anim_timer
+                      beq        .frame_advance                                  ; if anim_timer = 0, advances animation frame
+                      bra        .return
+.frame_advance:
+                      add.w      #1,bob.ssheet_c(a0)                             ; advances to next frame
+                      move.w     ship.anim_duration(a0),ship.anim_timer(a0)      ; resets anim timer
+                      move.w     bob.ssheet_c(a0),d0
+                      cmp.w      #10,d0                                          ; ssheet_c >= 10?
+                      bge        .end_animation
+                      bra        .return
+.end_animation:
+                      move.w     #PLSHIP_STATE_NORMAL,ship.state(a0)
+                      bra        .return
 .return:
                       movem.l    (sp)+,d0-a6
                       rts
@@ -1668,7 +1775,314 @@ enemy_explode:
 .return:
                      ;movem.l    (sp)+,d0-a6
                       rts
+
+
+;****************************************************************
+; Checks for collisions between enemy shots and player's ship.
+;****************************************************************
+check_coll_shots_plship:
+                      movem.l    d0-a6,-(sp)
+
+; iterates over all active enemy shots
+;     checks collision between current shot and player's ship
+;         collision response
+
+                      lea        enemy_shots,a0
+                      move.l     #ENEMY_MAX_SHOTS-1,d7
+; iterates over enemy shots
+.shots_loop:
+                      cmp.w      #SHOT_STATE_ACTIVE,shot.state(a0)               ; is current shot active?
+                      bne        .next_shot                                      ; if not, move on the next shot
+    
+; setups bounding rectangle for current shot
+                      lea        rect1,a3
+                      lea        shot.bbox(a0),a4
+                      move.w     shot.x(a0),rect.x(a3)
+                      move.w     rect.x(a4),d0
+                      add.w      d0,rect.x(a3)
+                      move.w     shot.y(a0),rect.y(a3)
+                      move.w     rect.y(a4),d0
+                      add.w      d0,rect.y(a3)
+                      move.w     rect.width(a4),rect.width(a3)
+                      move.w     rect.height(a4),rect.height(a3)
+
+; setups bounding rectangle for player's ship
+                      lea        player_ship,a1
+                      lea        rect2,a2
+                      lea        ship.bbox(a1),a4
+                      move.w     bob.x(a1),rect.x(a2)
+                      move.w     rect.x(a4),d0                 
+                      add.w      d0,rect.x(a2)     
+                      move.w     bob.y(a1),rect.y(a2)
+                      move.w     rect.y(a4),d0                 
+                      add.w      d0,rect.y(a2)
+                      move.w     rect.width(a4),rect.width(a2)
+                      move.w     rect.height(a4),rect.height(a2)
+; checks if player's ship bounding rectangle intersects with current shot bounding rectangle
+                      bsr        rect_intersects                                          
+; response to collision
+                      bsr        coll_response_shots_plship                                         
+
+.next_shot:
+                      add.l      #shot.length,a0
+                      dbra       d7,.shots_loop
+
+.return:
+                      movem.l    (sp)+,d0-a6
+                      rts
+
+
+;****************************************************************
+; Responds to collisions between enemy shots and player's ship.
+;
+; parameters:
+; d0.w - collision result: 1 if there is a collision, 0 otherwise
+; a0 - pointer to shot instance
+; a1 - pointer to player's ship instance
+;****************************************************************
+coll_response_shots_plship:
+                     ;movem.l    d0-a6,-(sp)
+
+; if d0 = 0 there is no collision and therefore returns
+                      tst.w      d0                                                       
+                      beq        .return                                                
+.collision:
+                      ;move.w     #$F00,COLOR00(a5)
+; changes the shot state to idle
+                      move.w     #SHOT_STATE_IDLE,shot.state(a0)                          
+; changes player's ship state to hit
+                      move.w     #PLSHIP_STATE_HIT,ship.state(a1)                         
+                      move.w     #PLSHIP_FLASH_DURATION,ship.flash_timer(a1)
+                      move.w     #PLSHIP_HIT_DURATION,ship.hit_timer(a1)
+; subtracts energy from the player's ship
+                      move.w     shot.damage(a0),d0
+                      sub.w      d0,ship.energy(a1)
+; if energy <= 0 then makes explode the player's ship
+                      ble        .explode
+                      bra        .return
+.explode:
+                      bsr        plship_explode
+.return:
+                     ;movem.l    (sp)+,d0-a6
+                      rts
+
+
+;****************************************************************
+; Blows up the player's ship.
+;
+; parameters:
+; a0 - shot instance
+; a1 - player's ship instance
+;****************************************************************
+plship_explode:
+                     ;movem.l    d0-a6,-(sp)
+                     
+                      move.w     #PLSHIP_STATE_EXPLOSION,ship.state(a1)
+                      move.l     #ship_explosion_gfx,bob.imgdata(a1)
+                      move.l     #ship_explosion_mask,bob.mask(a1)
+                      move.w     #64,bob.width(a1)
+                      move.w     #42,bob.height(a1)
+                      move.w     #0,bob.ssheet_c(a1)
+                      move.w     #0,bob.ssheet_r(a1)
+                      move.w     #640,bob.ssheet_w(a1)
+                      move.w     #42,bob.ssheet_h(a1)
+                      move.w     #1,ship.anim_duration(a1)
+                      move.w     #1,ship.anim_timer(a1)
+
+.return:
+                     ;movem.l    (sp)+,d0-a6
+                      rts
+
+
+;****************************************************************
+; Checks for collisions between enemy and player's ship.
+;****************************************************************
+check_coll_enemy_plship:
+                      movem.l    d0-a6,-(sp)
+
+; iterates over all active enemy
+;     checks collision between current enemy and player's ship
+;         collision response
+
+                      lea        player_ship,a1                                  ; bounding rectangle for player's ship
+                      cmp.w      #PLSHIP_STATE_NORMAL,ship.state(a1)             ; state is normal?
+                      bne        .return                                         ; if not, doesn't checks for collisions
+
+                      lea        enemies_array,a0
+                      move.l     #NUM_ENEMIES-1,d7
+
+.enemies_loop:
+                      cmp.w      #ENEMY_STATE_INACTIVE,enemy.state(a0)           ; is current enemy inactive?
+                      beq        .next_enemy                                     ; if yes, move on the next enemy
+    
+                      lea        rect1,a3                                        ; bounding rectangle for current enemy
+                      lea        enemy.bbox(a0),a4
+                      move.w     bob.x(a0),rect.x(a3)
+                      move.w     rect.x(a4),d0                                   ; enemy.bbox.x
+                      add.w      d0,rect.x(a3)                                   ; rect.x = bob.x + enemy.bbox.x
+                      move.w     bob.y(a0),rect.y(a3)
+                      move.w     rect.y(a4),d0                                   ; enemy.bbox.y
+                      add.w      d0,rect.y(a3)                                   ; rect.y = bob.y + enemy.bbox.y
+                      move.w     rect.width(a4),rect.width(a3)                   ; rect.width = enemy.bbox.width
+                      move.w     rect.height(a4),rect.height(a3)                 ; rect.height = enemy.bbox.height
+
+                      lea        rect2,a2
+                      lea        ship.bbox(a1),a4
+                      move.w     bob.x(a1),rect.x(a2)
+                      move.w     rect.x(a4),d0                 
+                      add.w      d0,rect.x(a2)                                   ; rect2.x = ship.x + ship.bbox.x
+                      move.w     bob.y(a1),rect.y(a2)
+                      move.w     rect.y(a4),d0                 
+                      add.w      d0,rect.y(a2)                                   ; rect2.y = ship.y + ship.bbox.y
+                      move.w     rect.width(a4),rect.width(a2)                   ; rect2.width = ship.bbox.width
+                      move.w     rect.height(a4),rect.height(a2)                 ; rect2.height = ship.bbox.height
+
+                      bsr        rect_intersects                                 ; checks if player's ship bbox intersects enemy bbox                                 
+
+                      bsr        coll_response_enemy_plship                      ; collision response                                 
+
+.next_enemy:
+                      add.l      #enemy.length,a0
+                      dbra       d7,.enemies_loop
+
+.return:
+                      movem.l    (sp)+,d0-a6
+                      rts
+
+
+;****************************************************************
+; Responds to collisions between enemy and player's ship.
+;
+; parameters:
+; d0.w - collision result: 1 if there is a collision, 0 otherwise
+; a0 - pointer to enemy instance
+; a1 - pointer to player's ship instance
+;****************************************************************
+coll_response_enemy_plship:
+                     ;movem.l    d0-a6,-(sp)
+
+                      tst.w      d0                                              ; d0 = 0?                                      
+                      beq        .return                                         ; if yes, there is no collision and therefore returns
+.collision:
+                      ;move.w     #$F00,COLOR00(a5)
+
+                      move.w     #PLSHIP_STATE_HIT,ship.state(a1)                ; changes player's ship state to hit                 
+                      move.w     #PLSHIP_FLASH_DURATION,ship.flash_timer(a1)     ; resets flash timer
+                      move.w     #PLSHIP_HIT_DURATION,ship.hit_timer(a1)         ; resets hit timer
+                                       
+                      sub.w      #5,ship.energy(a1)                              ; subtracts energy from the player's ship
+
+                      ble        .explode                                        ; if energy <= 0 then makes explode the player's ship
+                      bra        .return
+.explode:
+                      bsr        plship_explode
+.return:
+                     ;movem.l    (sp)+,d0-a6
+                      rts
+
+
+;****************************************************************
+; Checks for collisions between player's ship and map.
+;****************************************************************
+check_coll_plship_map:
+                      movem.l    d0-a6,-(sp)
+
+                      lea        player_ship,a0
+
+                      cmp.w      #PLSHIP_STATE_NORMAL,ship.state(a0)             ; ship state is normal?
+                      bne        .return                                         ; if not, doesn't check for collisions
+
+; performs an AND blitter operation between the ship mask and a collision plane containing the background tiles
+
+                      lea        player_ship_mask,a1
+
+; calculates ship address on collision plane
+                      lea        ship_coll_plane,a2                              ; destination address
+                      move.w     bob.y(a0),d1                                    ; ship y position
+                      mulu.w     #BGND_ROW_SIZE,d1                               ; offset Y = y * BGND_ROW_SIZE
+                      add.l      d1,a2                                           ; adds offset Y to destination address
+                      move.w     bob.x(a0),d0                                    ; ship x position
+                      add.w      bgnd_x,d0                                       ; adds viewport position
+                      sub.w      #CLIP_LEFT,d0                                   ; subtracts CLIP_LEFT because there is no invisible clipping edge on the collision plane
+                      move.w     d0,d6                                           ; copies the x
+                      lsr.w      #3,d0                                           ; offset x=x/8
+                      and.w      #$fffe,d0                                       ; makes x even
+                      add.w      d0,a2                                           ; adds offset x to destination address
                       
+; calculates the shift value
+                      and.w      #$000f,d6                                       ; selects the first 4 bits of the X
+                      lsl.w      #8,d6                                           ; shifts the shift value to the high nibble
+                      lsl.w      #4,d6                                           ; in order to have the value of shift to be inserted in BLTCON0
+                      or.w       #$0aa0,d6                                       ; value to be inserted in BLTCON0: enables channels A and C, minterms = AND
+
+; calculates the modulus of channel C
+                      move.w     #(PLSHIP_WIDTH/8),d0                            ; ship width in bytes
+                      add.w      #2,d0                                           ; adds 2 to the width in bytes, due to the shift
+                      move.w     #BGND_ROW_SIZE,d4                               ; collision plane width in bytes
+                      sub.w      d0,d4                                           ; modulus = coll.plane width - bob width in d4
+
+; calculates blit size
+                      move.w     #PLSHIP_HEIGHT,d3                               ; ship height in px
+                      lsl.w      #6,d3                                           ; height*64
+                      lsr.w      #1,d0                                           ; width/2 (in word)
+                      or         d0,d3                                           ; combines the dimensions into the value to be entered in BLTSIZE
+                          
+                      bsr        wait_blitter
+                      move.w     #$ffff,BLTAFWM(a5)                              ; lets everything go through
+                      move.w     #$0000,BLTALWM(a5)                              ; clears the last word of channel A
+                      move.w     #0,BLTCON1(a5)              
+                      move.w     d6,BLTCON0(a5)              
+                      move.w     #$fffe,BLTAMOD(a5)                              ; modulo -2 to go back by 2 bytes due to the extra word introduced for the shift
+                      move.w     d4,BLTCMOD(a5) 
+                      move.l     a1,BLTAPT(a5)                                   ; channel A: ship mask
+                      move.l     a2,BLTCPT(a5)                                   ; channel C: ship collision plane
+                      move.w     d3,BLTSIZE(a5)                                  ; set the size and starts the blitter
+                      bsr        wait_blitter
+
+                      move.w     DMACONR(a5),d0
+                      btst.l     #13,d0                                          ; tests the BZERO flag of DMACONR
+                      beq        .yes_coll                                       ; if it is zero then there has been a collision
+                      bra        .return
+.yes_coll:
+                      move.w     #1,d0                                           ; 1 indicates that there has been a collision
+                      lea        player_ship,a0
+                      bsr        coll_response_plship_map
+
+.return:
+                      movem.l    (sp)+,d0-a6
+                      rts
+
+
+;****************************************************************
+; Responds to collisions between player's ship and map.
+;
+; parameters:
+; d0.w - collision result: 1 if there is a collision, 0 otherwise
+; a0 - pointer to player's ship instance
+;****************************************************************
+coll_response_plship_map:
+                     ;movem.l    d0-a6,-(sp)
+
+                      tst.w      d0                                              ; d0 = 0?                                      
+                      beq        .return                                         ; if yes, there is no collision and therefore returns
+.collision:
+                      ;move.w     #$F00,COLOR00(a5)
+
+                      move.w     #PLSHIP_STATE_HIT,ship.state(a0)                ; changes player's ship state to hit                 
+                      move.w     #PLSHIP_FLASH_DURATION,ship.flash_timer(a0)     ; resets flash timer
+                      move.w     #PLSHIP_HIT_DURATION,ship.hit_timer(a0)         ; resets hit timer
+                                       
+                      sub.w      #5,ship.energy(a0)                              ; subtracts energy from the player's ship
+
+                      ble        .explode                                        ; if energy <= 0 then makes explode the player's ship
+                      bra        .return
+.explode:
+                      move.l     a0,a1
+                      bsr        plship_explode
+.return:
+                     ;movem.l    (sp)+,d0-a6
+                      rts
+
 
 ;************************************************************************
 ; VARIABLES
@@ -1714,7 +2128,7 @@ player_ship           dc.w       0                                              
                       dc.w       $ffff                                           ; visible
                       dc.w       0                                               ; flash_timer
                       dc.w       0                                               ; hit_timer
-                      dc.w       10                                              ; energy
+                      dc.w       5                                               ; energy
                       dc.w       PLSHIP_STATE_NORMAL                             ; state
 
 player_ship_engine    dc.w       0                                               ; x position
@@ -1749,7 +2163,7 @@ copperlist:
                       dc.w       BPLCON1
 scrollx               dc.w       $000f                                           ; bits 0-3 scroll value of pf1
 
-;                                       5432109876543210
+;                                         5432109876543210
                       dc.w       BPLCON2,%0000000001000000                       ; priority to pf2
 
                       dc.w       BPL1MOD,PF1_MOD-4                               ; -4 because we fetch 32 more pixels                                          
@@ -1762,7 +2176,7 @@ scrollx               dc.w       $000f                                          
   ; bit 9: set to 1 to enable composite video output
   ; bit 10: set to 1 to enable dual playfield mode
   ; bit 12-14: least significant bits of bitplane number
-  ;                                     5432109876543210
+  ;                                       5432109876543210
                       dc.w       BPLCON0,%0000011000010000
                       dc.w       FMODE,0                                         ; 16 bit fetch mode
 
@@ -1778,7 +2192,7 @@ bplpointers2:
                       dc.w       $f4,0,$f6,0                                     ; plane 6
                       dc.w       $fc,0,$fe,0                                     ; plane 8
 
-;                                       5432109876543210
+;                                         5432109876543210
                       dc.w       BPLCON3,%0001000000000000                       ; offset 16 tra le palette dei due playfield
 
 pf1_palette:
@@ -1791,6 +2205,7 @@ pf2_palette:
 
          
 tileset               incbin     "gfx/shooter_tiles_16.raw"                      ; image 640 x 512 pixel , 8 bitplanes
+tileset_mask          incbin     "gfx/shooter_tiles.mask"
 
 player_ship_gfx       incbin     "gfx/ship.raw"
 player_ship_mask      incbin     "gfx/ship.mask"
@@ -1800,6 +2215,9 @@ ship_engine_mask      incbin     "gfx/ship_engine.mask"
 
 ship_shots_gfx        incbin     "gfx/ship_shots.raw"
 ship_shots_mask       incbin     "gfx/ship_shots.mask"
+
+ship_explosion_gfx    incbin     "gfx/ship_explosion.raw"
+ship_explosion_mask   incbin     "gfx/ship_explosion.mask"
 
 enemies_gfx           incbin     "gfx/enemies.raw"
 enemies_mask          incbin     "gfx/enemies.mask"
@@ -1831,4 +2249,5 @@ enemy_shots           ds.b       (shot.length*ENEMY_MAX_SHOTS)                  
 rect1                 ds.b       rect.length                                     ; rectangles used for collision checking
 rect2                 ds.b       rect.length
 
+ship_coll_plane       ds.b       PF1_PLANE_SZ                                    ; plane used for pixel-perfect collisions between player's ship and map
                       END
