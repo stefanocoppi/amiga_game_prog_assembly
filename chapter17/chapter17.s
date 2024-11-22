@@ -1,7 +1,7 @@
 ;************************************************************************
 ; Amiga Assembly Game Programming Book
 ; 
-; Chapter 17 - 
+; Chapter 17 - Collisions and explosions
 ;
 ; (c) 2024 Stefano Coppi
 ;************************************************************************
