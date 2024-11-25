@@ -10,12 +10,14 @@
                      include    "bob.i"
 
                      xref       draw_buffer,draw_bob
+                     xref       ship_shot_create
 
                      xdef       player_ship
                      xdef       player_ship_engine
                      xdef       player_ship_mask
                      xdef       plship_init,plship_draw
                      xdef       plship_update,plship_explode
+                     xdef       ship_fire_shot
 
 ;****************************************************************
 ; GRAPHICS DATA in chip ram
@@ -36,6 +38,8 @@ ship_explosion_mask  incbin     "gfx/ship_explosion.mask"
 ;****************************************************************
                      SECTION    code_section,CODE
 
+fire_prev_frame      dc.w       0                                              ; state of fire button in the previous frame (1 pressed)
+
 player_ship          dc.w       0                                              ; bob.x
                      dc.w       0                                              ; bob.y
                      dc.w       2                                              ; bob.speed
@@ -50,7 +54,7 @@ player_ship          dc.w       0                                              ;
                      dc.w       5                                              ; ship.anim_duration 
                      dc.w       5                                              ; ship.anim_timer
                      dc.w       0                                              ; ship.fire_timer
-                     dc.w       BASE_FIRE_INTERVAL                             ; ship.fire_delay
+                     dc.w       FIRE_INTERVAL                                  ; ship.fire_delay
                      dc.w       0                                              ; bbox.rect.x
                      dc.w       0                                              ; bbox.rect.y
                      dc.w       64                                             ; bbox.rect.width
@@ -310,4 +314,44 @@ plship_explode:
 
 .return:
                      ;movem.l    (sp)+,d0-a6
+                     rts
+
+
+;****************************************************************
+; Fires a shot from the ship.
+;****************************************************************
+ship_fire_shot:
+                     movem.l    d0-a6,-(sp)
+
+                     lea        player_ship,a0
+                     sub.w      #1,ship.fire_timer(a0)                         ; decreases fire timer, time interval between two shots
+                     tst.w      ship.fire_timer(a0)                            ; fire_timer < 0?
+                     blt        .avoid_neg
+                     bra        .check_fire_btn
+.avoid_neg:
+                     clr.w      ship.fire_timer(a0)
+.check_fire_btn:
+                     btst       #7,CIAAPRA                                     ; fire button of joystick #1 pressed?
+                     beq        .check_prev_state
+                     bra        .fire_not_pressed                           
+.check_prev_state:
+                     cmp.w      #1,fire_prev_frame                             ; fire button pressed previous frame?
+                     bne        .check_timer
+                     bra        .prev_frame
+.check_timer:    
+                     tst.w      ship.fire_timer(a0)                            ; fire_timer = 0?
+                     beq        .create_shot
+                     bra        .prev_frame                             
+.create_shot:
+                     move.w     ship.fire_delay(a0),d0                         ; fire_timer = fire_delay
+                     move.w     d0,ship.fire_timer(a0)
+                     jsr        ship_shot_create
+                     bra        .prev_frame
+.fire_not_pressed:                                         
+                     clr.w      fire_prev_frame                                      
+                     bra        .return
+.prev_frame:
+                     move.w     #1,fire_prev_frame
+.return:
+                     movem.l    (sp)+,d0-a6
                      rts

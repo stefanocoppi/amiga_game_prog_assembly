@@ -85,6 +85,9 @@ check_coll_shots_enemies:
 ; iterates over all active player's ship shots
 ;     iterates over all active enemies
 ;         checks collision between current shot and current enemy
+;             setups bounding rectangle for current shot
+;             setups bounding rectangle for current enemy
+;             checks if current enemy bounding rectangle intersects with current shot bounding rectangle
 ;         collision response
 
                  lea        ship_shots,a0

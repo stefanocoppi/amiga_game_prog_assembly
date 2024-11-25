@@ -12,8 +12,8 @@
 
                   xref       player_ship,draw_buffer,draw_bob
 
-                  xdef       ship_fire_shot
                   xdef       ship_shots_draw,ship_shots_update
+                  xdef       ship_shot_create
                   xdef       enemy_shot_create
                   xdef       enemy_shots_draw
                   xdef       enemy_shots_update
@@ -40,11 +40,7 @@ ship_shots        ds.b       (shot.length*PLSHIP_MAX_SHOTS)                ; shi
 enemy_shots       ds.b       (shot.length*ENEMY_MAX_SHOTS)                 ; enemy shots array
 
 
-;****************************************************************
-; VARIABLES
-;****************************************************************
-                  SECTION    code_section,CODE
-fire_prev_frame   dc.w       0                                             ; state of fire button in the previous frame (1 pressed)
+
 
 
 
@@ -52,45 +48,8 @@ fire_prev_frame   dc.w       0                                             ; sta
 ; SUBROUTINES
 ;****************************************************************
                  
+                  SECTION    code_section,CODE
 
-;****************************************************************
-; Fires a shot from the ship.
-;****************************************************************
-ship_fire_shot:
-                  movem.l    d0-a6,-(sp)
-
-                  lea        player_ship,a0
-                  sub.w      #1,ship.fire_timer(a0)                        ; decreases fire timer, time interval between two shots
-                  tst.w      ship.fire_timer(a0)                           ; fire_timer < 0?
-                  blt        .avoid_neg
-                  bra        .check_fire_btn
-.avoid_neg:
-                  clr.w      ship.fire_timer(a0)
-.check_fire_btn:
-                  btst       #7,CIAAPRA                                    ; fire button of joystick #1 pressed?
-                  beq        .check_prev_state
-                  bra        .fire_not_pressed                           
-.check_prev_state:
-                  cmp.w      #1,fire_prev_frame                            ; fire button pressed previous frame?
-                  bne        .check_timer
-                  bra        .prev_frame
-.check_timer:    
-                  tst.w      ship.fire_timer(a0)                           ; fire_timer = 0?
-                  beq        .create_shot
-                  bra        .prev_frame                             
-.create_shot:
-                  move.w     ship.fire_delay(a0),d0                        ; fire_timer = fire_delay
-                  move.w     d0,ship.fire_timer(a0)
-                  bsr        ship_shot_create
-                  bra        .prev_frame
-.fire_not_pressed:                                         
-                  clr.w      fire_prev_frame                                      
-                  bra        .return
-.prev_frame:
-                  move.w     #1,fire_prev_frame
-.return:
-                  movem.l    (sp)+,d0-a6
-                  rts
 
 
 ;****************************************************************
