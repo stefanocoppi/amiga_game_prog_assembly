@@ -11,12 +11,12 @@
 
                   xref       player_ship,draw_buffer,draw_bob
 
-                  xdef       ship_fire_shot
                   xdef       ship_shots_draw,ship_shots_update
                   xdef       enemy_shot_create
                   xdef       enemy_shots_draw
                   xdef       enemy_shots_update
                   xdef       ship_shots,enemy_shots
+                  xdef       ship_shot_create
 
 ;****************************************************************
 ; GRAPHICS DATA in chip ram
@@ -40,57 +40,9 @@ enemy_shots       ds.b       (shot.length*ENEMY_MAX_SHOTS)                 ; ene
 
 
 ;****************************************************************
-; VARIABLES
-;****************************************************************
-                  SECTION    code_section,CODE
-fire_prev_frame   dc.w       0                                             ; state of fire button in the previous frame (1 pressed)
-
-
-
-;****************************************************************
 ; SUBROUTINES
 ;****************************************************************
-                 
-
-;****************************************************************
-; Fires a shot from the ship.
-;****************************************************************
-ship_fire_shot:
-                  movem.l    d0-a6,-(sp)
-
-                  lea        player_ship,a0
-                  sub.w      #1,ship.fire_timer(a0)                        ; decreases fire timer, time interval between two shots
-                  tst.w      ship.fire_timer(a0)                           ; fire_timer < 0?
-                  blt        .avoid_neg
-                  bra        .check_fire_btn
-.avoid_neg:
-                  clr.w      ship.fire_timer(a0)
-.check_fire_btn:
-                  btst       #7,CIAAPRA                                    ; fire button of joystick #1 pressed?
-                  beq        .check_prev_state
-                  bra        .fire_not_pressed                           
-.check_prev_state:
-                  cmp.w      #1,fire_prev_frame                            ; fire button pressed previous frame?
-                  bne        .check_timer
-                  bra        .prev_frame
-.check_timer:    
-                  tst.w      ship.fire_timer(a0)                           ; fire_timer = 0?
-                  beq        .create_shot
-                  bra        .prev_frame                             
-.create_shot:
-                  move.w     ship.fire_delay(a0),d0                        ; fire_timer = fire_delay
-                  move.w     d0,ship.fire_timer(a0)
-                  bsr        ship_shot_create
-                  bra        .prev_frame
-.fire_not_pressed:                                         
-                  clr.w      fire_prev_frame                                      
-                  bra        .return
-.prev_frame:
-                  move.w     #1,fire_prev_frame
-.return:
-                  movem.l    (sp)+,d0-a6
-                  rts
-
+                  SECTION    code_section,CODE
 
 ;****************************************************************
 ; Draws the ship's shots.
@@ -102,14 +54,15 @@ ship_shots_draw:
                   move.l     #PLSHIP_MAX_SHOTS-1,d7
 ; iterates over the ship_shots array
 .loop:
-                  tst.w      shot.state(a0)                                ; shot.state is idle?
+; doesn't draw shots in idle state
+                  tst.w      shot.state(a0)                 
                   beq        .next
-                     
+; draws the current shot
                   move.l     a0,a3
                   move.l     draw_buffer,a2
-                  jsr        draw_bob                                      ; draws shot
-
-.next             add.l      #shot.length,a0                               ; goes to next element
+                  jsr        draw_bob
+; goes to next element
+.next             add.l      #shot.length,a0
                   dbra       d7,.loop
                   bra        .return
 
@@ -119,16 +72,40 @@ ship_shots_draw:
 
 
 ;****************************************************************
-; Updates the ship's shots state.
+; Updates ship's shots position and animates them.
 ;****************************************************************
 ship_shots_update:
                   movem.l    d0-a6,-(sp)
 
+; pseudo-code:
+;
+; iterates over the ship_shots array
+;     doesn't updates shots in idle state
+;     if state is launch
+;         decreases anim_timer
+;         if anim_timer = 0
+;             increases animation frame
+;             resets anim_timer
+;             if current frame > num frames
+;                 set frame 6 (flight)
+;                 changes state to active
+;    if state is active
+;        updates position
+;        if shot reaches the right part of screen
+;            changes state to idle
+;    if state is hit
+;         decreases anim_timer
+;         if anim_timer = 0
+;             increases animation frame
+;             resets anim_timer
+;             if current frame > num frames
+;                 changes state to idle
+
                   lea        ship_shots,a0
                   move.l     #PLSHIP_MAX_SHOTS-1,d7
-; iterates over the ship_shots array
+
 .loop:
-                  tst.w      shot.state(a0)                                ; shot.state is idle?
+                  tst.w      shot.state(a0)                                ; shot.state is idle (0)?
                   beq        .next
                      
                   cmp.w      #SHOT_STATE_LAUNCH,shot.state(a0)             ; shot.state is launch?
@@ -204,11 +181,11 @@ ship_shot_create:
                   lea        player_ship,a1
                   move.w     bob.x(a1),d0
                   add.w      #47,d0
-                  move.w     d0,shot.x(a0)                                 ; shot.x = bob.x + ship.width
+                  move.w     d0,shot.x(a0)                                 ; shot.x = ship.x + ship.width
                   move.w     bob.y(a1),d0
                   sub.w      #9,d0
-                  move.w     d0,shot.y(a0)                                 ; shot.y = bob.y + 10
-                  move.w     #SHIP_SHOT_SPEED,shot.speed(a0)               ; shot.speed = SHOT_SPEED
+                  move.w     d0,shot.y(a0)                                 ; shot.y = ship.y + 10
+                  move.w     #SHIP_SHOT_SPEED,shot.speed(a0)
                   move.w     #SHIP_SHOT_WIDTH,shot.width(a0)
                   move.w     #SHIP_SHOT_HEIGHT,shot.height(a0)
                   move.w     #0,shot.ssheet_c(a0)
@@ -253,7 +230,7 @@ enemy_shot_create:
                   move.w     bob.y(a1),d0
                   add.w      #15,d0
                   move.w     d0,shot.y(a0)                                 ; shot.y = enemy.y + 15
-                  move.w     #ENEMY_SHOT_SPEED,shot.speed(a0)              ; shot.speed = SHOT_SPEED
+                  move.w     #ENEMY_SHOT_SPEED,shot.speed(a0)
                   move.w     #ENEMY_SHOT_WIDTH,shot.width(a0)
                   move.w     #ENEMY_SHOT_HEIGHT,shot.height(a0)
                   move.w     #0,shot.ssheet_c(a0)

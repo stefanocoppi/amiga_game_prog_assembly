@@ -19,12 +19,12 @@
   include    "enemies.i"
   include    "shots.i"
 
-  xref       take_system,release_system,copperlist
-  xref       wait_vblank,wait_blitter,draw_tile_column
+  xref       take_system,release_system
+  xref       wait_vblank
   xref       init_background,scroll_background,playfield1
-  xref       camera_x,map_ptr,bgnd_x
-  xref       draw_bob,erase_bgnds,swap_buffers,playfield2a,draw_buffer
-  xref       player_ship,player_ship_engine,plship_init
+  xref       map_ptr,bgnd_x
+  xref       erase_bgnds,swap_buffers,playfield2a
+  xref       plship_init
   xref       plship_draw,plship_update
   xref       enemies_activate,enemies_draw,enemies_update
   xref       ship_fire_shot,ship_shots_draw,ship_shots_update
