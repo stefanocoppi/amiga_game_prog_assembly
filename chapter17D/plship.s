@@ -298,8 +298,6 @@ plship_limit_movement:
 ; a1 - player's ship instance
 ;****************************************************************
 plship_explode:
-                     ;movem.l    d0-a6,-(sp)
-                     
                      move.w     #PLSHIP_STATE_EXPLOSION,ship.state(a1)
                      move.l     #ship_explosion_gfx,bob.imgdata(a1)
                      move.l     #ship_explosion_mask,bob.mask(a1)
@@ -313,7 +311,6 @@ plship_explode:
                      move.w     #1,ship.anim_timer(a1)
 
 .return:
-                     ;movem.l    (sp)+,d0-a6
                      rts
 
 

@@ -154,12 +154,9 @@ check_coll_shots_enemies:
 ; a1 - pointer to enemy instance
 ;****************************************************************
 coll_response_shots_enemies:
-      ;movem.l    d0-a6,-(sp)
-
                  tst.w      d0                                             ; if d0 = 0 there is no collision
                  beq        .return                                        ; and therefore returns
 .collision:
-      ;move.w     #$F00,COLOR00(a5)                              ; changes background color to red
                  move.w     shot.anim_duration(a0),shot.anim_timer(a0)     ; resets anim timer
                  move.w     #0,shot.ssheet_c(a0)                           ; sets hit animation frame
                  move.w     #1,shot.ssheet_r(a0)
@@ -174,9 +171,7 @@ coll_response_shots_enemies:
                  bra        .return
 .explode:
                  bsr        enemy_explode
-      ;move.w     #ENEMY_STATE_INACTIVE,enemy.state(a1)
 .return:
-      ;movem.l    (sp)+,d0-a6
                  rts
 
 
@@ -338,13 +333,9 @@ check_coll_enemy_plship:
 ; a1 - pointer to player's ship instance
 ;****************************************************************
 coll_response_enemy_plship:
-                     ;movem.l    d0-a6,-(sp)
-
                  tst.w      d0                                             ; d0 = 0?                                      
                  beq        .return                                        ; if yes, there is no collision and therefore returns
 .collision:
-                      ;move.w     #$F00,COLOR00(a5)
-
                  move.w     #PLSHIP_STATE_HIT,ship.state(a1)               ; changes player's ship state to hit                 
                  move.w     #PLSHIP_FLASH_DURATION,ship.flash_timer(a1)    ; resets flash timer
                  move.w     #PLSHIP_HIT_DURATION,ship.hit_timer(a1)        ; resets hit timer
@@ -356,7 +347,6 @@ coll_response_enemy_plship:
 .explode:
                  bsr        plship_explode
 .return:
-                     ;movem.l    (sp)+,d0-a6
                  rts
 
 
@@ -440,13 +430,9 @@ check_coll_plship_map:
 ; a0 - pointer to player's ship instance
 ;****************************************************************
 coll_response_plship_map:
-                     ;movem.l    d0-a6,-(sp)
-
                  tst.w      d0                                             ; d0 = 0?                                      
                  beq        .return                                        ; if yes, there is no collision and therefore returns
 .collision:
-                      ;move.w     #$F00,COLOR00(a5)
-
                  move.w     #PLSHIP_STATE_HIT,ship.state(a0)               ; changes player's ship state to hit                 
                  move.w     #PLSHIP_FLASH_DURATION,ship.flash_timer(a0)    ; resets flash timer
                  move.w     #PLSHIP_HIT_DURATION,ship.hit_timer(a0)        ; resets hit timer
@@ -459,5 +445,4 @@ coll_response_plship_map:
                  move.l     a0,a1
                  bsr        plship_explode
 .return:
-                     ;movem.l    (sp)+,d0-a6
                  rts

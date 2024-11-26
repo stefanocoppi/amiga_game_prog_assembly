@@ -252,13 +252,15 @@ enemies_execute_command:
 ; a1 - enemy instance
 ;****************************************************************
 enemy_explode:
-      ;movem.l    d0-a6,-(sp)
-                     
+; changes enemy state to explosion
                       move.w     #ENEMY_STATE_EXPLOSION,enemy.state(a1)
+; setups explosion graphics data and mask
                       move.l     #enemy_explosion_gfx,bob.imgdata(a1)
                       move.l     #enemy_explosion_mask,bob.mask(a1)
+; adjusts bob position for explosion animation
                       sub.w      #3,bob.x(a1)
                       sub.w      #12,bob.y(a1)
+; setups explosion animation data
                       move.w     #64,bob.width(a1)
                       move.w     #64,bob.height(a1)
                       move.w     #0,bob.ssheet_c(a1)
@@ -269,6 +271,4 @@ enemy_explode:
                       move.w     #3,enemy.anim_timer(a1)
                       move.w     #8,enemy.num_frames(a1)
 
-.return:
-      ;movem.l    (sp)+,d0-a6
                       rts
