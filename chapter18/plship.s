@@ -18,6 +18,7 @@
                      xdef       plship_init,plship_draw
                      xdef       plship_update,plship_explode
                      xdef       ship_fire_shot
+                     xref       draw_string,num2string
 
 ;****************************************************************
 ; GRAPHICS DATA in chip ram
@@ -77,6 +78,8 @@ player_ship_engine   dc.w       0                                              ;
                      dc.l       ship_engine_gfx                                ; image data address
                      dc.l       ship_engine_mask 
 
+posx_str             dcb.b      6,0
+posy_str             dcb.b      6,0
 
 ;****************************************************************
 ; SUBROUTINES
@@ -144,6 +147,25 @@ plship_update:
                      lea        player_ship,a0
                      bsr        plship_move_with_joystick
                      bsr        plship_limit_movement
+
+                     move.w     bob.x(a0),d0                                   ; converts x position into a string
+                     lea        posx_str,a0
+                     jsr        num2string
+
+                     lea        posx_str,a2                                    ; draws x position
+                     move.w     #CLIP_LEFT,d3
+                     move.w     #192+9*2,d4
+                     jsr        draw_string
+
+                     lea        player_ship,a0
+                     move.w     bob.y(a0),d0                                   ; converts y position into a string
+                     lea        posy_str,a0
+                     jsr        num2string
+
+                     lea        posy_str,a2                                    ; draws y position
+                     move.w     #CLIP_LEFT+6*8,d3
+                     move.w     #192+9*2,d4
+                     jsr        draw_string
 
 ; sets engine fire bob position
                      lea        player_ship_engine,a1

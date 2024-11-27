@@ -17,3 +17,4 @@ amigeconv.exe -f bitplane -d 4 .\enemy_explosion.png enemy_explosion.raw
 amigeconv.exe -f bitplane -m -d 1 .\enemy_explosion.png enemy_explosion.mask
 amigeconv.exe -f bitplane -d 4 .\ship_explosion.png ship_explosion.raw
 amigeconv.exe -f bitplane -m -d 1 .\ship_explosion.png ship_explosion.mask
+amigeconv.exe -f bitplane -d 1 .\numeric_font.png numeric_font.raw
