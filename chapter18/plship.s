@@ -166,7 +166,8 @@ plship_update:
                      move.w     #CLIP_LEFT+6*8,d3
                      move.w     #192+9*2,d4
                      jsr        draw_string
-
+                     
+                     lea        player_ship,a0
 ; sets engine fire bob position
                      lea        player_ship_engine,a1
                      move.w     bob.x(a0),d0
