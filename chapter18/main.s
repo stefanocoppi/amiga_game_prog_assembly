@@ -1,7 +1,7 @@
 ;************************************************************************
 ; Amiga Assembly Game Programming Book
 ; 
-; Chapter 17D - Collisions and explosions
+; Chapter 18 - Text rendering
 ;
 ;
 ; (c) 2024 Stefano Coppi

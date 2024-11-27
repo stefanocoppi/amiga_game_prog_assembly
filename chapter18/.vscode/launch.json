@@ -6,8 +6,8 @@
             "request": "launch",
             "name": "WinUAE Debug",
             "stopOnEntry": false,
-            "program": "${workspaceFolder}/uae/dh0/chapter17D",
-            "remoteProgram": "SYS:chapter17D",
+            "program": "${workspaceFolder}/uae/dh0/chapter18",
+            "remoteProgram": "SYS:chapter18",
             "emulatorType": "winuae",
             "emulatorArgs": [
                 "-s",
@@ -20,8 +20,8 @@
             "request": "launch",
             "name": "FS-UAE Debug",
             "stopOnEntry": true,
-            "program": "${workspaceFolder}/uae/dh0/chapter17D",
-            "remoteProgram": "SYS:chapter17D",
+            "program": "${workspaceFolder}/uae/dh0/chapter18",
+            "remoteProgram": "SYS:chapter18",
             "emulatorType": "fs-uae",
             "emulatorArgs": [
                 "--hard_drive_0=${workspaceFolder}/uae/dh0",
