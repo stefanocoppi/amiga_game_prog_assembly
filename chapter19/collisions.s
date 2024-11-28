@@ -22,6 +22,7 @@
                  xref       ship_shots,enemies_array
                  xref       plship_explode,enemy_explode
                  xref       player_ship_mask,wait_blitter
+                 xref       draw_hud_bar
 
 ;****************************************************************
 ; BSS DATA
@@ -258,7 +259,12 @@ coll_response_shots_plship:
 ; subtracts energy from the player's ship
                  move.w     shot.damage(a0),d0
                  sub.w      d0,ship.energy(a1)
+
+                 move.w     ship.energy(a1),d0
+                 jsr        draw_hud_bar
+
 ; if energy <= 0 then makes explode the player's ship
+                 tst.w      ship.energy(a1)
                  ble        .explode
                  bra        .return
 .explode:
@@ -342,6 +348,10 @@ coll_response_enemy_plship:
                                        
                  sub.w      #5,ship.energy(a1)                             ; subtracts energy from the player's ship
 
+                 move.w     ship.energy(a1),d0
+                 jsr        draw_hud_bar
+
+                 tst.w      ship.energy(a1)
                  ble        .explode                                       ; if energy <= 0 then makes explode the player's ship
                  bra        .return
 .explode:
@@ -439,6 +449,10 @@ coll_response_plship_map:
                                        
                  sub.w      #5,ship.energy(a0)                             ; subtracts energy from the player's ship
 
+                 move.w     ship.energy(a0),d0
+                 jsr        draw_hud_bar
+                 
+                 tst.w      ship.energy(a0)
                  ble        .explode                                       ; if energy <= 0 then makes explode the player's ship
                  bra        .return
 .explode:

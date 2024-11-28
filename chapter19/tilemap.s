@@ -68,7 +68,7 @@ draw_tile:
   move.w     #$ffff,BLTAFWM(a5)      ; don't use mask
   move.w     #$ffff,BLTALWM(a5)
   move.w     #$09f0,BLTCON0(a5)      ; enable channels A,D
-                                                          ; logical function = $f0, D = A
+                                     ; logical function = $f0, D = A
   move.w     #0,BLTCON1(a5)
   move.w     #(TILESET_WIDTH-TILE_WIDTH)/8,BLTAMOD(a5)    ; A channel modulus
   move.w     #(PF1_WIDTH-TILE_WIDTH)/8,BLTDMOD(a5)        ; D channel modulus

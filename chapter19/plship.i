@@ -49,6 +49,6 @@ PLSHIP_STATE_EXPLOSION equ 2
 PLSHIP_FLASH_DURATION  equ 1
 PLSHIP_HIT_DURATION    equ 10
 FIRE_INTERVAL          equ 7                     ; time interval between two shots
-
+PLSHIP_MAX_ENERGY      equ 20
 
                     ENDC

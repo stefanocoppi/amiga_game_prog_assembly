@@ -63,7 +63,7 @@ player_ship          dc.w       0                                              ;
                      dc.w       $ffff                                          ; visible
                      dc.w       0                                              ; flash_timer
                      dc.w       0                                              ; hit_timer
-                     dc.w       5                                              ; energy
+                     dc.w       PLSHIP_MAX_ENERGY                              ; energy
                      dc.w       PLSHIP_STATE_NORMAL                            ; state
 
 player_ship_engine   dc.w       0                                              ; x position

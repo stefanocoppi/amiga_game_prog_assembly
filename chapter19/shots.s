@@ -232,7 +232,7 @@ enemy_shot_create:
                   move.w     #5,shot.num_frames(a0)
                   move.w     #3,shot.anim_duration(a0)
                   move.w     #3,shot.anim_timer(a0)
-                  move.w     #SHIP_SHOT_DAMAGE,shot.damage(a0)
+                  move.w     #ENEMY_SHOT_DAMAGE,shot.damage(a0)
 .return:
                   movem.l    (sp)+,d0-a6
                   rts

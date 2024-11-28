@@ -4,9 +4,9 @@
 ; (c) 2024 Stefano Coppi
 ;****************************************************************
 
-                  include    "playfield.i"
+                  include    "hud.i"
 
-                  xref       draw_buffer
+                  xref       hud_bgnd
 
                   xdef       draw_string
                   xdef       num2string
@@ -44,18 +44,18 @@ draw_char:
     
                   lea        numeric_font_gfx,a0       ; font address
 
-    ; since the font starts from '0', subtracts the ascii code of '0',
-    ; in order to have an index starting from zero
+; since the font starts from '0', subtracts the ascii code of '0',
+; in order to have an index starting from zero
                   sub.b      #48,d0
-    ; clears the high byte of d0, unused
+; clears the high byte of d0, unused
                   and.w      #$00FF,d0
-    ; calculates the address of the character within the font spritesheet
+; calculates the address of the character within the font spritesheet
                   add.w      d0,a0
-    ; copies the character data to the destination bitplane
+; copies the character data to the destination bitplane
                   moveq      #8-1,d2
 .loop:
                   move.b     (a0),(a1)                 ; copies a row of 8 px from font to bitplane
-                  add.l      #PF2_ROW_SIZE,a1          ; go to the next row of the bitplane
+                  add.l      #HUD_ROW_SIZE,a1          ; go to the next row of the bitplane
                   add.l      #FONT_SS_ROW_SIZE,a0      ; go to next row in the font spritesheet
                   dbra       d2,.loop
     
@@ -73,16 +73,16 @@ draw_char:
 draw_string:
                   movem.l    d0-a6,-(sp)
     
-    ; calculates the destination address on the bitplane
-                  move.l     draw_buffer,a1            ; playfield where to draw
-                  mulu.w     #PF2_ROW_SIZE,d4          ; offset_y = y * PF2_ROW_SIZE
+; calculates the destination address on the bitplane
+                  move.l     #hud_bgnd,a1              ; playfield where to draw
+                  mulu.w     #HUD_ROW_SIZE,d4          ; offset_y = y * HUD_ROW_SIZE
                   add.l      d4,a1                     ; adds offset_y to bitplane address
                   lsr.w      #3,d3                     ; offset_x = x/8
                   and.l      #$0000FFFF,d3             ; clears the high word of d2
                   add.l      d3,a1                     ; adds offset_x to bitplane address
     
-    ; for each character of the string:
-    ;     drawChar
+; for each character of the string:
+;     drawChar
 .loop:
                   move.b     (a2)+,d0                  ; current string character
                   tst.b      d0                        ; if current character is zero

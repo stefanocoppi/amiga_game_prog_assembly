@@ -179,7 +179,7 @@ enemy5        dc.w       CLIP_LEFT+320                 ; enemy.x
               dc.w       0                             ; enemy.anim_timer
               dc.w       0                             ; enemy.num_frames
               dc.w       ENEMY_STATE_INACTIVE          ; enemy.state
-              dc.w       100                           ; enemy.score
+              dc.w       200                           ; enemy.score
               dc.w       10                            ; enemy.energy
               dc.w       704                           ; enemy.map_position
               dc.w       0                             ; enemy.tx

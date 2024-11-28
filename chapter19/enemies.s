@@ -14,7 +14,7 @@
                       xref       enemies_array,camera_x
                       xref       draw_buffer,draw_bob
                       xref       enemy_shot_create
-
+                      xref       add_to_score
 
 ;****************************************************************
 ; GRAPHICS DATA in chip ram
@@ -252,6 +252,11 @@ enemies_execute_command:
 ; a1 - enemy instance
 ;****************************************************************
 enemy_explode:
+
+; adds points to score
+                      move.w     enemy.score(a1),d0
+                      jsr        add_to_score
+
 ; changes enemy state to explosion
                       move.w     #ENEMY_STATE_EXPLOSION,enemy.state(a1)
 ; setups explosion graphics data and mask

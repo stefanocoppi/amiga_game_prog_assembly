@@ -34,7 +34,7 @@
            xref       check_coll_shots_enemies,check_coll_shots_plship
            xref       check_coll_enemy_plship,check_coll_plship_map
            xref       draw_string,num2string
-           xref       init_hud_plf
+           xref       init_hud,draw_score,draw_hud_bar
     
            
 ;************************************************************************
@@ -61,7 +61,7 @@ main:
            move.w     #TILE_WIDTH,bgnd_x                                  ; x position of the part of background to draw
 
            jsr        plship_init
-           jsr        init_hud_plf
+           jsr        init_hud
 
 mainloop: 
            jsr        wait_vblank                                         ; waits for vertical blank
@@ -88,21 +88,7 @@ mainloop:
            jsr        plship_draw
            jsr        ship_shots_draw                                     ; draws player's ship shots
            jsr        enemy_shots_draw                                    ; draws enemy shots
-
-        ;    lea        test_str,a2                                         ; draws a string
-        ;    move.w     #CLIP_LEFT+8,d3
-        ;    move.w     #192,d4
-        ;    jsr        draw_string
-
-        ;    move.w     score,d0                                            ; converts score into a string
-        ;    lea        score_str,a0
-        ;    jsr        num2string
-
-        ;    lea        score_str,a2
-        ;    move.w     #CLIP_LEFT,d3
-        ;    move.w     #192+9,d4
-        ;    jsr        draw_string
-
+           
            btst       #6,CIAAPRA                                          ; left mouse button pressed?
            bne        mainloop                                            ; if not, repeats the loop
 

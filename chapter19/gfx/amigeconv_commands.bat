@@ -18,7 +18,7 @@ amigeconv.exe -f bitplane -m -d 1 .\enemy_explosion.png enemy_explosion.mask
 amigeconv.exe -f bitplane -d 4 .\ship_explosion.png ship_explosion.raw
 amigeconv.exe -f bitplane -m -d 1 .\ship_explosion.png ship_explosion.mask
 amigeconv.exe -f bitplane -d 1 .\numeric_font.png numeric_font.raw
-::amigeconv.exe -f bitplane -d 4 .\hud_bgnd_16.png hud_bgnd.raw
-::amigeconv.exe -f palette -p pal4 -c 16 -x -n .\hud_bgnd_16.png hud_palette.pal
 amigeconv.exe -f bitplane -d 5 .\hud_bgnd.png hud_bgnd.raw
 amigeconv.exe -f palette -p pal4 -c 32 -x -n .\hud_bgnd.png hud_palette.pal
+amigeconv.exe -f bitplane -d 5 .\bar.png bar.raw
+amigeconv.exe -f bitplane -m -d 1 .\bar.png bar.mask

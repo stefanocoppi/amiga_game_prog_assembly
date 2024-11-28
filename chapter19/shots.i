@@ -40,6 +40,7 @@ SHIP_SHOT_SPEED   equ 10
 SHIP_SHOT_WIDTH   equ 64
 SHIP_SHOT_HEIGHT  equ 64
 SHIP_SHOT_DAMAGE  equ 5
+ENEMY_SHOT_DAMAGE equ 10
 SHOT_STATE_IDLE   equ 0                         ; state where a shot isn't drawn and isn't updated
 SHOT_STATE_ACTIVE equ 1                         ; state where a shot is drawn and updated
 SHOT_STATE_LAUNCH equ 2                         ; state where a shot throwing animation is played
