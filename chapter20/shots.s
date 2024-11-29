@@ -18,6 +18,7 @@
                   xdef       enemy_shots_draw
                   xdef       enemy_shots_update
                   xdef       ship_shots,enemy_shots
+                  xdef       shots_init
 
 ;****************************************************************
 ; GRAPHICS DATA in chip ram
@@ -50,6 +51,32 @@ enemy_shots       ds.b       (shot.length*ENEMY_MAX_SHOTS)                 ; ene
                  
                   SECTION    code_section,CODE
 
+
+;****************************************************************
+; Initializes shots array, making all shots idle
+;****************************************************************
+shots_init:
+                  movem.l    d0-a6,-(sp)
+
+                  lea        ship_shots,a0
+                  move.l     #PLSHIP_MAX_SHOTS-1,d7
+; changes state to idle for all ship_shots
+.loop:
+                  move.w     #SHOT_STATE_IDLE,shot.state(a0)
+                  add.l      #shot.length,a0
+                  dbra       d7,.loop
+
+                  lea        enemy_shots,a0
+                  move.l     #ENEMY_MAX_SHOTS-1,d7
+; changes state to idle for all enemy_shots
+.loop2:
+                  move.w     #SHOT_STATE_IDLE,shot.state(a0)
+                  add.l      #shot.length,a0
+                  dbra       d7,.loop2
+
+.return:
+                  movem.l    (sp)+,d0-a6
+                  rts
 
 
 ;****************************************************************

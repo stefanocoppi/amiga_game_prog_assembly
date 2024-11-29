@@ -40,6 +40,7 @@
   xref       plship_init
   xref       init_hud
   xref       game_state
+  xref       shots_init
 
   SECTION    code_section,CODE
 
@@ -101,7 +102,8 @@ init_play_state:
 ; initializes player's ship state
   jsr        plship_init
 
-; initializes shots : TODO
+; initializes shots
+  jsr        shots_init
 
 ; initializes hud 
   jsr        init_hud
