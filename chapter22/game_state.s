@@ -10,6 +10,8 @@
             xref       update_play_state
             xref       init_gameover_state
             xref       update_gameover_state
+            xref       init_titlescreen_state
+            xref       update_titlescreen_state
 
 
             xdef       update_gamestate
@@ -21,20 +23,20 @@
 ;****************************************************************
             SECTION    code_section,CODE
 
-game_state  dc.w       GAME_STATE_PLAYING         ; current game state
+game_state  dc.w       GAME_STATE_PLAYING          ; current game state
 
 ; jump table containing pointers to the game state processing routines
 gamestate_table:
             dc.l       update_play_state
             dc.l       update_gameover_state
-            dc.l       0
+            dc.l       update_titlescreen_state
             dc.l       0
 
 ; jump table containing pointers to the game state initialization routines
 init_gamestate_table:
             dc.l       init_play_state
             dc.l       init_gameover_state
-            dc.l       0
+            dc.l       init_titlescreen_state
             dc.l       0
 
                           

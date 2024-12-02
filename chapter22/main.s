@@ -15,6 +15,7 @@
   xref       wait_vblank
   xref       update_gamestate
   xref       init_play_state
+  xref       init_titlescreen_state
            
 ;************************************************************************
 ; MAIN PROGRAM
@@ -23,7 +24,7 @@
 
 main:
   jsr        take_system                   ; takes the control of Amiga's hardware
-  jsr        init_play_state
+  jsr        init_titlescreen_state
 
 mainloop: 
   jsr        wait_vblank                   ; waits for vertical blank

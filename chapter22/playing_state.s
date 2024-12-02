@@ -4,6 +4,8 @@
 ; (c) 2024 Stefano Coppi
 ;****************************************************************
 
+  incdir     "include/"
+  include    "hw.i"
   include    "playfield.i"
   include    "tilemaps.i"
   include    "game_state.i"
@@ -42,6 +44,7 @@
   xref       game_state
   xref       shots_init
   xref       init_enemies_array
+  xref       copperlist
 
   SECTION    code_section,CODE
 
@@ -81,7 +84,10 @@ update_play_state:
 ;***************************************************************************
 init_play_state:
 
-; sets bitplane pointers for dual playfield mode
+  move.l     #copperlist,COP1LC(a5)            ; sets our copperlist address into Copper
+  move.w     d0,COPJMP1(a5)                    ; reset Copper PC to the beginning of our copperlist
+  
+; sets bitplane pointers for dual playfield mode            
   move.l     #BPP,d7  
   lea        bplpointers1,a1                   ; bitplane pointers in a1
   move.l     #playfield1+8-2,d0                ; address of background playfield

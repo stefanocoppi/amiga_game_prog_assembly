@@ -127,6 +127,7 @@ scroll_background:
             lea        bplpointers1,a1
             move.l     #playfield1-2,d0
             move.l     #PF1_PLANE_SZ,d1
+            move.l     #BPP,d7
             jsr        init_bplpointers
             move.w     #$000f,scrollx                       ; resets scroll value
             bra        .return

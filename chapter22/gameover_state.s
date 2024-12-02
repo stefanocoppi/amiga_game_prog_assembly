@@ -45,7 +45,7 @@
                 xdef       update_gameover_state
 
 FLASH_DURATION equ 6
-STATE_DURATION equ 50*5                                       ; 5 seconds
+STATE_DURATION equ 50*2                                       ; 2 seconds
 
 ;****************************************************************
 ; GRAPHICS DATA in chip ram
@@ -156,7 +156,7 @@ update_gameover_text:
                 beq        .change_state
                 bra        .decr_flash_timer
 .change_state:
-                move.w     #GAME_STATE_PLAYING,d0
+                move.w     #GAME_STATE_TITLESCREEN,d0
                 jsr        change_gamestate
 .decr_flash_timer:
                 sub.w      #1,flash_timer

@@ -24,3 +24,7 @@ amigeconv.exe -f bitplane -d 5 .\bar.png bar.raw
 amigeconv.exe -f bitplane -m -d 1 .\bar.png bar.mask
 amigeconv.exe -f bitplane -d 4 .\game_over.png game_over.raw
 amigeconv.exe -f bitplane -m -d 1 .\game_over.png game_over.mask
+amigeconv.exe -f bitplane -d 5 .\title_screen.png title_screen.raw
+amigeconv.exe -f palette -p pal4 -c 32 -x -n .\title_screen.png titlescreen_palette.pal
+
+
