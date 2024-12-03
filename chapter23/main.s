@@ -18,6 +18,7 @@
   xref       init_titlescreen_state
   xref       init_sound
   xref       quit_sound
+  xref       update_sound_engine
            
 ;************************************************************************
 ; MAIN PROGRAM
@@ -26,18 +27,19 @@
 
 main:
   jsr        take_system                   ; takes the control of Amiga's hardware
-  jsr        init_sound
+  ;jsr        init_sound
   jsr        init_titlescreen_state
 
 mainloop: 
   jsr        wait_vblank                   ; waits for vertical blank
            
   jsr        update_gamestate              ; updates the game state
+  jsr        update_sound_engine
            
   btst       #6,CIAAPRA                    ; left mouse button pressed?
   bne        mainloop                      ; if not, repeats the loop
 
-  jsr        quit_sound
+  ;jsr        quit_sound
   jsr        release_system                ; releases the hw control to the O.S.
   rts
 

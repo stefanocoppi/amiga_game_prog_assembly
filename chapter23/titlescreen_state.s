@@ -85,16 +85,16 @@ init_titlescreen_state:
                        move.w     #GAME_STATE_TITLESCREEN,game_state
 
 
-                       lea        CUSTOM,a6
-                       lea        title_music,a0
-                       move.l     #0,a1
-                       move.b     #0,d0
-                       jsr        _mt_init
-                       move.b     #1,_mt_Enable
+                    ;    lea        CUSTOM,a6
+                    ;    lea        title_music,a0
+                    ;    move.l     #0,a1
+                    ;    move.b     #0,d0
+                    ;    jsr        _mt_init
+                    ;    move.b     #1,_mt_Enable
 
-                       lea        CUSTOM,a6
-                       move.w     #8,d0
-                       jsr        _mt_mastervol
+                    ;    lea        CUSTOM,a6
+                    ;    move.w     #8,d0
+                    ;    jsr        _mt_mastervol
                        
 
                        movem.l    (sp)+,d0-a6
@@ -118,8 +118,8 @@ update_titlescreen_state:
 ; plays sound fx
                        move.w     #SFX_ID_START,d0
                        clr.w      d1                                    ; no loop
-                       jsr        play_sfx
-                       ;jsr        play_sample
+                       ;jsr        play_sfx
+                       jsr        play_sample
 
 ; changes state to PLAYING
                        move.w     #GAME_STATE_PLAYING,d0
