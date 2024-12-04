@@ -44,14 +44,14 @@ draw_char:
     
                   lea        numeric_font_gfx,a0       ; font address
 
-    ; since the font starts from '0', subtracts the ascii code of '0',
-    ; in order to have an index starting from zero
+; since the font starts from '0', subtracts the ascii code of '0',
+; in order to have an index starting from zero
                   sub.b      #48,d0
-    ; clears the high byte of d0, unused
+; clears the high byte of d0, unused
                   and.w      #$00FF,d0
-    ; calculates the address of the character within the font spritesheet
+; calculates the address of the character within the font spritesheet
                   add.w      d0,a0
-    ; copies the character data to the destination bitplane
+; copies the character data to the destination bitplane
                   moveq      #8-1,d2
 .loop:
                   move.b     (a0),(a1)                 ; copies a row of 8 px from font to bitplane

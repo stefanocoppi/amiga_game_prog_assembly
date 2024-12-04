@@ -114,6 +114,5 @@ mainloop:
 test_str   dc.b       "0123456789",0,0
 score      dc.w       655
 score_str  dcb.b      8,'0'
-           dc.b       0,0
 
            END
