@@ -42,6 +42,7 @@
                 xref       draw_buffer
                 xref       change_gamestate
                 xref       play_sfx
+                xref       play_sample
   
                 xdef       init_gameover_state
                 xdef       update_gameover_state
@@ -96,7 +97,9 @@ init_gameover_state:
                 move.w     #SFX_ID_GAMEOVER,d0
                 clr.w      d1                                 ; no loop
                 ;jsr        play_sfx
-  
+                jsr        play_sample
+                
+
                 movem.l    (sp)+,d0-a6
                 rts
 

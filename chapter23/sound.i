@@ -4,15 +4,15 @@
 ; (c) 2024 Stefano Coppi
 ;****************************************************************
 
-               IFND       SOUND_I
-SOUND_I        SET        1
+                 IFND       SOUND_I
+SOUND_I          SET        1
 
 ;****************************************************************
 ; CONSTANTS
 ;****************************************************************
 
 ; sound
-SFX_PERIOD        equ 443            ; 8000 Hz
+SFX_PERIOD        equ 443              ; 8000 Hz
 SFX_VOLUME        equ 32
 
 ; sound effects priorities (higher value -> higher priority)
@@ -40,20 +40,20 @@ SFX_ID_TITLEMUSIC equ 10
 ; DATA STRUCTURES
 ;****************************************************************
 ; Sound effects structure, passed into _mt_playfx
-               rsreset
-sfx_ptr        rs.l       1
-sfx_len        rs.w       1
-sfx_per        rs.w       1
-sfx_vol        rs.w       1
-sfx_cha        rs.b       1
-sfx_pri        rs.b       1
-sfx_sizeof     rs.b       0
+                 rsreset
+sfx_ptr          rs.l       1
+sfx_len          rs.w       1
+sfx_per          rs.w       1
+sfx_vol          rs.w       1
+sfx_cha          rs.b       1
+sfx_pri          rs.b       1
+sfx_sizeof       rs.b       0
 
-               rsreset
-sfx_ch0_timer  rs.w       1
-sfx_ch1_timer  rs.w       1
-sfx_ch2_timer  rs.w       1
-sfx_ch3_timer  rs.w       1
-sfx_length     rs.b       0
+                 rsreset
+sfx_ch0_counter  rs.w       1
+sfx_ch1_counter  rs.w       1
+sfx_ch2_counter  rs.w       1
+sfx_ch3_counter  rs.w       1
+sfx_length       rs.b       0
 
-               ENDC
+                 ENDC

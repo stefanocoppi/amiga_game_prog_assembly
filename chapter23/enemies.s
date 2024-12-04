@@ -21,6 +21,7 @@
                       xref       enemy_shot_create
                       xref       add_to_score
                       xref       play_sfx
+                      xref       play_sample
 
 
 
@@ -314,5 +315,6 @@ enemy_explode:
                       move.w     #SFX_ID_EXPLOSION,d0
                       clr.w      d1                                              ; no loop
                       ;jsr        play_sfx
-                       
+                      jsr        play_sample 
+
                       rts
