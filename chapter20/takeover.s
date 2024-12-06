@@ -48,8 +48,8 @@ take_system:
              move.w     #$7fff,DMACON(a5)             ; disables all DMA channels
              move.w     #DMASET,DMACON(a5)            ; sets only dma channels that we will use
 
-             move.l     #copperlist,COP1LC(a5)        ; sets our copperlist address into Copper
-             move.w     d0,COPJMP1(a5)                ; reset Copper PC to the beginning of our copperlist       
+            ;  move.l     #copperlist,COP1LC(a5)        ; sets our copperlist address into Copper
+            ;  move.w     d0,COPJMP1(a5)                ; reset Copper PC to the beginning of our copperlist       
 
              move.w     #0,FMODE(a5)                  ; sets 16 bit FMODE
              move.w     #$c00,BPLCON3(a5)             ; sets default value                       

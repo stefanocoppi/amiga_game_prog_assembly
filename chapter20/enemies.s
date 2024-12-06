@@ -10,6 +10,7 @@
                       xdef       enemies_activate
                       xdef       enemies_draw
                       xdef       enemies_update,enemy_explode
+                      xdef       init_enemies_array
 
                       xref       enemies_array,camera_x
                       xref       draw_buffer,draw_bob
@@ -28,6 +29,24 @@ enemy_explosion_mask  incbin     "gfx/enemy_explosion.mask"
 ; SUBROUTINES
 ;****************************************************************
                       SECTION    code_section,CODE
+
+
+;****************************************************************
+; Initializes the enemies array, copying data from enemies_model
+;****************************************************************
+init_enemies_array:
+                      movem.l    d0-a6,-(sp)
+
+                      move.l     #(enemy.length*NUM_ENEMIES),d7
+                      lea        enemies_model,a0
+                      lea        enemies_array,a1
+.copy_loop:
+                      move.b     (a0)+,(a1)+
+                      dbra       d7,.copy_loop
+
+.return:
+                      movem.l    (sp)+,d0-a6
+                      rts
 
 
 ;****************************************************************

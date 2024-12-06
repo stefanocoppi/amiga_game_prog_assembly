@@ -7,6 +7,7 @@
             include    "game_state.i"
 
             xref       update_play_state
+            xref       init_play_state
 
             xdef       update_gamestate
             xdef       change_gamestate
@@ -28,7 +29,7 @@ gamestate_table:
 
 ; jump table containing pointers to the game state initialization routines
 init_gamestate_table:
-            dc.l       0
+            dc.l       init_play_state
             dc.l       0
             dc.l       0
             dc.l       0
@@ -77,7 +78,7 @@ change_gamestate:
 ; uses a jump table to call the init routine for the current game state
             lea        init_gamestate_table,a0    
 ; the new game state is used as offset of the jump table
-; multiplies it x4 because the jump table elements are long
+; multiplies it by 4 because the jump table elements are long
             lsl.w      #2,d0                      
 ; calculates the address of the state update routine          
             move.l     0(a0,d0.w),a0
