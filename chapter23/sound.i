@@ -39,14 +39,14 @@ SFX_ID_TITLEMUSIC equ 10
 ;****************************************************************
 ; DATA STRUCTURES
 ;****************************************************************
-; Sound effects structure, passed into _mt_playfx
+; Sound effects structure
                  rsreset
-sfx_ptr          rs.l       1
-sfx_len          rs.w       1
-sfx_per          rs.w       1
-sfx_vol          rs.w       1
-sfx_cha          rs.b       1
-sfx_pri          rs.b       1
+sfx_ptr          rs.l       1          ; pointer to samples
+sfx_len          rs.w       1          ; samples length in word
+sfx_per          rs.w       1          ; samples period
+sfx_vol          rs.w       1          ; volume 0-64
+sfx_cha          rs.b       1          ; channel 0-3
+sfx_pri          rs.b       1          ; priority
 sfx_sizeof       rs.b       0
 
                  rsreset

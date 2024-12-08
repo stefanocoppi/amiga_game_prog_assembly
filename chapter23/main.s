@@ -16,10 +16,10 @@
   xref       update_gamestate
   xref       init_play_state
   xref       init_titlescreen_state
-  xref       init_sound
+  xref       init_sound_pt
   xref       quit_sound
   xref       update_sound_engine
-  xref       init_sound2
+  xref       init_sound
            
 ;************************************************************************
 ; MAIN PROGRAM
@@ -28,8 +28,8 @@
 
 main:
   jsr        take_system                   ; takes the control of Amiga's hardware
-  ;jsr        init_sound
-  jsr        init_sound2
+  ;jsr        init_sound_pt
+  jsr        init_sound
   jsr        init_titlescreen_state
 
 mainloop: 

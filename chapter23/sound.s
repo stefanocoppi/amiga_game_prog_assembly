@@ -8,13 +8,13 @@
              include    "hw.i"
              include    "sound.i"
 
-             xdef       init_sound
+             xdef       init_sound_pt
              xdef       quit_sound
              xdef       play_sfx
              xdef       stop_sfx
              xdef       play_sample
              xdef       update_sound_engine
-             xdef       init_sound2
+             xdef       init_sound
           
              xref       _mt_install_cia
              xref       _mt_end
@@ -38,9 +38,9 @@ ch_counters  ds.b       2*4
              SECTION    sounds,CODE
 
 ;****************************************************************
-; Initialize the sound subsystem.
+; Initializes the Pro Tracker sound engine.
 ;****************************************************************
-init_sound:
+init_sound_pt:
              movem.l    d0/a0/a6,-(sp)
 
              lea        CUSTOM,a6
@@ -145,11 +145,11 @@ play_sample:
              movem.l    d0-a6,-(sp)
 
 ; calculates the offset of the sfx_table using the sound effect id
-             lea        sfx_table,a0
+             lea        sfx_table,a0                     ; base address of sfx table
              mulu       #sfx_sizeof,d0                   ; offset = sfx_id * sfx_sizeof
-             add.l      d0,a0                            ; pointer to sfx item in the table
+             add.l      d0,a0                            ; pointer to sfx item = base address + offset
 
-; cerca un canale libero
+; finds a free channel
              lea        ch_counters,a1
              tst.w      sfx_ch0_counter(a1)
              beq        .channel0_free
@@ -161,12 +161,13 @@ play_sample:
              beq        .channel3_free
              bra        .return
 
+; plays sound effect
 .channel0_free:
-             move.l     sfx_ptr(a0),AUD0LC(a5)
+             move.l     sfx_ptr(a0),AUD0LC(a5)           ; sets sound registers
              move.w     sfx_len(a0),AUD0LEN(a5)
              move.w     sfx_per(a0),AUD0PER(a5)
              move.w     #SFX_VOLUME,AUD0VOL(a5)
-             move.w     #%1000000000000001,DMACON(a5)
+             move.w     #%1000000000000001,DMACON(a5)    ; enables DMA channel
              bra        .return           
 
 .channel1_free:
@@ -244,15 +245,15 @@ update_sound_engine:
 
 
 ;****************************************************************
-; Initialize the sound subsystem.
+; Initializes the sound subsystem.
 ;****************************************************************
-init_sound2:
+init_sound:
              movem.l    d0-a6,-(sp)
 
              move.l     #0,a0
-; installa la routine di interrupt di livello 4
+; installs the level 4 interrupt routine
              move.l     #interrupt_lev4,$70(a0)
-; abilita gli interrupt dei canali audio (bit 7-10)
+; enables audio channel interrupts (bits 7-10)
 ;                         5432109876543210           
              move.w     #%1100011110000000,INTENA(A5)
 

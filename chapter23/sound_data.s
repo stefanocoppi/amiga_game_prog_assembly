@@ -7,12 +7,11 @@
                   xdef       sfx_table
                   xdef       title_music
 
-                  SECTION    sounds,DATA_C
-
 
 ;****************************************************************
 ; SOUND EFFECTS
 ;****************************************************************
+                  SECTION    sounds,DATA_C
 
 sfx_start         dc.w       0                             ; the first two bytes of sfx must be zero for using ptplayer lib
                   incbin     "sfx/sfx_start.raw"
@@ -78,7 +77,7 @@ title_music       incbin     "sfx/xenon2.mod"
 
 ; sound effects table
 sfx_table:
-                    ; 0 - start
+                  ; 0 - start
                   dc.l       sfx_start                     ; samples pointer
                   dc.w       sfx_start_len                 ; samples length (bytes)
                   dc.w       SFX_PERIOD                    ; period
@@ -86,7 +85,7 @@ sfx_table:
                   dc.b       -1                            ; channel
                   dc.b       SFX_PRI_START                 ; priority
 
-                    ; 1 - base_fire
+                  ; 1 - base_fire
                   dc.l       sfx_base_fire                 ; samples pointer
                   dc.w       sfx_base_fire_len             ; samples length (bytes)
                   dc.w       SFX_PERIOD                    ; period
