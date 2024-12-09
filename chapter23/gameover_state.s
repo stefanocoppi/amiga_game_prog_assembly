@@ -96,8 +96,8 @@ init_gameover_state:
 ; plays sound fx
                 move.w     #SFX_ID_GAMEOVER,d0
                 clr.w      d1                                 ; no loop
-                ;jsr        play_sfx
-                jsr        play_sample
+                jsr        play_sfx
+                ;jsr        play_sample
                 
 
                 movem.l    (sp)+,d0-a6

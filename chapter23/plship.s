@@ -344,8 +344,8 @@ plship_explode:
 ; plays sound fx
                      move.w     #SFX_ID_EXPLOSION,d0
                      clr.w      d1                                             ; no loop
-                     ;jsr        play_sfx
-                     jsr        play_sample
+                     jsr        play_sfx
+                     ;jsr        play_sample
                      
 .return:
                      rts
@@ -383,8 +383,8 @@ ship_fire_shot:
 ; plays sound fx
                      move.w     #SFX_ID_BASE_FIRE,d0
                      clr.w      d1                                             ; no loop
-                     ;jsr        play_sfx
-                     jsr        play_sample
+                     jsr        play_sfx
+                     ;jsr        play_sample
                        
                      bra        .prev_frame
 .fire_not_pressed:                                         
