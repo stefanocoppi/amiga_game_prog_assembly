@@ -24,6 +24,9 @@
                      xdef       plship_update,plship_explode
                      xdef       ship_fire_shot
                      xref       draw_string,num2string
+                     xref       mouse_dx
+                     xref       mouse_dy
+                     xref       mouse_lbtn
 
 ;****************************************************************
 ; GRAPHICS DATA in chip ram
@@ -120,6 +123,9 @@ plship_init:
                      move.w     #PLSHIP_X0-17,bob.x(a1)
                      move.w     #PLSHIP_Y0+9,bob.y(a1)
                      clr.w      bob.ssheet_c(a1)
+
+                     clr.w      mouse_dx
+                     clr.w      mouse_dy
                   
 .return:
                      movem.l    (sp)+,d0-a6
@@ -173,6 +179,7 @@ plship_update:
                      beq        .return
 
                      bsr        plship_move_with_joystick
+                     bsr        plship_move_with_mouse
                      bsr        plship_limit_movement
 
 ; sets engine fire bob position
@@ -282,6 +289,25 @@ plship_move_with_joystick:
 
 
 ;****************************************************************
+; Moves the player's ship with the mouse
+;
+; parameters:
+; a0 - player's ship
+;****************************************************************
+plship_move_with_mouse:
+                     movem.l    d0-a6,-(sp)
+
+                     move.w     mouse_dx,d0                                     ; adds mouse_dx to
+                     add.w      d0,bob.x(a0)                                   ; player.x
+                     move.w     mouse_dy,d0                                     ; adds mouse_dy to
+                     add.w      d0,bob.y(a0)                                   ; player.y
+
+.return:
+                     movem.l    (sp)+,d0-a6
+                     rts
+
+
+;****************************************************************
 ; Limits player's ship movement, avoiding exiting from the viewport.
 ;
 ; parameters:
@@ -365,6 +391,9 @@ ship_fire_shot:
 .avoid_neg:
                      clr.w      ship.fire_timer(a0)
 .check_fire_btn:
+                     cmp.w      #1,mouse_lbtn                                  ; left mouse button pressed?
+                     beq        .check_timer
+
                      btst       #7,CIAAPRA                                     ; fire button of joystick #1 pressed?
                      beq        .check_prev_state
                      bra        .fire_not_pressed                           

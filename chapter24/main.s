@@ -9,6 +9,7 @@
 
   incdir     "include"
   include    "hw.i"
+  include    "keyboard.i"
   
 
   xref       take_system,release_system
@@ -22,6 +23,8 @@
   xref       init_sound
   xref       init_keyboard
   xref       current_key
+  xref       read_mouse
+  xref       mouse_rbtn
            
 ;************************************************************************
 ; MAIN PROGRAM
@@ -38,16 +41,17 @@ main:
 
 mainloop: 
   jsr        wait_vblank                   ; waits for vertical blank
-           
+
+  jsr        read_mouse                    ; reads mouse position         
   jsr        update_gamestate              ; updates the game state
   jsr        update_sound_engine
            
-  ;btst       #6,CIAAPRA                    ; left mouse button pressed?
-  cmp.b      #$45,current_key
+  cmp.w      #1,mouse_rbtn                 ; right mouse button pressed?
+  beq        .quit                         ; if yes, exits the mainloop
+  cmp.b      #KEY_ESC,current_key          ; ESC pressed?
   bne        mainloop                      ; if not, repeats the loop
 
-  ;move.b     #%10011111,CIAAICR            ; re-enable all CIA IRQs
-  
+.quit:
   ;jsr        quit_ptplayer
   jsr        release_system                ; releases the hw control to the O.S.
   rts

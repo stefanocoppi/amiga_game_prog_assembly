@@ -21,7 +21,7 @@
                        xref       play_sfx
                        xref       title_music
                        xref       play_pt_module
-                        
+                       xref       mouse_lbtn
 
 
 ;****************************************************************
@@ -97,6 +97,9 @@ update_titlescreen_state:
                        movem.l    d0-a6,-(sp)
 
                        bsr        animate_press_fire_text
+
+                       cmp.w      #1,mouse_lbtn                         ; left mouse button pressed?
+                       beq        .change_state
 
  ; fire button of joystick #1 pressed?
                        btst       #7,CIAAPRA                                    

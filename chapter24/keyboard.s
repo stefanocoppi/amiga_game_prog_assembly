@@ -16,8 +16,8 @@
 ;****************************************************************
 ; VARIABLES
 ;****************************************************************
-; current key pressed on the keyboard
-current_key  dc.b       0
+
+current_key  dc.b       0                                ; current key pressed on the keyboard
              even
 
 
