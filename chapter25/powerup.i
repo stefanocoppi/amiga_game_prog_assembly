@@ -47,7 +47,7 @@ PU_TYPE_FIRE2   equ 1                      ; powerup that activates a new powerf
 PU_VIS_DUR      equ (2*50)                 ; visibility duration (5 sec * 50 frames)
 PU_FRAME_SZ     equ 320                    ; frame size (bytes)
 PU_MASK_SZ      equ 80                     ; mask size (bytes)
-PU_WIDTH        equ 64                     ; width (pixels)
-PU_HEIGHT       equ 64                     ; height (pixels)
+PU_WIDTH        equ 32                     ; width (pixels)
+PU_HEIGHT       equ 32                     ; height (pixels)
 
                    ENDC

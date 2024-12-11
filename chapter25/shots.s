@@ -202,9 +202,11 @@ ship_shot_create:
                   cmp.w      #PLSHIP_FIRE_2,ship.fire_type(a1)
                   beq        .fire2
                   move.w     #0,shot.ssheet_r(a0)
+                  move.w     #SHIP_SHOT_DAMAGE1,shot.damage(a0)
                   bra        .continue
 .fire2:
                   move.w     #2,shot.ssheet_r(a0)
+                  move.w     #SHIP_SHOT_DAMAGE2,shot.damage(a0)
 .continue:
                   move.w     #448,shot.ssheet_w(a0)
                   move.w     #256,shot.ssheet_h(a0)
@@ -214,7 +216,7 @@ ship_shot_create:
                   move.w     #6,shot.num_frames(a0)
                   move.w     #3,shot.anim_duration(a0)
                   move.w     #3,shot.anim_timer(a0)
-                  move.w     #SHIP_SHOT_DAMAGE,shot.damage(a0)
+                  
 ; setups bounding box for collisions
                   lea        shot.bbox(a0),a2
                   move.w     #20,rect.x(a2)                                ; rect.x = shot.x + 20
