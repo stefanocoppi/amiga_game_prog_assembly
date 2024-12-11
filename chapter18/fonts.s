@@ -107,7 +107,7 @@ num2string:
                   movem.l    d0-a6,-(sp)
 
                   moveq      #4,d2                     ; number of iterations
-                  move.w     #10000,d1
+                  move.l     #10000,d1
 .loop:
                   and.l      #$0000FFFF,d0             ; clears high word of d0 because DIVU destination operand is always long
                   divu       d1,d0                     ; d0 = d0 / d1
