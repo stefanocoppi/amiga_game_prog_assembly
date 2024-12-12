@@ -181,7 +181,7 @@ check_coll_ship_powerup:
 ;****************************************************************
 ; Activates a powerup.
 ;
-; Input:
+; parameters:
 ; a0 - pointer to powerup instance
 ; a1 - pointer to ship instance
 ;****************************************************************
