@@ -65,7 +65,7 @@ enemy1         dc.w       0                                     ; enemy.x
                dc.w       $ffff                                 ; enemy.visible
                dc.w       0                                     ; fire_offx
                dc.w       0                                     ; fire_offy
-               dc.w       PU_TYPE_FIRE2                         ; enemy.powerup
+               dc.w       PU_TYPE_NONE                          ; enemy.powerup
                dc.w       ENEMY_CMD_SETPOS,CLIP_LEFT+320,53     ; enemy.cmd_list
                dc.w       ENEMY_CMD_GOTO,0,53                  
                dc.w       ENEMY_CMD_END
@@ -101,7 +101,7 @@ enemy2         dc.w       0                                     ; enemy.x
                dc.w       $ffff                                 ; enemy.visible
                dc.w       0                                     ; fire_offx
                dc.w       0                                     ; fire_offy
-               dc.w       PU_TYPE_NONE                          ; enemy.powerup
+               dc.w       PU_TYPE_FIRE2                         ; enemy.powerup
                dc.w       ENEMY_CMD_SETPOS,CLIP_LEFT+320,129    ; enemy.cmd_list
                dc.w       ENEMY_CMD_GOTO,0,129
                dc.w       ENEMY_CMD_END
@@ -121,7 +121,7 @@ enemy3         dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.anim_timer
                dc.w       0                                     ; enemy.num_frames
                dc.w       ENEMY_STATE_INACTIVE                  ; enemy.state
-               dc.w       100                                   ; enemy.score
+               dc.w       300                                   ; enemy.score
                dc.w       10                                    ; enemy.energy
                dc.w       1088                                  ; enemy.map_position
                dc.w       0                                     ; enemy.tx
@@ -129,9 +129,9 @@ enemy3         dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.cmd_pointer
                dc.w       0                                     ; enemy.pause_timer
                dc.w       0                                     ; rect.x
-               dc.w       0                                     ; rect.y
-               dc.w       0                                     ; rect.width
-               dc.w       0                                     ; rect.height
+               dc.w       12                                    ; rect.y
+               dc.w       44                                    ; rect.width
+               dc.w       21                                    ; rect.height
                dc.w       0                                     ; enemy.flash_timer
                dc.w       0                                     ; enemy.hit_timer
                dc.w       $ffff                                 ; enemy.visible
@@ -160,17 +160,17 @@ enemy5         dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.anim_timer
                dc.w       0                                     ; enemy.num_frames
                dc.w       ENEMY_STATE_INACTIVE                  ; enemy.state
-               dc.w       100                                   ; enemy.score
-               dc.w       10                                    ; enemy.energy
+               dc.w       500                                   ; enemy.score
+               dc.w       20                                    ; enemy.energy
                dc.w       1536                                  ; enemy.map_position
                dc.w       0                                     ; enemy.tx
                dc.w       0                                     ; enemy.ty
                dc.w       0                                     ; enemy.cmd_pointer
                dc.w       0                                     ; enemy.pause_timer
-               dc.w       0                                     ; rect.x
-               dc.w       0                                     ; rect.y
-               dc.w       0                                     ; rect.width
-               dc.w       0                                     ; rect.height
+               dc.w       1                                     ; rect.x
+               dc.w       11                                    ; rect.y
+               dc.w       48                                    ; rect.width
+               dc.w       27                                    ; rect.height
                dc.w       0                                     ; enemy.flash_timer
                dc.w       0                                     ; enemy.hit_timer
                dc.w       $ffff                                 ; enemy.visible
@@ -198,7 +198,7 @@ enemy6         dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.anim_timer
                dc.w       0                                     ; enemy.num_frames
                dc.w       ENEMY_STATE_INACTIVE                  ; enemy.state
-               dc.w       100                                   ; enemy.score
+               dc.w       300                                   ; enemy.score
                dc.w       10                                    ; enemy.energy
                dc.w       2048                                  ; enemy.map_position
                dc.w       0                                     ; enemy.tx
@@ -206,9 +206,9 @@ enemy6         dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.cmd_pointer
                dc.w       0                                     ; enemy.pause_timer
                dc.w       0                                     ; rect.x
-               dc.w       0                                     ; rect.y
-               dc.w       0                                     ; rect.width
-               dc.w       0                                     ; rect.height
+               dc.w       12                                    ; rect.y
+               dc.w       44                                    ; rect.width
+               dc.w       21                                    ; rect.height
                dc.w       0                                     ; enemy.flash_timer
                dc.w       0                                     ; enemy.hit_timer
                dc.w       $ffff                                 ; enemy.visible
@@ -236,7 +236,7 @@ enemy7         dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.anim_timer
                dc.w       0                                     ; enemy.num_frames
                dc.w       ENEMY_STATE_INACTIVE                  ; enemy.state
-               dc.w       100                                   ; enemy.score
+               dc.w       200                                   ; enemy.score
                dc.w       10                                    ; enemy.energy
                dc.w       2560                                  ; enemy.map_position
                dc.w       0                                     ; enemy.tx
@@ -244,9 +244,9 @@ enemy7         dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.cmd_pointer
                dc.w       0                                     ; enemy.pause_timer
                dc.w       0                                     ; rect.x
-               dc.w       0                                     ; rect.y
-               dc.w       0                                     ; rect.width
-               dc.w       0                                     ; rect.height
+               dc.w       12                                    ; rect.y
+               dc.w       57                                    ; rect.width
+               dc.w       20                                    ; rect.height
                dc.w       0                                     ; enemy.flash_timer
                dc.w       0                                     ; enemy.hit_timer
                dc.w       $ffff                                 ; enemy.visible
@@ -272,7 +272,7 @@ enemy8         dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.anim_timer
                dc.w       0                                     ; enemy.num_frames
                dc.w       ENEMY_STATE_INACTIVE                  ; enemy.state
-               dc.w       100                                   ; enemy.score
+               dc.w       200                                   ; enemy.score
                dc.w       10                                    ; enemy.energy
                dc.w       2560                                  ; enemy.map_position
                dc.w       0                                     ; enemy.tx
@@ -280,9 +280,9 @@ enemy8         dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.cmd_pointer
                dc.w       0                                     ; enemy.pause_timer
                dc.w       0                                     ; rect.x
-               dc.w       0                                     ; rect.y
-               dc.w       0                                     ; rect.width
-               dc.w       0                                     ; rect.height
+               dc.w       12                                    ; rect.y
+               dc.w       57                                    ; rect.width
+               dc.w       20                                    ; rect.height
                dc.w       0                                     ; enemy.flash_timer
                dc.w       0                                     ; enemy.hit_timer
                dc.w       $ffff                                 ; enemy.visible
@@ -309,17 +309,17 @@ enemy9         dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.anim_timer
                dc.w       0                                     ; enemy.num_frames
                dc.w       ENEMY_STATE_INACTIVE                  ; enemy.state
-               dc.w       100                                   ; enemy.score
-               dc.w       10                                    ; enemy.energy
+               dc.w       500                                   ; enemy.score
+               dc.w       20                                    ; enemy.energy
                dc.w       2943                                  ; enemy.map_position
                dc.w       0                                     ; enemy.tx
                dc.w       0                                     ; enemy.ty
                dc.w       0                                     ; enemy.cmd_pointer
                dc.w       0                                     ; enemy.pause_timer
-               dc.w       0                                     ; rect.x
-               dc.w       0                                     ; rect.y
-               dc.w       0                                     ; rect.width
-               dc.w       0                                     ; rect.height
+               dc.w       1                                     ; rect.x
+               dc.w       11                                    ; rect.y
+               dc.w       48                                    ; rect.width
+               dc.w       27                                    ; rect.height
                dc.w       0                                     ; enemy.flash_timer
                dc.w       0                                     ; enemy.hit_timer
                dc.w       $ffff                                 ; enemy.visible
@@ -345,7 +345,7 @@ enemy10        dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.anim_timer
                dc.w       0                                     ; enemy.num_frames
                dc.w       ENEMY_STATE_INACTIVE                  ; enemy.state
-               dc.w       100                                   ; enemy.score
+               dc.w       300                                   ; enemy.score
                dc.w       10                                    ; enemy.energy
                dc.w       3455                                  ; enemy.map_position
                dc.w       0                                     ; enemy.tx
@@ -353,9 +353,9 @@ enemy10        dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.cmd_pointer
                dc.w       0                                     ; enemy.pause_timer
                dc.w       0                                     ; rect.x
-               dc.w       0                                     ; rect.y
-               dc.w       0                                     ; rect.width
-               dc.w       0                                     ; rect.height
+               dc.w       12                                    ; rect.y
+               dc.w       44                                    ; rect.width
+               dc.w       21                                    ; rect.height
                dc.w       0                                     ; enemy.flash_timer
                dc.w       0                                     ; enemy.hit_timer
                dc.w       $ffff                                 ; enemy.visible
@@ -381,27 +381,27 @@ enemy11        dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.anim_timer
                dc.w       0                                     ; enemy.num_frames
                dc.w       ENEMY_STATE_INACTIVE                  ; enemy.state
-               dc.w       100                                   ; enemy.score
-               dc.w       10                                    ; enemy.energy
-               dc.w       4160                                  ; enemy.map_position
+               dc.w       1000                                  ; enemy.score
+               dc.w       30                                    ; enemy.energy
+               dc.w       4224                                  ; enemy.map_position
                dc.w       0                                     ; enemy.tx
                dc.w       0                                     ; enemy.ty
                dc.w       0                                     ; enemy.cmd_pointer
                dc.w       0                                     ; enemy.pause_timer
                dc.w       0                                     ; rect.x
-               dc.w       0                                     ; rect.y
-               dc.w       0                                     ; rect.width
-               dc.w       0                                     ; rect.height
+               dc.w       7                                     ; rect.y
+               dc.w       48                                    ; rect.width
+               dc.w       31                                    ; rect.height
                dc.w       0                                     ; enemy.flash_timer
                dc.w       0                                     ; enemy.hit_timer
                dc.w       $ffff                                 ; enemy.visible
                dc.w       0                                     ; fire_offx
                dc.w       0                                     ; fire_offy
                dc.w       PU_TYPE_NONE                          ; enemy.powerup
-               dc.w       ENEMY_CMD_SETPOS,CLIP_LEFT+320,100    ; enemy.cmd_list
-               dc.w       ENEMY_CMD_GOTO,128+180,100
+               dc.w       ENEMY_CMD_SETPOS,CLIP_LEFT+320,130    ; enemy.cmd_list
+               dc.w       ENEMY_CMD_GOTO,128+180,130
                dc.w       ENEMY_CMD_PAUSE,30
-               dc.w       ENEMY_CMD_GOTO,0,100
+               dc.w       ENEMY_CMD_GOTO,0,130
                dc.w       ENEMY_CMD_END
                dcb.b      ENEMY_CMD_LIST_SIZE-12*2,0
 enemy12        dc.w       0                                     ; enemy.x
@@ -419,17 +419,17 @@ enemy12        dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.anim_timer
                dc.w       0                                     ; enemy.num_frames
                dc.w       ENEMY_STATE_INACTIVE                  ; enemy.state
-               dc.w       100                                   ; enemy.score
-               dc.w       10                                    ; enemy.energy
+               dc.w       2000                                  ; enemy.score
+               dc.w       40                                    ; enemy.energy
                dc.w       5182                                  ; enemy.map_position
                dc.w       0                                     ; enemy.tx
                dc.w       0                                     ; enemy.ty
                dc.w       0                                     ; enemy.cmd_pointer
                dc.w       0                                     ; enemy.pause_timer
                dc.w       0                                     ; rect.x
-               dc.w       0                                     ; rect.y
-               dc.w       0                                     ; rect.width
-               dc.w       0                                     ; rect.height
+               dc.w       1                                     ; rect.y
+               dc.w       63                                    ; rect.width
+               dc.w       42                                    ; rect.height
                dc.w       0                                     ; enemy.flash_timer
                dc.w       0                                     ; enemy.hit_timer
                dc.w       $ffff                                 ; enemy.visible
@@ -457,17 +457,17 @@ enemy13        dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.anim_timer
                dc.w       0                                     ; enemy.num_frames
                dc.w       ENEMY_STATE_INACTIVE                  ; enemy.state
-               dc.w       100                                   ; enemy.score
+               dc.w       200                                   ; enemy.score
                dc.w       10                                    ; enemy.energy
                dc.w       5760                                  ; enemy.map_position
                dc.w       0                                     ; enemy.tx
                dc.w       0                                     ; enemy.ty
                dc.w       0                                     ; enemy.cmd_pointer
                dc.w       0                                     ; enemy.pause_timer
-               dc.w       0                                     ; rect.x
-               dc.w       0                                     ; rect.y
-               dc.w       0                                     ; rect.width
-               dc.w       0                                     ; rect.height
+               dc.w       15                                    ; rect.x
+               dc.w       13                                    ; rect.y
+               dc.w       34                                    ; rect.width
+               dc.w       16                                    ; rect.height
                dc.w       0                                     ; enemy.flash_timer
                dc.w       0                                     ; enemy.hit_timer
                dc.w       $ffff                                 ; enemy.visible
@@ -493,17 +493,17 @@ enemy14        dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.anim_timer
                dc.w       0                                     ; enemy.num_frames
                dc.w       ENEMY_STATE_INACTIVE                  ; enemy.state
-               dc.w       100                                   ; enemy.score
+               dc.w       200                                   ; enemy.score
                dc.w       10                                    ; enemy.energy
                dc.w       5760                                  ; enemy.map_position
                dc.w       0                                     ; enemy.tx
                dc.w       0                                     ; enemy.ty
                dc.w       0                                     ; enemy.cmd_pointer
                dc.w       0                                     ; enemy.pause_timer
-               dc.w       0                                     ; rect.x
-               dc.w       0                                     ; rect.y
-               dc.w       0                                     ; rect.width
-               dc.w       0                                     ; rect.height
+               dc.w       15                                    ; rect.x
+               dc.w       13                                    ; rect.y
+               dc.w       34                                    ; rect.width
+               dc.w       16                                    ; rect.height
                dc.w       0                                     ; enemy.flash_timer
                dc.w       0                                     ; enemy.hit_timer
                dc.w       $ffff                                 ; enemy.visible
@@ -530,17 +530,17 @@ enemy15        dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.anim_timer
                dc.w       0                                     ; enemy.num_frames
                dc.w       ENEMY_STATE_INACTIVE                  ; enemy.state
-               dc.w       100                                   ; enemy.score
+               dc.w       200                                   ; enemy.score
                dc.w       10                                    ; enemy.energy
                dc.w       5760                                  ; enemy.map_position
                dc.w       0                                     ; enemy.tx
                dc.w       0                                     ; enemy.ty
                dc.w       0                                     ; enemy.cmd_pointer
                dc.w       0                                     ; enemy.pause_timer
-               dc.w       0                                     ; rect.x
-               dc.w       0                                     ; rect.y
-               dc.w       0                                     ; rect.width
-               dc.w       0                                     ; rect.height
+               dc.w       15                                    ; rect.x
+               dc.w       13                                    ; rect.y
+               dc.w       34                                    ; rect.width
+               dc.w       16                                    ; rect.height
                dc.w       0                                     ; enemy.flash_timer
                dc.w       0                                     ; enemy.hit_timer
                dc.w       $ffff                                 ; enemy.visible
@@ -567,17 +567,17 @@ enemy16        dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.anim_timer
                dc.w       0                                     ; enemy.num_frames
                dc.w       ENEMY_STATE_INACTIVE                  ; enemy.state
-               dc.w       100                                   ; enemy.score
+               dc.w       200                                   ; enemy.score
                dc.w       10                                    ; enemy.energy
                dc.w       5760                                  ; enemy.map_position
                dc.w       0                                     ; enemy.tx
                dc.w       0                                     ; enemy.ty
                dc.w       0                                     ; enemy.cmd_pointer
                dc.w       0                                     ; enemy.pause_timer
-               dc.w       0                                     ; rect.x
-               dc.w       0                                     ; rect.y
-               dc.w       0                                     ; rect.width
-               dc.w       0                                     ; rect.height
+               dc.w       15                                    ; rect.x
+               dc.w       13                                    ; rect.y
+               dc.w       34                                    ; rect.width
+               dc.w       16                                    ; rect.height
                dc.w       0                                     ; enemy.flash_timer
                dc.w       0                                     ; enemy.hit_timer
                dc.w       $ffff                                 ; enemy.visible

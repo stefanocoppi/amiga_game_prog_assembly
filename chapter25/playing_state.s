@@ -108,7 +108,7 @@ init_play_state:
 
 ; initializes scrolling background state
   move.w     #0,map_ptr
-  move.w     #0,camera_x
+  move.w     #0*64,camera_x
   move.w     map_ptr,d0
   jsr        init_background
   move.w     #TILE_WIDTH,bgnd_x                ; x position of the part of background to draw

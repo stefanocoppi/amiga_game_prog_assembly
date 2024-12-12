@@ -51,7 +51,7 @@ PLSHIP_STATE_IDLE      equ 3
 PLSHIP_FLASH_DURATION  equ 1
 PLSHIP_HIT_DURATION    equ 10
 FIRE_INTERVAL          equ 7                     ; time interval between two shots
-PLSHIP_MAX_ENERGY      equ 5                     ; 20
+PLSHIP_MAX_ENERGY      equ 20                    ; 20
 PLSHIP_FIRE_BASE       equ 0
 PLSHIP_FIRE_2          equ 1
 
