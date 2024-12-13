@@ -12,7 +12,6 @@
               include    "takeover.i"
  
               xdef       take_system,release_system
-              xdef       dos_base
               xref       copperlist
 
 
@@ -31,9 +30,6 @@ old_ciaa_icr  dc.b       0
 old_int2      dc.l       0
 old_int4      dc.l       0
 
-dos_name      dc.b       "dos.library",0
-              even
-dos_base      dc.l       0
 
 
 ;************************************************************************
@@ -44,10 +40,6 @@ take_system:
               move.l     ExecBase,a6                   ; base address of Exec
               jsr        _LVOForbid(a6)                ; disables O.S. multitasking
               jsr        _LVODisable(a6)               ; disables O.S. interrupts
-
-              lea        dos_name,a1 
-              jsr        _LVOOldOpenLibrary(a6)        ; opens dos.library
-              move.l     d0,dos_base                   ; saves base address of dos.library in a variable
 
               lea        gfx_name,a1                   ; OpenLibrary takes 1 parameter: library name in a1
               jsr        _LVOOldOpenLibrary(a6)        ; opens graphics.library
@@ -120,8 +112,5 @@ release_system:
               move.l     gfx_base,a1                   ; base address of graphics.library in a1
               jsr        _LVOCloseLibrary(a6)          ; closes graphics.library
               
-              move.l     dos_base,a1
-              jsr        _LVOCloseLibrary(a6)          ; closes dos.library
-
               movem.l    (sp)+,d0-a6
               rts

@@ -25,6 +25,11 @@
   xref       current_key
   xref       read_mouse
   xref       mouse_rbtn
+  xref       init_file
+  xref       quit_file
+  xref       load_file
+  xref       file_name
+  xref       hud_bar_gfx
            
 ;************************************************************************
 ; MAIN PROGRAM
@@ -32,6 +37,13 @@
   SECTION    code_section,CODE
 
 main:
+  jsr        init_file
+  move.l     #file_name,d1
+  move.l     #hud_bar_gfx,d2
+  move.l     #4400,d3
+  jsr        load_file
+  jsr        quit_file
+  
   jsr        take_system                   ; takes the control of Amiga's hardware
   ;jsr        init_ptplayer
   jsr        init_keyboard

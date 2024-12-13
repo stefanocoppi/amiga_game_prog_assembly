@@ -4,9 +4,13 @@
 ; (c) 2024 Stefano Coppi
 ;****************************************************************
 
-             xref       dos_base
+             incdir     "include"
+             include    "hw.i"
+             include    "funcdef.i"
+             include    "exec/exec_lib.i"
 
-
+             xdef       file_name
+             
 ;****************************************************************
 ; CONSTANTS
 ;****************************************************************
@@ -21,11 +25,49 @@ LVOClose     equ -$24
 ;****************************************************************
              SECTION    code_section,CODE
 
+dos_name     dc.b       "dos.library",0
+             even
+dos_base     dc.l       0
 file_handle  dc.l       0
+file_name    dc.b       "gfx/bar.raw",0
+             even
 
 ;****************************************************************
 ; SUBROUTINES
 ;****************************************************************
+
+
+;****************************************************************
+; Initializes file module.
+;****************************************************************
+             xdef       init_file
+init_file:
+             movem.l    d0-a6,-(sp)
+
+             move.l     ExecBase,a6               ; base address of Exec
+             lea        dos_name,a1 
+             jsr        _LVOOldOpenLibrary(a6)    ; opens dos.library
+             move.l     d0,dos_base               ; saves base address of dos.library in a variable
+
+.return:
+             movem.l    (sp)+,d0-a6
+             rts
+
+
+;****************************************************************
+; Quits file module.
+;****************************************************************
+             xdef       quit_file
+quit_file:
+             movem.l    d0-a6,-(sp)
+
+             move.l     ExecBase,a6               ; base address of Exec
+             move.l     dos_base,a1
+             jsr        _LVOCloseLibrary(a6)      ; closes dos.library
+
+.return:
+             movem.l    (sp)+,d0-a6
+             rts
 
 
 ;****************************************************************
@@ -41,20 +83,20 @@ file_handle  dc.l       0
 load_file:
              movem.l    d0-a6,-(sp)
 
-             move.l     d2,d4                ; makes a copy
-             move.l     #MODE_OLDFILE,d2     ; read mode
+             move.l     d2,d4                     ; makes a copy
+             move.l     #MODE_OLDFILE,d2          ; read mode
              move.l     dos_base,a6
-             jsr        LVOOpen(a6)          ; opens file
-             move.l     d0,file_handle       ; saves file handle
-             beq        .return              ; if handle = 0 there is an error
+             jsr        LVOOpen(a6)               ; opens file
+             move.l     d0,file_handle            ; saves file handle
+             beq        .return                   ; if handle = 0 there is an error
 
              move.l     d0,d1
              move.l     d4,d2
-             jsr        LVORead(a6)          ; reads the file
+             jsr        LVORead(a6)               ; reads the file
 
              move.l     file_handle,d1
              ;move.l     dos_base,a6
-             jsr        LVOClose(a6)         ; closes the file
+             jsr        LVOClose(a6)              ; closes the file
 .return:
              movem.l    (sp)+,d0-a6
              rts
