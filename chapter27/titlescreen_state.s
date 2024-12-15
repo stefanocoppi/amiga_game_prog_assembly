@@ -22,7 +22,8 @@
                        xref       title_music
                        xref       play_pt_module
                        xref       mouse_lbtn
-
+                       xref       load_assets
+    
 
 ;****************************************************************
 ; CONSTANTS
@@ -82,9 +83,13 @@ init_titlescreen_state:
              
 ; changes the game state to TITLESCREEN
                        move.w     #GAME_STATE_TITLESCREEN,game_state
+
+; loads assets from file
+                       jsr        load_assets
+                    
 ; plays pro-tracker music
-                       lea        title_music,a0
-                       jsr        play_pt_module
+                    ;    lea        title_music,a0
+                    ;    jsr        play_pt_module
 
                        movem.l    (sp)+,d0-a6
                        rts

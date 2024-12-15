@@ -22,6 +22,8 @@
                   xdef       draw_hud_bar
                   xdef       add_to_score
                   xdef       hud_bar_gfx
+                  xdef       hud_bar_gfx_mask
+                  xref       hud_bgnd
 
 
 ;****************************************************************
@@ -30,9 +32,11 @@
                   SECTION    graphics_data,DATA_C
 
 hud_bgnd          incbin     "gfx/hud_bgnd.raw"
+;hud_bgnd          dcb.b      12800,0
 ;hud_bar_gfx       incbin     "gfx/bar.raw"
 hud_bar_gfx       dcb.b      4400,0
-hud_bar_gfx_mask  incbin     "gfx/bar.mask"
+;hud_bar_gfx_mask  incbin     "gfx/bar.mask"
+hud_bar_gfx_mask  dcb.b      880,0
 
 
 ;****************************************************************

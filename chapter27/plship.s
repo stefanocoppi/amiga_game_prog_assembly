@@ -23,18 +23,22 @@
                      xdef       plship_init,plship_draw
                      xdef       plship_update,plship_explode
                      xdef       ship_fire_shot
+                     xdef       player_ship_gfx
                      xref       draw_string,num2string
                      xref       mouse_dx
                      xref       mouse_dy
                      xref       mouse_lbtn
+                     
 
 ;****************************************************************
 ; GRAPHICS DATA in chip ram
 ;****************************************************************
                      SECTION    graphics_data,DATA_C
          
-player_ship_gfx      incbin     "gfx/ship.raw"
-player_ship_mask     incbin     "gfx/ship.mask"
+;player_ship_gfx      incbin     "gfx/ship.raw"
+player_ship_gfx      dcb.b      896,0
+;player_ship_mask     incbin     "gfx/ship.mask"
+player_ship_mask     dcb.b      224,0
 
 ship_engine_gfx      incbin     "gfx/ship_engine.raw"
 ship_engine_mask     incbin     "gfx/ship_engine.mask"

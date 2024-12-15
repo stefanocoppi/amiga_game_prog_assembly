@@ -9,7 +9,6 @@
              include    "funcdef.i"
              include    "exec/exec_lib.i"
 
-             xdef       file_name
              
 ;****************************************************************
 ; CONSTANTS
@@ -29,7 +28,6 @@ dos_name     dc.b       "dos.library",0
              even
 dos_base     dc.l       0
 file_handle  dc.l       0
-file_name    dc.b       "gfx/bar.raw",0
              even
 
 ;****************************************************************
@@ -95,7 +93,7 @@ load_file:
              jsr        LVORead(a6)               ; reads the file
 
              move.l     file_handle,d1
-             ;move.l     dos_base,a6
+             move.l     dos_base,a6
              jsr        LVOClose(a6)              ; closes the file
 .return:
              movem.l    (sp)+,d0-a6
