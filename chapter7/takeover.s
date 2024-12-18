@@ -37,6 +37,7 @@ take_system:
              jsr        _LVOOldOpenLibrary(a6)       ; opens graphics.library
              move.l     d0,gfx_base                  ; saves base address of graphics.library in a variable
       
+             move.l     d0,a0
              move.l     $26(a0),sys_coplist          ; saves system copperlist address
   
              lea        CUSTOM,a5                    ; a5 will always contain CUSTOM chips base address $dff000
