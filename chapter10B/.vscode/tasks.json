@@ -19,7 +19,7 @@
 				"includes": "*.{s,S,asm,ASM}",
 				"excludes": "",
 				"exefilename": "../uae/dh0/chapter10B",
-				"entrypoint": "chapter10B.s",
+				"entrypoint": "main.s",
 				"args": [
 					"-bamigahunk",
 					"-Bstatic"
