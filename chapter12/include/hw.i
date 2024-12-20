@@ -29,7 +29,6 @@ CUSTOM      equ $DFF000
 *
 * Various control registers
 *
-CLXCON      equ clxcon
 FMODE       equ $1fc
 DMACONR     equ dmaconr                          ; Just capitalization...
 VPOSR       equ vposr                            ;  "         "

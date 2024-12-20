@@ -10,6 +10,9 @@ HARDWARE_HW_I  SET        1
                INCLUDE    "hardware/custom.i"
                ENDC
 
+ExecBase    equ $4
+CIAAPRA     equ $bfe001
+
 *******************************************************************************
 *
 * This instruction for the copper will cause it to wait forever since
@@ -23,13 +26,10 @@ COPPER_HALT equ $FFFFFFFE
 * It is the same as  _custom  when linking with AMIGA.lib
 *
 CUSTOM      equ $DFF000
-
-CIAAPRA     equ $bfe001
-
 *
 * Various control registers
 *
-CLXCON      equ $098
+CLXCON      equ clxcon
 FMODE       equ $1fc
 DMACONR     equ dmaconr                          ; Just capitalization...
 VPOSR       equ vposr                            ;  "         "
