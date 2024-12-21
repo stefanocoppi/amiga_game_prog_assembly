@@ -1,8 +1,8 @@
-;****************************************************************
+;************************************************************************
 ; Scrolling background
 ;
 ; (c) 2024 Stefano Coppi
-;****************************************************************
+;************************************************************************
             include    "playfield.i"
             include    "tilemaps.i"
             include    "scroll_bgnd.i"
@@ -16,15 +16,20 @@
             xdef       map_ptr,bgnd_x
             xdef       camera_x
 
-            SECTION    bss_data,BSS_C
 
+;************************************************************************
+; BSS DATA
+;************************************************************************
+            SECTION    bss_data,BSS_C
 
 playfield1  ds.b       (PF1_PLANE_SZ*BPP)                   ; used for scrolling background
 
 
+;************************************************************************
+; VARIABLES
+;************************************************************************
             SECTION    code_section,CODE
 
-; Variables
 camera_x    dc.w       0*64                                 ; x position of camera
 map_ptr     dc.w       0                                    ; current map column
 bgnd_x      dc.w       0    

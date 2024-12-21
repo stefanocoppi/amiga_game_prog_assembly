@@ -1,2 +1,0 @@
-.\amigeconv.exe -f sprite -w 64 -t -a -d 4 .\player_ship.png player_ship.raw
-.\amigeconv.exe -f palette -p pal8 -c 16 -x .\player_ship.png player_ship.pal

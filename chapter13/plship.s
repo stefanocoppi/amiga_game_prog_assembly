@@ -36,8 +36,6 @@ ship_engine_mask     incbin     "gfx/ship_engine.mask"
 ;****************************************************************
                      SECTION    code_section,CODE
 
-fire_prev_frame      dc.w       0                                              ; state of fire button in the previous frame (1 pressed)
-
 player_ship          dc.w       0                                              ; bob.x
                      dc.w       0                                              ; bob.y
                      dc.w       2                                              ; bob.speed
@@ -51,18 +49,7 @@ player_ship          dc.w       0                                              ;
                      dc.l       player_ship_mask                               ; bob.mask
                      dc.w       5                                              ; ship.anim_duration 
                      dc.w       5                                              ; ship.anim_timer
-                     dc.w       0                                              ; ship.fire_timer
-                     dc.w       FIRE_INTERVAL                                  ; ship.fire_delay
-                     dc.w       0                                              ; bbox.rect.x
-                     dc.w       0                                              ; bbox.rect.y
-                     dc.w       64                                             ; bbox.rect.width
-                     dc.w       28                                             ; bbox.rect.height
-                     dc.w       $ffff                                          ; visible
-                     dc.w       0                                              ; flash_timer
-                     dc.w       0                                              ; hit_timer
-                     dc.w       PLSHIP_MAX_ENERGY                              ; energy
-                     dc.w       PLSHIP_STATE_NORMAL                            ; state
-                     dc.w       PLSHIP_FIRE_BASE                               ; ship.fire_type
+                     
 
 player_ship_engine   dc.w       0                                              ; x position
                      dc.w       0                                              ; y position
@@ -101,22 +88,11 @@ plship_init:
                      move.w     #64,bob.ssheet_w(a0)
                      move.w     #28,bob.ssheet_h(a0)
                      move.w     ship.anim_duration(a0),ship.anim_timer(a0)
-                     clr.w      ship.fire_timer(a0)
-                     move.w     #$ffff,ship.visible(a0)
-                     clr.w      ship.flash_timer(a0)
-                     clr.w      ship.hit_timer(a0)
-                     move.w     #PLSHIP_MAX_ENERGY,ship.energy(a0)
-                     move.w     #PLSHIP_STATE_NORMAL,ship.state(a0)
-                     move.w     #PLSHIP_FIRE_BASE,ship.fire_type(a0)
-
 
                      lea        player_ship_engine,a1
                      move.w     #PLSHIP_X0-17,bob.x(a1)
                      move.w     #PLSHIP_Y0+9,bob.y(a1)
                      clr.w      bob.ssheet_c(a1)
-
-                     clr.w      mouse_dx
-                     clr.w      mouse_dy
                   
 .return:
                      movem.l    (sp)+,d0-a6
@@ -130,24 +106,10 @@ plship_draw:
                      movem.l    d0-a6,-(sp)
 
                      lea        player_ship,a3
-
-; if state is idle, returns immediately
-                     cmp.w      #PLSHIP_STATE_IDLE,ship.state(a3)
-                     beq        .return
-
-                     tst.w      ship.visible(a3)                               ; if visible = 0, doesn't draw the ship
-                     beq        .return
                       
                      move.l     draw_buffer,a2
                      bsr        draw_bob                                       ; draws ship
 
-                     cmp.w      #PLSHIP_STATE_NORMAL,ship.state(a3)
-                     beq        .draw_engine_fire                              ; if state is normal
-                     cmp.w      #PLSHIP_STATE_HIT,ship.state(a3)
-                     beq        .draw_engine_fire                              ; or hit, draws engine fire
-                     bra        .return
-
-.draw_engine_fire:
                      lea        player_ship_engine,a3
                      move.l     draw_buffer,a2
                      bsr        draw_bob                                       ; draws engine fire
@@ -165,12 +127,7 @@ plship_update:
 
                      lea        player_ship,a0
 
-; if state is idle, returns immediately
-                     cmp.w      #PLSHIP_STATE_IDLE,ship.state(a0)
-                     beq        .return
-
                      bsr        plship_move_with_joystick
-                     bsr        plship_move_with_mouse
                      bsr        plship_limit_movement
 
 ; sets engine fire bob position
@@ -197,42 +154,6 @@ plship_update:
 .reset_timer:
                      move.w     ship.anim_duration(a0),ship.anim_timer(a0)     ; resets anim_timer
 
-                     cmp.w      #PLSHIP_STATE_HIT,ship.state(a0)               ; state = hit?
-                     beq        .hit_state
-                     cmp.w      #PLSHIP_STATE_EXPLOSION,ship.state(a0)         ; state = explosion?
-                     beq        .explosion_state
-                     bra        .return
-.hit_state:
-                     sub.w      #1,ship.hit_timer(a0)
-                     beq        .hit_state_end
-                     sub.w      #1,ship.flash_timer(a0)
-                     beq        .toggle_visibility
-                     bra        .return
-.hit_state_end:
-                     move.w     #$ffff,ship.visible(a0)                        ; makes ship visible
-                     move.w     #PLSHIP_STATE_NORMAL,ship.state(a0)
-                     bra        .return
-.toggle_visibility:          
-                     not.w      ship.visible(a0)                               ; toggles visibility
-                     move.w     #PLSHIP_FLASH_DURATION,ship.flash_timer(a0)
-                     bra        .return
-
-.explosion_state:
-                     sub.w      #1,ship.anim_timer(a0)                         ; decreases anim_timer
-                     beq        .frame_advance                                 ; if anim_timer = 0, advances animation frame
-                     bra        .return
-.frame_advance:
-                     add.w      #1,bob.ssheet_c(a0)                            ; advances to next frame
-                     move.w     ship.anim_duration(a0),ship.anim_timer(a0)     ; resets anim timer
-                     move.w     bob.ssheet_c(a0),d0
-                     cmp.w      #10,d0                                         ; ssheet_c >= 10?
-                     bge        .end_animation
-                     bra        .return
-.end_animation:
-                     move.w     #PLSHIP_STATE_IDLE,ship.state(a0)
-                     move.w     #GAME_STATE_GAMEOVER,d0
-                     jsr        change_gamestate
-                     bra        .return
 .return:
                      movem.l    (sp)+,d0-a6
                      rts
@@ -273,25 +194,6 @@ plship_move_with_joystick:
                      bra        .return
 .set_down:
                      add.w      d2,bob.y(a0)                                   ; ship.y+= ship.speed
-
-.return:
-                     movem.l    (sp)+,d0-a6
-                     rts
-
-
-;****************************************************************
-; Moves the player's ship with the mouse
-;
-; parameters:
-; a0 - player's ship
-;****************************************************************
-plship_move_with_mouse:
-                     movem.l    d0-a6,-(sp)
-
-                     move.w     mouse_dx,d0                                    ; adds mouse_dx to
-                     add.w      d0,bob.x(a0)                                   ; player.x
-                     move.w     mouse_dy,d0                                    ; adds mouse_dy to
-                     add.w      d0,bob.y(a0)                                   ; player.y
 
 .return:
                      movem.l    (sp)+,d0-a6

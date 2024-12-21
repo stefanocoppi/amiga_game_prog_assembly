@@ -13,10 +13,7 @@
 
          xdef       copperlist,scrollx
          xdef       bplpointers1,bplpointers2
-         xdef       bplpointers_hud
-         xdef       coplist_title
-         xdef       bplpointers_title
-         xdef       title_palette
+  
   
 copperlist:
          dc.w       DIWSTRT,$2c81                    ; display window start at ($81,$2c)
@@ -56,7 +53,7 @@ bplpointers2:
          dc.w       $fc,0,$fe,0                      ; plane 8
 
 ;                            5432109876543210
-         dc.w       BPLCON3,%0001000000000000        ; offset 16 tra le palette dei due playfield
+         dc.w       BPLCON3,%0001000000000000        ; offset 16 between the palettes of the two playfields
 
 pf1_palette:
          incbin     "gfx/shooter_tiles_16.pal"       ; background palette
@@ -65,37 +62,5 @@ pf2_palette:
          incbin     "gfx/pf2_palette.pal"            ; foreground palette
 
 
-
-         dc.w       $ffff,$fffe                      ; end of copperlist
-
-
-; copperlist used for the title screen only
-coplist_title:
-         dc.w       DIWSTRT,$2c81                    ; display window start at ($81,$2c)
-         dc.w       DIWSTOP,$2cc1                    ; display window stop at ($1c1,$12c)
-         dc.w       DDFSTRT,$38                      ; display data fetch start at $38
-         dc.w       DDFSTOP,$d0                      ; display data fetch stop at $d0
-         dc.w       BPLCON0,$5200                    ; lores video mode, 5 bpp
-         dc.w       BPLCON1,0
-         ;dc.w       BPLCON2,0
-         ;dc.w       BPLCON3,$c00
-
-         dc.w       BPL1MOD,0                                         
-         dc.w       BPL2MOD,0
-            
-         
-
-bplpointers_title:
-         dc.w       BPL1PT,$0000,BPL1PT+2,$0000      ; bitplane pointers
-         dc.w       BPL2PT,$0000,BPL2PT+2,$0000
-         dc.w       BPL3PT,$0000,BPL3PT+2,$0000
-         dc.w       BPL4PT,$0000,BPL4PT+2,$0000
-         dc.w       BPL5PT,$0000,BPL5PT+2,$0000
-         dc.w       BPL6PT,$0000,BPL6PT+2,$0000
-         dc.w       BPL7PT,$0000,BPL7PT+2,$0000
-         dc.w       BPL8PT,$0000,BPL8PT+2,$0000
-   
-title_palette:
-         incbin     "gfx/titlescreen_palette.pal"
 
          dc.w       $ffff,$fffe                      ; end of copperlist
