@@ -12,7 +12,6 @@ HARDWARE_HW_I  SET        1
 
 ExecBase    equ $4
 CIAAPRA     equ $bfe001
-
 *******************************************************************************
 *
 * This instruction for the copper will cause it to wait forever since
