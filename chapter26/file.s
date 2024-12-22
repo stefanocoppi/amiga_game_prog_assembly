@@ -9,7 +9,12 @@
              include    "funcdef.i"
              include    "exec/exec_lib.i"
 
-             
+
+             xdef       init_file
+             xdef       quit_file
+             xdef       load_file
+
+                 
 ;****************************************************************
 ; CONSTANTS
 ;****************************************************************
@@ -38,7 +43,6 @@ file_handle  dc.l       0
 ;****************************************************************
 ; Initializes file module.
 ;****************************************************************
-             xdef       init_file
 init_file:
              movem.l    d0-a6,-(sp)
 
@@ -55,7 +59,6 @@ init_file:
 ;****************************************************************
 ; Quits file module.
 ;****************************************************************
-             xdef       quit_file
 quit_file:
              movem.l    d0-a6,-(sp)
 
@@ -75,9 +78,7 @@ quit_file:
 ; d1.l - pointer to filename (specify the entire path)
 ; d2.l - address of buffer where to load the file content
 ; d3.l - file length in bytes
-
 ;****************************************************************
-             xdef       load_file
 load_file:
              movem.l    d0-a6,-(sp)
 

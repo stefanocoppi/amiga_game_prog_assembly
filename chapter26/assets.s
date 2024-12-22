@@ -6,6 +6,8 @@
  
         include    "assets.i"
 
+        xdef       load_assets
+
         xref       release_system
         xref       init_file
         xref       load_file
@@ -61,7 +63,6 @@ asset4  dc.b       "gfx/ship.mask",0
 ;****************************************************************
 ;  Load assets
 ;****************************************************************
-        xdef       load_assets
 load_assets:
         movem.l    d0-a6,-(sp)
 
