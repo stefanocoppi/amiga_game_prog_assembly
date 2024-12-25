@@ -3,7 +3,10 @@
 ;
 ; (c) 2024 Stefano Coppi
 ;****************************************************************
-          
+
+;****************************************************************
+; INCLUDES
+;****************************************************************
           incdir     "include"
           include    "hw.i"
           include    "funcdef.i"
@@ -13,6 +16,13 @@
  
 
 ;****************************************************************
+; GLOBAL SYMBOLS
+;****************************************************************
+          xdef       take_system
+          xdef       release_system
+
+
+;****************************************************************
 ; VARIABLES
 ;****************************************************************
 gfx_name  dc.b       "graphics.library",0,0       ; string containing the name of graphics.library
@@ -20,11 +30,14 @@ gfx_base  dc.l       0                            ; base address of graphics.lib
 old_dma   dc.w       0                            ; saved state of DMACON
 
 
-;************************************************************************
+;****************************************************************
+; ROUTINES
+;****************************************************************
+
+;****************************************************************
 ; Takes full control of Amiga hardware,
 ; disabling the O.S. in a controlled way.
-;************************************************************************
-          xdef       take_system
+;****************************************************************   
 take_system:
           move.l     ExecBase,a6                  ; base address of Exec
           jsr        _LVOForbid(a6)               ; disables O.S. multitasking
@@ -47,16 +60,13 @@ take_system:
           rts
 
 
-;************************************************************************
+;****************************************************************
 ; Releases the hardware control to the O.S.
-;************************************************************************
-          xdef       release_system
+;****************************************************************
 release_system:
           or.w       #$8000,old_dma               ; sets bit 15
           move.w     old_dma,DMACON(a5)           ; restores saved DMA state
 
-          move.l     gfx_base,a6
-          jsr        _LVODisownBlitter(a6)        ; release Blitter ownership
           move.l     ExecBase,a6                  ; base address of Exec
           jsr        _LVOPermit(a6)               ; enables O.S. multitasking
           jsr        _LVOEnable(a6)               ; enables O.S. interrupts
