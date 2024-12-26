@@ -6,16 +6,23 @@
 ; (c) 2024 Stefano Coppi
 ;****************************************************************
 
+
+;****************************************************************
+; INCLUDES
+;****************************************************************
            incdir     "include"
            include    "hw.i"
            include    "playfield.i"
 
 
-          
+;****************************************************************
+; EXTERNAL REFERENCES
+;****************************************************************          
            xref       take_system
            xref       release_system
            xref       init_bplpointers
            xref       bplpointers
+
 
 ;************************************************************************
 ; Graphics data
@@ -23,14 +30,13 @@
 
 ; segment loaded in CHIP RAM
            SECTION    graphics_data,DATA_C
-img_space  incbin     "gfx/image352.raw"         ; image 352 x 256 pixel , 4 bitplanes
+img_space  incbin     "gfx/image352.raw"      ; image 352 x 256 pixel , 4 bitplanes
 
-
-           SECTION    code_section,CODE
 
 ;****************************************************************
 ; MAIN PROGRAM
 ;****************************************************************
+           SECTION    code_section,CODE
 main:
            jsr        take_system             ; takes the control of Amiga's hardware
 
