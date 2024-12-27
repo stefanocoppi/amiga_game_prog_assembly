@@ -6,13 +6,19 @@
 ; (c) 2024 Stefano Coppi
 ;****************************************************************
 
+
+;****************************************************************
+; INCLUDES
+;****************************************************************
           incdir     "include"
           include    "hw.i"
           include    "playfield.i"
           include    "tilemap.i"
 
 
-          
+;****************************************************************
+; EXTERNAL REFERENCES
+;****************************************************************
           xref       take_system
           xref       release_system
           xref       init_bplpointers
@@ -21,10 +27,11 @@
           xref       fill_screen_with_tiles
           
 
-          SECTION    code_section,CODE
+          
 ;****************************************************************
 ; MAIN PROGRAM
 ;****************************************************************
+          SECTION    code_section,CODE
 main:
           nop
           nop
