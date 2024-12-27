@@ -8,14 +8,15 @@
 ;****************************************************************
 ; INCLUDES
 ;****************************************************************
-         incdir     "include"
-         include    "hw.i"
+            incdir     "include"
+            include    "hw.i"
 
 
 ;****************************************************************
 ; GLOBAL SYMBOLS
 ;****************************************************************
-         xdef       bplpointers
+            xdef       bplpointers
+            xdef       copperlist
 
 
 ;****************************************************************
@@ -25,7 +26,6 @@
 ; segment loaded in CHIP RAM
             SECTION    graphics_data,DATA_C
 
-            xdef       copperlist
 copperlist:
             dc.w       DIWSTRT,$2c81                ; display window start at ($81,$2c)
             dc.w       DIWSTOP,$2cc1                ; display window stop at ($1c1,$12c)
