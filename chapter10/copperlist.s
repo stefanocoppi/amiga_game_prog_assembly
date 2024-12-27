@@ -3,19 +3,22 @@
 ;
 ; (c) 2024 Stefano Coppi
 ;****************************************************************
-            
+
+
+;****************************************************************
+; INCLUDES
+;****************************************************************
          incdir     "include"
          include    "hw.i"
 
-         xdef       bplpointers
-            
+
 ;****************************************************************
 ; Graphics data
 ;****************************************************************
 
 ; segment loaded in CHIP RAM
          SECTION    graphics_data,DATA_C
-
+         
          xdef       copperlist
 copperlist:
          dc.w       DIWSTRT,$2c91                ; display window start at ($91,$2c)
@@ -36,6 +39,7 @@ copperlist:
   ;                          5432109876543210
          dc.w       BPLCON0,%0100001000000000
 
+         xdef       bplpointers
 bplpointers:
          dc.w       $e0,0,$e2,0                  ; plane 1
          dc.w       $e4,0,$e6,0                  ; plane 2

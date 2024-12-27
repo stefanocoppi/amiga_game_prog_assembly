@@ -16,13 +16,6 @@
  
 
 ;****************************************************************
-; GLOBAL SYMBOLS
-;****************************************************************
-          xdef       take_system
-          xdef       release_system
-
-
-;****************************************************************
 ; VARIABLES
 ;****************************************************************
 gfx_name  dc.b       "graphics.library",0,0       ; string containing the name of graphics.library
@@ -37,7 +30,8 @@ old_dma   dc.w       0                            ; saved state of DMACON
 ;****************************************************************
 ; Takes full control of Amiga hardware,
 ; disabling the O.S. in a controlled way.
-;****************************************************************   
+;****************************************************************
+          xdef       take_system   
 take_system:
           move.l     ExecBase,a6                  ; base address of Exec
           jsr        _LVOForbid(a6)               ; disables O.S. multitasking
@@ -63,6 +57,7 @@ take_system:
 ;****************************************************************
 ; Releases the hardware control to the O.S.
 ;****************************************************************
+          xdef       release_system
 release_system:
           or.w       #$8000,old_dma               ; sets bit 15
           move.w     old_dma,DMACON(a5)           ; restores saved DMA state

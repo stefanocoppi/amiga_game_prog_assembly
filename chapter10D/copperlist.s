@@ -8,18 +8,18 @@
          include    "hw.i"
          include    "map.i"
 
-         xdef       copperlist,scrollx
-         xdef       bplpointers
          
 ; segment loaded in CHIP RAM
          SECTION    graphics_data,DATA_C
 
+         xdef       copperlist
 copperlist:
          dc.w       DIWSTRT,$2c81                ; display window start at ($81,$2c)
          dc.w       DIWSTOP,$2cc1                ; display window stop at ($1c1,$12c)
          dc.w       DDFSTRT,$30                  ; display data fetch start at $30 to hide scrolling artifacts
          dc.w       DDFSTOP,$d0                  ; display data fetch stop at $d0
          dc.w       BPLCON1
+         xdef       scrollx
 scrollx  dc.w       $0000                        ; bits 0-7 scroll value
 
          dc.w       BPL1MOD,MAP_MOD-2            ; -2 because we fetch 16 more pixels                                          
@@ -33,6 +33,7 @@ scrollx  dc.w       $0000                        ; bits 0-7 scroll value
          dc.w       BPLCON0,%0100001000000000
          dc.w       FMODE,0                      ; 16 bit fetch mode
 
+         xdef       bplpointers
 bplpointers:
          dc.w       $e0,0,$e2,0                  ; plane 1
          dc.w       $e4,0,$e6,0                  ; plane 2

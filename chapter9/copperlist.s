@@ -13,19 +13,14 @@
 
 
 ;****************************************************************
-; GLOBAL SYMBOLS
-;****************************************************************
-         xdef       bplpointers
-         xdef       copperlist
-
-
-;****************************************************************
 ; Graphics data
 ;****************************************************************
 
 ; segment loaded in CHIP RAM
          SECTION    graphics_data,DATA_C
 
+         
+         xdef       copperlist
 copperlist:
          dc.w       DIWSTRT,$2c81                ; display window start at ($81,$2c)
          dc.w       DIWSTOP,$2cc1                ; display window stop at ($1c1,$12c)
@@ -45,6 +40,7 @@ copperlist:
   ;                          5432109876543210
          dc.w       BPLCON0,%0100001000000000
 
+         xdef       bplpointers
 bplpointers:
          dc.w       $e0,0,$e2,0                  ; plane 1
          dc.w       $e4,0,$e6,0                  ; plane 2

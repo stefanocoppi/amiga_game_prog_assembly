@@ -15,14 +15,6 @@
 
 
 ;****************************************************************
-; GLOBAL SYMBOLS
-;****************************************************************
-         xdef       draw_tile
-         xdef       draw_tile_column
-         xdef       fill_screen_with_tiles
-
-
-;****************************************************************
 ; EXTERNAL REFERENCES
 ;****************************************************************
          xref       wait_blitter
@@ -53,6 +45,7 @@ tileset  incbin     "gfx/shooter_tiles.raw"                      ; image 640 x 5
 ; d3.w - y position of the screen where the tile will be drawn
 ; a1   - address where draw the tile
 ;************************************************************************
+         xdef       draw_tile
 draw_tile:
          movem.l    d0-a6,-(sp)                                  ; saves registers into the stack
 
@@ -115,6 +108,7 @@ draw_tile:
 ; d2.w - x position (multiple of 16)
 ; a1   - address where draw the tile
 ;************************************************************************
+         xdef       draw_tile_column
 draw_tile_column: 
          movem.l    d0-a6,-(sp)
         
@@ -144,6 +138,7 @@ draw_tile_column:
 ; d0.w - map column from which to start drawing tiles
 ; a1   - address where draw the tile
 ;************************************************************************
+         xdef       fill_screen_with_tiles
 fill_screen_with_tiles:
          movem.l    d0-a6,-(sp)
 

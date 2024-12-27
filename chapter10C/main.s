@@ -24,14 +24,13 @@
   xref       bgnd_surface
   xref       init_background
   xref       map_ptr
-  xref       bgnd_x
   xref       scroll_background
           
 
-  SECTION    code_section,CODE
 ;****************************************************************
 ; MAIN PROGRAM
 ;****************************************************************
+  SECTION    code_section,CODE
 main:
   nop
   nop

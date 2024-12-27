@@ -17,13 +17,6 @@
 
 
 ;****************************************************************
-; GLOBAL SYMBOLS
-;****************************************************************
-             xdef       take_system
-             xdef       release_system
-
-
-;****************************************************************
 ; EXTERNAL REFERENCES
 ;****************************************************************
              xref       copperlist
@@ -49,6 +42,7 @@ sys_coplist  dc.l       0                            ; address of system copperl
 ; Takes full control of Amiga hardware,
 ; disabling the O.S. in a controlled way.
 ;****************************************************************
+             xdef       take_system
 take_system:
              move.l     ExecBase,a6                  ; base address of Exec
              jsr        _LVOForbid(a6)               ; disables O.S. multitasking
@@ -82,6 +76,7 @@ take_system:
 ;****************************************************************
 ; Releases the hardware control to the O.S.
 ;****************************************************************
+             xdef       release_system
 release_system:
     
              move.l     sys_coplist,COP1LC(a5)       ; restores the system copperlist

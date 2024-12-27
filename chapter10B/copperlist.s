@@ -3,15 +3,17 @@
 ;
 ; (c) 2024 Stefano Coppi
 ;****************************************************************
-            
+
+
+;****************************************************************
+; INCLUDES
+;****************************************************************
          incdir     "include"
          include    "hw.i"
          include    "scroll_bgnd.i"
          include    "playfield.i"
 
-         xdef       bplpointers
-         xdef       scrollx
-            
+
 ;****************************************************************
 ; Graphics data
 ;****************************************************************
@@ -26,6 +28,7 @@ copperlist:
          dc.w       DDFSTRT,$28                                ; display data fetch start at $38
          dc.w       DDFSTOP,$d0                                ; display data fetch stop at $d0
          dc.w       BPLCON1
+         xdef       scrollx
 scrollx  dc.w       $00ff                                      ; bits 0-3 and 4-7 scroll value                                         
          dc.w       BPLCON2,0                                             
          dc.w       BPL1MOD,(BGND_WIDTH-VIEWPORT_WIDTH)/8-4    ; -4 because we fetch 32 more pixels                                          
@@ -40,6 +43,7 @@ scrollx  dc.w       $00ff                                      ; bits 0-3 and 4-
   ;                          5432109876543210
          dc.w       BPLCON0,%0100001000000000
 
+         xdef       bplpointers
 bplpointers:
          dc.w       $e0,0,$e2,0                                ; plane 1
          dc.w       $e4,0,$e6,0                                ; plane 2

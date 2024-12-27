@@ -14,17 +14,11 @@
 
 
 ;****************************************************************
-; GLOBAL SYMBOLS
-;****************************************************************
-        xdef       init_bplpointers
-        xdef       screen
-
-
-;****************************************************************
 ; BSS DATA
 ;****************************************************************
         SECTION    bss_data,BSS_C
-        
+
+        xdef       screen
 screen  ds.b       (PF_PLANE_SZ*BPP)    ; visible screen
 
 
@@ -42,6 +36,7 @@ screen  ds.b       (PF_PLANE_SZ*BPP)    ; visible screen
 ; d1.l - playfield plane size (in bytes)
 ; d7.l - bitplanes number
 ;****************************************************************
+        xdef       init_bplpointers
 init_bplpointers:
         movem.l    d0-a6,-(sp)
                          

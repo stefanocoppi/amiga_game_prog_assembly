@@ -4,20 +4,30 @@
 ; (c) 2024 Stefano Coppi
 ;****************************************************************
 
+
+;****************************************************************
+; INCLUDES
+;****************************************************************
               incdir     "include/"
               include    "hw.i"
               include    "scroll_bgnd.i"
               include    "playfield.i"
               include    "tilemap.i"
 
+
+;****************************************************************
+; EXTERNAL REFERENCES
+;****************************************************************
               xref       wait_blitter
               xref       draw_tile_column
               xref       scrollx
+
 
 ;****************************************************************
 ; BSS DATA
 ;****************************************************************
               SECTION    bss_data,BSS_C
+
               xdef       bgnd_surface
 bgnd_surface  ds.b       (BGND_PLANE_SIZE*BPP)                ; invisible surface used for scrolling background
 
@@ -26,6 +36,7 @@ bgnd_surface  ds.b       (BGND_PLANE_SIZE*BPP)                ; invisible surfac
 ; VARIABLES
 ;****************************************************************
               SECTION    code_section,CODE
+
               xdef       map_ptr
 map_ptr       dc.w       0                                    ; current map column
               xdef       bgnd_x

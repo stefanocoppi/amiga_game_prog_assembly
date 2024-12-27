@@ -15,13 +15,6 @@
 
 
 ;****************************************************************
-; GLOBAL SYMBOLS
-;****************************************************************
-          xdef       img_tile
-          xdef       draw_tile
-
-
-;****************************************************************
 ; EXTERNAL REFERENCES
 ;****************************************************************
           xref       wait_blitter
@@ -32,6 +25,8 @@
 ;****************************************************************
 ; segment loaded in CHIP RAM
           SECTION    graphics_data,DATA_C
+
+          xdef       img_tile
 img_tile  incbin     "gfx/tile.raw"                              ; image 64 x 64 pixel , 3 bitplanes
 
 
@@ -47,6 +42,7 @@ img_tile  incbin     "gfx/tile.raw"                              ; image 64 x 64
 ; a0 - address of tile
 ; a1 - address where draw the tile
 ;****************************************************************
+          xdef       draw_tile
 draw_tile:
           movem.l    d0-a6,-(sp)                                 ; saves registers into the stack
 

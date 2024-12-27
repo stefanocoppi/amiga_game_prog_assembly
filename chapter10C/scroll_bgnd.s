@@ -28,7 +28,6 @@ bgnd_surface  ds.b       (BGND_PLANE_SIZE*BPP)                      ; invisible 
               SECTION    code_section,CODE
               xdef       map_ptr
 map_ptr       dc.w       TILEMAP_HEIGHT-4                           ; current map row
-              xdef       bgnd_x
 viewport_y    dc.w       VIEWPORT_HEIGHT+TILE_HEIGHT                ; current y coordinate of viewport into playfield
 
 ;****************************************************************

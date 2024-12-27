@@ -6,17 +6,13 @@
 
 
 ;****************************************************************
-; GLOBAL SYMBOLS
-;****************************************************************
-  xdef       copperlist
-
-;****************************************************************
 ; Graphics data
 ;****************************************************************
 
 ; segment loaded in CHIP RAM
   SECTION    graphics_data,DATA_C
 
+  xdef       copperlist
 copperlist:
   ; BPLCON0 lowres video mode
   dc.w       $100,$0200
