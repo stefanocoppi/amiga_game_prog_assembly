@@ -11,15 +11,6 @@
 
 
 ;****************************************************************
-; PUBLIC SYMBOLS
-;****************************************************************
-              xdef       copperlist
-              xdef       bplpointers
-              xdef       sprite_pointers
-              xdef       bgnd_palette
-
-
-;****************************************************************
 ; Graphics data
 ;****************************************************************
 
@@ -28,6 +19,7 @@
 
               
               CNOP       0,8                          ; 64-bit alignment
+              xdef       copperlist
 copperlist:
               dc.w       DIWSTRT,$2c81                ; display window start at ($81,$2c)
               dc.w       DIWSTOP,$2cc1                ; display window stop at ($1c1,$12c)
@@ -67,6 +59,7 @@ copperlist:
 ;                                5432109876543210
               dc.w       CLXCON,%0011111111010001
 
+              xdef       bplpointers
 bplpointers:
               dc.w       $e0,0,$e2,0                  ; plane 1
               dc.w       $e4,0,$e6,0                  ; plane 2
@@ -77,7 +70,7 @@ bplpointers:
               dc.w       $f8,0,$fa,0                  ; plane 7
               dc.w       $fc,0,$fe,0                  ; plane 8
 
-
+              xdef       sprite_pointers
 sprite_pointers:
               dc.w       SPR0PTH,0,SPR0PTL,0
               dc.w       SPR1PTH,0,SPR1PTL,0
@@ -88,6 +81,7 @@ sprite_pointers:
               dc.w       SPR6PTH,0,SPR6PTL,0
               dc.w       SPR7PTH,0,SPR7PTL,0
 
+              xdef       bgnd_palette
 bgnd_palette  incbin     "gfx/bgnd_256.pal"
 palette       incbin     "gfx/ship.pal"
 

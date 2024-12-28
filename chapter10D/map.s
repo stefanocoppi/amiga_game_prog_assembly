@@ -8,11 +8,6 @@
           include    "hw.i"
           include    "map.i"
 
-          xref       init_bplpointers
-          xref       bplpointers
-          xref       copperlist
-          xref       scrollx
-
 
 ;****************************************************************
 ; GRAPHICS DATA in chip ram

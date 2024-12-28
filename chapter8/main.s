@@ -17,18 +17,6 @@
 
 
 ;****************************************************************
-; EXTERNAL REFERENCES
-;****************************************************************
-          xref       take_system
-          xref       release_system
-          xref       init_bplpointers
-          xref       bplpointers
-          xref       screen
-          xref       draw_tile
-          xref       img_tile
-
-
-;****************************************************************
 ; MAIN PROGRAM
 ;****************************************************************
           SECTION    code_section,CODE

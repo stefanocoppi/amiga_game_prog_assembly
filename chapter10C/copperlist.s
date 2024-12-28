@@ -9,7 +9,7 @@
          include    "scroll_bgnd.i"
          include    "playfield.i"
 
-         xdef       bplpointers
+         
             
 ;****************************************************************
 ; Graphics data
@@ -38,6 +38,7 @@ copperlist:
   ;                          5432109876543210
          dc.w       BPLCON0,%0100001000000000
 
+         xdef       bplpointers
 bplpointers:
          dc.w       $e0,0,$e2,0                  ; plane 1
          dc.w       $e4,0,$e6,0                  ; plane 2

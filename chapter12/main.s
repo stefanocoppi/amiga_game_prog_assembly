@@ -13,27 +13,11 @@
            include    "playfield.i"
            include    "bob.i"
            
-
-;****************************************************************
-; EXTERNAL REFERENCES
-;****************************************************************
-           xref       take_system
-           xref       release_system
-           xref       init_bplpointers
-           xref       bplpointers
-           xref       wait_vblank
-           xref       swap_buffers
-           xref       dbuffer1
-           xref       restore_bob_bgnd
-           xref       save_bob_bgnd
-           xref       update_bob
-           
-          
-
-           SECTION    code_section,CODE
+      
 ;****************************************************************
 ; MAIN PROGRAM
 ;****************************************************************
+           SECTION    code_section,CODE
 main:
            nop
            nop

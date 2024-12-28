@@ -13,23 +13,6 @@
       
 
 ;****************************************************************
-; EXTERNAL REFERENCES
-;****************************************************************
-      xref       take_system
-      xref       release_system
-      xref       init_bplpointers
-      xref       bplpointers
-      xref       wait_vblank
-      xref       init_sprite_pointers
-      xref       set_sprite_position
-      xref       alien_sprite
-      xref       sprite_x
-      xref       sprite_y
-      xref       move_sprite_with_joystick
-      xref       check_collisions 
-          
-
-;****************************************************************
 ; MAIN PROGRAM
 ;****************************************************************
       SECTION    code_section,CODE

@@ -10,29 +10,13 @@
              include    "bob.i"
 
 
-;****************************************************************
-; PUBLIC SYMBOLS
-;****************************************************************
-             xdef       dbuffer1
-             xdef       update_bob
-             xdef       draw_bob
-             xdef       restore_bob_bgnd
-             xdef       save_bob_bgnd
-             xdef       update_bob
-
-
-;****************************************************************
-; EXTERNAL REFERENCES
-;****************************************************************
-             xref       bplpointers
-
-
 ;************************************************************************
 ; Graphics data
 ;************************************************************************
 ; segment loaded in CHIP RAM
              SECTION    graphics_data,DATA_C
 
+             xdef       dbuffer1
 dbuffer1     incbin     "gfx/space_bgnd.raw"       ; display buffers used for double buffering
 dbuffer2     incbin     "gfx/space_bgnd.raw"
 
@@ -96,6 +80,7 @@ swap_buffers:
 ; a3 - bob's data
 ; a2 - destination video buffer address
 ;************************************************************************
+             xdef       draw_bob
 draw_bob:
              movem.l    d0-a6,-(sp)
 
@@ -197,6 +182,7 @@ draw_bob:
 ; parameters:
 ; a1   - address of bob structure instance
 ;************************************************************************
+             xdef       update_bob
 update_bob:
              movem.l    d0-a6,-(sp)
 
@@ -221,6 +207,7 @@ update_bob:
 ; parameters:
 ; a1 - bob's data
 ;************************************************************************
+             xdef       save_bob_bgnd
 save_bob_bgnd:
              movem.l    d0-a6,-(sp)
 
@@ -296,6 +283,7 @@ save_bob_bgnd:
 ; parameters:
 ; a1   - address of bob structure instance
 ;************************************************************************
+             xdef       restore_bob_bgnd
 restore_bob_bgnd:
              movem.l    d0-a6,-(sp)
 

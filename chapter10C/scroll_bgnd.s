@@ -10,9 +10,6 @@
               include    "playfield.i"
               include    "tilemap.i"
 
-              xref       wait_blitter
-              xref       draw_tile_row
-              
 
 ;****************************************************************
 ; BSS DATA

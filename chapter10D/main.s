@@ -10,15 +10,7 @@
   incdir     "include"
   include    "hw.i"
 
-  
-
-  xref       take_system,release_system
-  xref       wait_vblank
-  xref       init_map
-  xref       update_map
-  xref       move_map_with_joy
-
-           
+          
 ;************************************************************************
 ; MAIN PROGRAM
 ;************************************************************************

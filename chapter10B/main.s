@@ -20,24 +20,6 @@
 
 
 ;****************************************************************
-; EXTERNAL REFERENCES
-;****************************************************************
-  xref       take_system
-  xref       release_system
-  xref       init_bplpointers
-  xref       bplpointers
-  xref       screen
-  xref       fill_screen_with_tiles
-  xref       wait_vblank
-  xref       bgnd_surface
-  xref       init_background
-  xref       map_ptr
-  xref       bgnd_x
-  xref       scroll_background
-          
-
-  
-;****************************************************************
 ; MAIN PROGRAM
 ;****************************************************************
   SECTION    code_section,CODE

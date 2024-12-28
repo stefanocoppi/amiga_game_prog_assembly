@@ -16,15 +16,6 @@
 
 
 ;****************************************************************
-; EXTERNAL REFERENCES
-;****************************************************************          
-           xref       take_system
-           xref       release_system
-           xref       init_bplpointers
-           xref       bplpointers
-
-
-;****************************************************************
 ; Graphics data
 ;****************************************************************
 
@@ -32,8 +23,6 @@
            SECTION    graphics_data,DATA_C
 img_space  incbin     "gfx/space.raw"         ; image 320 x 256 pixel , 8 bitplanes
 
-
-           
 
 ;****************************************************************
 ; MAIN PROGRAM

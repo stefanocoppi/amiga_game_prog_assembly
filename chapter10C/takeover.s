@@ -11,7 +11,6 @@
              include    "graphics/graphics_lib.i"
              include    "takeover.i"
  
-             xref       copperlist
 
 ;****************************************************************
 ; VARIABLES

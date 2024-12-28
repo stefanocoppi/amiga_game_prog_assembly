@@ -15,19 +15,7 @@
           include    "playfield.i"
           include    "tilemap.i"
 
-
-;****************************************************************
-; EXTERNAL REFERENCES
-;****************************************************************
-          xref       take_system
-          xref       release_system
-          xref       init_bplpointers
-          xref       bplpointers
-          xref       screen
-          xref       fill_screen_with_tiles
-          
-
-          
+       
 ;****************************************************************
 ; MAIN PROGRAM
 ;****************************************************************

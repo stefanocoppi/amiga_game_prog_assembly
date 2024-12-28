@@ -7,21 +7,13 @@
             include    "tilemaps.i"
             include    "scroll_bgnd.i"
 
-            xref       draw_tile_column,scrollx
-            xref       bplpointers1
-
-            xdef       init_background
-            xref       scroll_background
-            xdef       playfield1,camera_x
-            xdef       map_ptr,bgnd_x
-            xdef       camera_x
-
-
+            
 ;************************************************************************
 ; BSS DATA
 ;************************************************************************
             SECTION    bss_data,BSS_C
 
+            xdef       playfield1
 playfield1  ds.b       (PF1_PLANE_SZ*BPP)                   ; used for scrolling background
 
 
@@ -30,8 +22,11 @@ playfield1  ds.b       (PF1_PLANE_SZ*BPP)                   ; used for scrolling
 ;************************************************************************
             SECTION    code_section,CODE
 
+            xdef       camera_x
 camera_x    dc.w       0*64                                 ; x position of camera
+            xdef       map_ptr
 map_ptr     dc.w       0                                    ; current map column
+            xdef       bgnd_x
 bgnd_x      dc.w       0    
 
 
@@ -41,6 +36,7 @@ bgnd_x      dc.w       0
 ; parameters:
 ; d0.w - map column from which to start drawing tiles
 ;************************************************************************
+            xdef       init_background
 init_background:
             movem.l    d0-a6,-(sp)
 
@@ -74,6 +70,7 @@ init_background:
 ;************************************************************************
 ; Scrolls the background to the left.
 ;************************************************************************
+            xdef       scroll_background
 scroll_background:
             movem.l    d0-a6,-(sp)
 

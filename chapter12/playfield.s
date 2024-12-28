@@ -9,13 +9,6 @@
   include    "playfield.i"
 
 
-;****************************************************************
-; PUBLIC SYMBOLS
-;****************************************************************
-  xdef       init_bplpointers
-  xdef       wait_vblank
-
-
 ;************************************************************************
 ; SUBROUTINES
 ;************************************************************************
@@ -30,6 +23,7 @@
 ; d1.l - playfield plane size (in bytes)
 ; d7.l - bitplanes number
 ;************************************************************************
+  xdef       init_bplpointers
 init_bplpointers:
   movem.l    d0-a6,-(sp)
                          
@@ -71,6 +65,7 @@ wait:
 ;************************************************************************
 ; Waits for the vertical blank
 ;************************************************************************
+  xdef       wait_vblank
 wait_vblank:
   movem.l    d0-a6,-(sp)          ; saves registers into the stack
   move.l     #304,d2              ; line to wait: 304 236

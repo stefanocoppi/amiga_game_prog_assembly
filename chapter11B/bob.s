@@ -8,7 +8,6 @@
              include    "hw.i"
              include    "playfield.i"
 
-             xref       bplpointers
 
 ;************************************************************************
 ; BSS DATA

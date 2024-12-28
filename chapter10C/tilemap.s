@@ -9,9 +9,6 @@
          include    "tilemap.i"
          include    "scroll_bgnd.i"
 
-         xref       wait_blitter
-         xref       map
-
 
 ;************************************************************************
 ; Graphics data

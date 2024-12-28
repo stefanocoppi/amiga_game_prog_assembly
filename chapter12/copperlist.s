@@ -7,7 +7,7 @@
          incdir     "include"
          include    "hw.i"
 
-         xdef       bplpointers
+         
             
 ;****************************************************************
 ; Graphics data
@@ -40,7 +40,8 @@ copperlist:
 ; bit 0-1: 16 bit fetch mode
 ; bit 2-3: 16 pixel sprite width
          dc.w       FMODE,0
-               
+         
+         xdef       bplpointers               
 bplpointers:
          dc.w       $e0,0,$e2,0                  ; plane 1
          dc.w       $e4,0,$e6,0                  ; plane 2
