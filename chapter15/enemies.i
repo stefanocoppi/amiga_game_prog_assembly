@@ -8,6 +8,7 @@
 ENEMIES_I            SET        1
 
                      include    "bob.i"
+                     
 
 ;****************************************************************
 ; DATA STRUCTURES
@@ -27,8 +28,6 @@ enemy.tx             rs.w       1                      ; target x coordinate
 enemy.ty             rs.w       1                      ; target y coordinate
 enemy.cmd_pointer    rs.w       1                      ; pointer to the next command
 enemy.pause_timer    rs.w       1
-enemy.fire_offx      rs.w       1                      ; x offset where to place the fire shot
-enemy.fire_offy      rs.w       1                      ; y offset where to place the fire shot
 enemy.cmd_list       rs.b       ENEMY_CMD_LIST_SIZE    ; commands list
 enemy.length         rs.b       0
 
@@ -38,7 +37,7 @@ enemy.length         rs.b       0
 ;************************************************************************
 
 ENEMY_CMD_LIST_SIZE   equ 40
-NUM_ENEMIES           equ 18-3
+NUM_ENEMIES           equ 15
 ENEMY_STATE_INACTIVE  equ 0
 ENEMY_STATE_ACTIVE    equ 1
 ENEMY_STATE_PAUSE     equ 2
@@ -47,5 +46,7 @@ ENEMY_CMD_END         equ 0
 ENEMY_CMD_GOTO        equ 1
 ENEMY_CMD_PAUSE       equ 2
 ENEMY_CMD_FIRE        equ 3
+ENEMY_CMD_SETPOS      equ 4
+
 
                      ENDC

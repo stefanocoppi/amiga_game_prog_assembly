@@ -13,30 +13,6 @@
   include    "tilemaps.i"
 
   
-
-  xref       take_system,release_system
-  xref       wait_vblank
-  xref       copperlist
-  xref       bplpointers1
-  xref       bplpointers2
-  xref       playfield1
-  xref       playfield2a
-  xref       init_bplpointers
-  xref       init_background
-  xref       map_ptr
-  xref       camera_x
-  xref       bgnd_x
-  xref       plship_init
-  xref       scroll_background
-  xref       plship_update
-  xref       plship_draw
-  xref       swap_buffers
-  xref       erase_bgnds
-  xref       init_enemies_array
-  xref       enemies_activate
-  xref       enemies_update
-  xref       enemies_draw
-           
 ;************************************************************************
 ; MAIN PROGRAM
 ;************************************************************************

@@ -9,18 +9,13 @@
                     include    "playfield.i"
                     include    "bob.i"
 
-                    xdef       wait_blitter,draw_bob
-                    xdef       bgnd_list_ptr,bgnd_list_ptr2
-                    xdef       bgnd_list_counter
-                    xdef       bgnd_list_counter2,erase_bgnds
-                    xdef       swap_buffers,playfield2a
-                    xdef       draw_buffer
-
+                    
 ;************************************************************************
 ; BSS DATA
 ;************************************************************************
                     SECTION    bss_data,BSS_C
 
+                    xdef       playfield2a
 playfield2a         ds.b       (PF2_PLANE_SZ*BPP)                          ; used to draw BOBs using double buffering
 playfield2b         ds.b       (PF2_PLANE_SZ*BPP)
             
@@ -35,6 +30,7 @@ bgnd_list2          ds.b       (bob_bgnd.length*BGND_LIST_MAX_ITEMS)
 ;************************************************************************
 
 view_buffer         dc.l       playfield2a                                 ; buffer displayed on screen
+                    xdef       draw_buffer
 draw_buffer         dc.l       playfield2b                                 ; drawing buffer (not visible)
 
 
@@ -53,6 +49,7 @@ bgnd_list_counter2  dc.w       0                                           ; dou
 ;************************************************************************
 ; Swaps video buffers, causing draw_buffer to be displayed.
 ;************************************************************************
+                    xdef       swap_buffers
 swap_buffers:
                     movem.l    d0-a6,-(sp)                                 ; saves registers into the stack
 
@@ -85,6 +82,7 @@ swap_buffers:
 ;************************************************************************
 ; Wait for the blitter to finish
 ;************************************************************************
+                    xdef       wait_blitter
 wait_blitter:
 .loop:
                     btst.b     #6,DMACONR(a5)                              ; if bit 6 is 1, the blitter is busy
@@ -99,6 +97,7 @@ wait_blitter:
 ; a3 - bob's data
 ; a2 - destination video buffer address
 ;************************************************************************
+                    xdef       draw_bob
 draw_bob:
                     movem.l    d0-a6,-(sp)
 
@@ -250,6 +249,7 @@ erase_bob_bgnd:
 ;***************************************************************************
 ; Clears backgrounds of bobs using a list.
 ;***************************************************************************
+                    xdef       erase_bgnds
 erase_bgnds:
                     movem.l    d0-a6,-(sp)
 

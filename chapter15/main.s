@@ -19,23 +19,11 @@
   include    "enemies.i"
   include    "shots.i"
 
-  xref       take_system,release_system
-  xref       wait_vblank
-  xref       init_background,scroll_background,playfield1
-  xref       map_ptr,bgnd_x
-  xref       erase_bgnds,swap_buffers,playfield2a
-  xref       plship_init
-  xref       plship_draw,plship_update
-  xref       enemies_activate,enemies_draw,enemies_update
-  xref       ship_fire_shot,ship_shots_draw,ship_shots_update
-  xref       enemy_shots_draw,enemy_shots_update
-                 
-
-  SECTION    code_section,CODE
-
+  
 ;************************************************************************
 ; MAIN PROGRAM
 ;************************************************************************
+  SECTION    code_section,CODE
 main:
   jsr        take_system                  ; takes the control of Amiga's hardware
              
@@ -55,6 +43,9 @@ main:
 
   jsr        plship_init
 
+; initializes enemies array
+  jsr        init_enemies_array
+  
 mainloop: 
   jsr        wait_vblank                  ; waits for vertical blank
   jsr        swap_buffers

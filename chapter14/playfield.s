@@ -8,10 +8,7 @@
   include    "hw.i"
   include    "playfield.i"
 
-  xdef       init_bplpointers
-  xdef       wait_vblank
-  xdef       wait_vline
-
+  
 ;************************************************************************
 ; Initializes bitplane pointers
 ;
@@ -21,6 +18,7 @@
 ; d1.l - playfield plane size (in bytes)
 ; d7.l - bitplanes number
 ;************************************************************************
+  xdef       init_bplpointers
 init_bplpointers:
   movem.l    d0-a6,-(sp)
                          
@@ -62,6 +60,7 @@ wait:
 ;************************************************************************
 ; Waits for the vertical blank
 ;************************************************************************
+  xdef       wait_vblank
 wait_vblank:
   movem.l    d0-a6,-(sp)         ; saves registers into the stack
   move.l     #304,d2             ; line to wait: 304 236
