@@ -8,17 +8,6 @@
              include    "hw.i"
              include    "sprites.i"
 
-;****************************************************************
-; PUBLIC SYMBOLS
-;****************************************************************
-             xdef       init_sprite_pointers
-             xdef       set_sprite_position
-             xdef       ship_sprite
-             xdef       sprite_x
-             xdef       sprite_y
-             xdef       move_sprite_with_joystick
-             xdef       check_collisions
-
 
 ;****************************************************************
 ; EXTERNAL REFERENCES
@@ -33,6 +22,7 @@
 ; segment loaded in CHIP RAM
              SECTION    graphics_data,DATA_C
 
+             xdef       ship_sprite
              CNOP       0,8                               ; 64-bit alignment
 ship_sprite  incbin     "gfx/ship.raw"
 
@@ -42,7 +32,10 @@ ship_sprite  incbin     "gfx/ship.raw"
 ; VARIABLES
 ;************************************************************************
              SECTION    code_section,CODE
+
+             xdef       sprite_x
 sprite_x     dc.w       16
+             xdef       sprite_y
 sprite_y     dc.w       16
 
 
@@ -54,6 +47,7 @@ sprite_y     dc.w       16
 ;****************************************************************
 ; Initializes sprite pointers
 ;****************************************************************
+             xdef       init_sprite_pointers
 init_sprite_pointers:
              movem.l    d0-a6,-(sp)
 
@@ -98,6 +92,7 @@ init_sprite_pointers:
 ; d1.w - x position (0-319)
 ; d2.w - sprite height
 ;****************************************************************
+             xdef       set_sprite_position
 set_sprite_position:
              movem.l    d0-a6,-(sp)
 
@@ -136,6 +131,7 @@ set_sprite_position:
 ;****************************************************************
 ; Moves the sprite with the joystick
 ;****************************************************************
+             xdef       move_sprite_with_joystick
 move_sprite_with_joystick:
              movem.l    d0-a6,-(sp)
 
@@ -189,6 +185,7 @@ move_sprite_with_joystick:
 ; Checks the collisions between sprite and playfield.
 ; If a collision is detected, change the border color to red.
 ;****************************************************************
+             xdef       check_collisions
 check_collisions:
              movem.l    d0-a6,-(sp)
 

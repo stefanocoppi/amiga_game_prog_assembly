@@ -9,10 +9,7 @@
               include    "playfield.i"
               include    "hardware/custom.i"
 
-              xdef       bplpointers
-              xdef       sprite_pointers
-              xdef       bgnd_palette
-            
+                 
 ;****************************************************************
 ; Graphics data
 ;****************************************************************
@@ -47,13 +44,14 @@ copperlist:
   ;                              5432109876543210
               dc.w       CLXCON,%0001001111001000
 
+              xdef       bplpointers
 bplpointers:
               dc.w       $e0,0,$e2,0                  ; plane 1
               dc.w       $e4,0,$e6,0                  ; plane 2
               dc.w       $e8,0,$ea,0                  ; plane 3
               dc.w       $ec,0,$ee,0                  ; plane 4
 
-
+              xdef       sprite_pointers
 sprite_pointers:
               dc.w       SPR0PTH,0,SPR0PTL,0
               dc.w       SPR1PTH,0,SPR1PTL,0
@@ -63,7 +61,8 @@ sprite_pointers:
               dc.w       SPR5PTH,0,SPR5PTL,0
               dc.w       SPR6PTH,0,SPR6PTL,0
               dc.w       SPR7PTH,0,SPR7PTL,0
-
+              
+              xdef       bgnd_palette
 bgnd_palette  incbin     "gfx/bgnd.pal"
 palette       incbin     "gfx/alien.pal"
 

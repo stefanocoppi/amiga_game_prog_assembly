@@ -29,10 +29,11 @@
       xref       check_collisions 
           
 
-      SECTION    code_section,CODE
+      
 ;****************************************************************
 ; MAIN PROGRAM
 ;****************************************************************
+      SECTION    code_section,CODE
 main:
       nop
       nop
