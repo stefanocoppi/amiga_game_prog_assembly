@@ -9,23 +9,14 @@
                      include    "plship.i"
                      include    "bob.i"
 
-                     xref       draw_buffer,draw_bob
-                     xref       ship_shot_create
-
-                     xdef       player_ship
-                     xdef       player_ship_engine
-                     xdef       player_ship_mask
-                     xdef       plship_init,plship_draw
-                     xdef       plship_update,plship_explode
-                     xdef       ship_fire_shot
-                     xref       draw_string,num2string
-
+                    
 ;****************************************************************
 ; GRAPHICS DATA in chip ram
 ;****************************************************************
                      SECTION    graphics_data,DATA_C
          
 player_ship_gfx      incbin     "gfx/ship.raw"
+                     xdef       player_ship_mask
 player_ship_mask     incbin     "gfx/ship.mask"
 
 ship_engine_gfx      incbin     "gfx/ship_engine.raw"
@@ -41,6 +32,7 @@ ship_explosion_mask  incbin     "gfx/ship_explosion.mask"
 
 fire_prev_frame      dc.w       0                                              ; state of fire button in the previous frame (1 pressed)
 
+                     xdef       player_ship
 player_ship          dc.w       0                                              ; bob.x
                      dc.w       0                                              ; bob.y
                      dc.w       2                                              ; bob.speed
@@ -89,6 +81,7 @@ posy_str             dcb.b      6,0
 ;****************************************************************
 ; Initializes the player's ship state
 ;****************************************************************
+                     xdef       plship_init
 plship_init:
                      movem.l    d0-a6,-(sp)
 
@@ -111,6 +104,7 @@ plship_init:
 ;****************************************************************
 ; Draws the player's ship.
 ;****************************************************************
+                     xdef       plship_draw
 plship_draw:
                      movem.l    d0-a6,-(sp)
 
@@ -141,6 +135,7 @@ plship_draw:
 ;****************************************************************
 ; Updates the player's ship state
 ;****************************************************************
+                     xdef       plship_update
 plship_update:
                      movem.l    d0-a6,-(sp)
 
@@ -320,6 +315,7 @@ plship_limit_movement:
 ; a0 - shot instance
 ; a1 - player's ship instance
 ;****************************************************************
+                     xdef       plship_explode
 plship_explode:
                      move.w     #PLSHIP_STATE_EXPLOSION,ship.state(a1)
                      move.l     #ship_explosion_gfx,bob.imgdata(a1)
@@ -340,6 +336,7 @@ plship_explode:
 ;****************************************************************
 ; Fires a shot from the ship.
 ;****************************************************************
+                     xdef       ship_fire_shot
 ship_fire_shot:
                      movem.l    d0-a6,-(sp)
 

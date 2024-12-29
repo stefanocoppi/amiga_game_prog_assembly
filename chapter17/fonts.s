@@ -6,10 +6,6 @@
 
                   include    "playfield.i"
 
-                  xref       draw_buffer
-
-                  xdef       draw_string
-                  xdef       num2string
 
 ;****************************************************************
 ; CONSTANTS
@@ -70,6 +66,7 @@ draw_char:
 ; a2 - address of the string, zero terminated.
 ; d3.w,d4.w - x, y coordinates where to draw the string
 ;***************************************************************************
+                  xdef       draw_string
 draw_string:
                   movem.l    d0-a6,-(sp)
     
@@ -103,6 +100,7 @@ draw_string:
 ; d0.w - 16 bit number
 ; a0   - address of the output string
 ;***************************************************************************
+                  xdef       num2string
 num2string:
                   movem.l    d0-a6,-(sp)
 
