@@ -7,16 +7,7 @@
                       include    "enemies.i"
                       include    "bob.i"
 
-                      xdef       enemies_activate
-                      xdef       enemies_draw
-                      xdef       enemies_update,enemy_explode
-                      xdef       init_enemies_array
-
-                      xref       enemies_array,camera_x
-                      xref       draw_buffer,draw_bob
-                      xref       enemy_shot_create
-                      xref       add_to_score
-
+                     
 ;****************************************************************
 ; GRAPHICS DATA in chip ram
 ;****************************************************************
@@ -34,6 +25,7 @@ enemy_explosion_mask  incbin     "gfx/enemy_explosion.mask"
 ;****************************************************************
 ; Initializes the enemies array, copying data from enemies_model
 ;****************************************************************
+                      xdef       init_enemies_array
 init_enemies_array:
                       movem.l    d0-a6,-(sp)
 
@@ -52,6 +44,7 @@ init_enemies_array:
 ;****************************************************************
 ; Activates enemies based on their map location.
 ;****************************************************************
+                      xdef       enemies_activate
 enemies_activate:
                       movem.l    d0-a6,-(sp)
 
@@ -77,6 +70,7 @@ enemies_activate:
 ;****************************************************************
 ; Draws the enemies.
 ;****************************************************************
+                      xdef       enemies_draw
 enemies_draw:
                       movem.l    d0-a6,-(sp)
 
@@ -104,6 +98,7 @@ enemies_draw:
 ;****************************************************************
 ; Updates the enemies state.
 ;****************************************************************
+                      xdef       enemies_update
 enemies_update:
                       movem.l    d0-a6,-(sp)
 
@@ -150,7 +145,6 @@ enemies_update:
                       bra        .next_element
 .end_animation:
                       move.w     #ENEMY_STATE_INACTIVE,enemy.state(a0)
-                      clr.w      enemy.cmd_pointer(a0)                           ; resets cmd_pointer
                       bra        .next_element
 .state_gotoxy:
                       move.w     bob.speed(a0),d1
@@ -215,8 +209,6 @@ enemies_execute_command:
                       beq        .exec_pause
                       cmp.w      #ENEMY_CMD_FIRE,d0
                       beq        .exec_fire
-                      cmp.w      #ENEMY_CMD_SETPOS,d0
-                      beq        .exec_setpos
                       bra        .return
 .exec_goto:
                       move.w     #ENEMY_STATE_GOTOXY,enemy.state(a0)             ; changes state to gotoxy
@@ -239,7 +231,6 @@ enemies_execute_command:
                       bra        .return
 .exec_end:
                       move.w     #ENEMY_STATE_INACTIVE,enemy.state(a0)           ; changes state to inactive
-                      clr.w      enemy.cmd_pointer(a0)                           ; resets cmd_pointer
                       bra        .return
 .exec_pause:
                       cmp.w      #ENEMY_STATE_PAUSE,enemy.state(a0)              ; state = pause?
@@ -262,13 +253,6 @@ enemies_execute_command:
                       add.w      #2,enemy.cmd_pointer(a0)                        ; points to next command
                       bra        .return
 
-.exec_setpos:
-                      move.w     2(a1),d0                                        ; gets x0 coordinate
-                      move.w     d0,bob.x(a0)                                    ; enemy.x = x0
-                      move.w     4(a1),d0
-                      move.w     d0,bob.y(a0)                                    ; enemy.y = y0
-                      add.w      #3*2,enemy.cmd_pointer(a0)                      ; points to next command
-                      bra        .return
 .return:
                       movem.l    (sp)+,d0-a6
                       rts
@@ -281,6 +265,7 @@ enemies_execute_command:
 ; a0 - shot instance
 ; a1 - enemy instance
 ;****************************************************************
+                      xdef       enemy_explode
 enemy_explode:
 
 ; adds points to score

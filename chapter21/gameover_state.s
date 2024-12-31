@@ -8,42 +8,10 @@
                 include    "playfield.i"
                 include    "bob.i"
 
-                xref       swap_buffers
-                xref       scroll_background
-                xref       plship_update
-                xref       ship_fire_shot
-                xref       ship_shots_update
-                xref       enemy_shots_update
-                xref       enemies_activate
-                xref       enemies_update
-                xref       check_coll_shots_enemies
-                xref       check_coll_shots_plship
-                xref       check_coll_enemy_plship
-                xref       check_coll_plship_map
-                xref       erase_bgnds
-                xref       enemies_draw
-                xref       plship_draw
-                xref       ship_shots_draw
-                xref       enemy_shots_draw
-                xref       bplpointers1
-                xref       playfield1
-                xref       init_bplpointers
-                xref       bplpointers2
-                xref       playfield2a
-                xref       map_ptr
-                xref       init_background
-                xref       bgnd_x
-                xref       camera_x
-                xref       plship_init
-                xref       init_hud
-                xref       game_state
-                xref       shots_init
-                xref       draw_buffer
-                xref       change_gamestate
-  
-                xdef       init_gameover_state
-                xdef       update_gameover_state
-
+               
+;****************************************************************
+; CONSTANTS
+;****************************************************************
 FLASH_DURATION equ 6
 STATE_DURATION equ 50*2                                       ; 2 seconds
 
@@ -77,8 +45,14 @@ gameover_timer  dc.w       0                                  ; measures the per
 
 
 ;****************************************************************
+; SUBROUTINES
+;****************************************************************
+
+
+;****************************************************************
 ; Initializes the GAMEOVER game state.
 ;****************************************************************
+                xdef       init_gameover_state
 init_gameover_state:
                 movem.l    d0-a6,-(sp)
 
@@ -97,6 +71,7 @@ init_gameover_state:
 ;****************************************************************
 ; Updates the GAMEOVER game state.
 ;****************************************************************
+                xdef       update_gameover_state
 update_gameover_state:
                 movem.l    d0-a6,-(sp)
 

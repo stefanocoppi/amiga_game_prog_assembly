@@ -4,50 +4,22 @@
 ; (c) 2024 Stefano Coppi
 ;****************************************************************
 
+  incdir     "include/"
+  include    "hw.i"
   include    "playfield.i"
   include    "tilemaps.i"
   include    "game_state.i"
 
-  xdef       update_play_state
-  xdef       init_play_state
-
-  xref       swap_buffers
-  xref       scroll_background
-  xref       plship_update
-  xref       ship_fire_shot
-  xref       ship_shots_update
-  xref       enemy_shots_update
-  xref       enemies_activate
-  xref       enemies_update
-  xref       check_coll_shots_enemies
-  xref       check_coll_shots_plship
-  xref       check_coll_enemy_plship
-  xref       check_coll_plship_map
-  xref       erase_bgnds
-  xref       enemies_draw
-  xref       plship_draw
-  xref       ship_shots_draw
-  xref       enemy_shots_draw
-  xref       bplpointers1
-  xref       playfield1
-  xref       init_bplpointers
-  xref       bplpointers2
-  xref       playfield2a
-  xref       map_ptr
-  xref       init_background
-  xref       bgnd_x
-  xref       camera_x
-  xref       plship_init
-  xref       init_hud
-  xref       game_state
-  xref       shots_init
-  xref       init_enemies_array
-
+ 
+;****************************************************************
+; SUBROUTINES
+;****************************************************************
   SECTION    code_section,CODE
 
 ;****************************************************************
 ; Updates the PLAYING game state.
 ;****************************************************************
+  xdef       update_play_state
 update_play_state:
   jsr        swap_buffers                      ; swaps draw and view buffers for implementing double buffering
 
@@ -79,7 +51,11 @@ update_play_state:
 ;***************************************************************************
 ; Initializes the PLAYING game state.
 ;***************************************************************************
+  xdef       init_play_state
 init_play_state:
+
+  move.l     #copperlist,COP1LC(a5)            ; sets our copperlist address into Copper
+  move.w     d0,COPJMP1(a5)                    ; reset Copper PC to the beginning of our copperlist
 
 ; sets bitplane pointers for dual playfield mode
   move.l     #BPP,d7  

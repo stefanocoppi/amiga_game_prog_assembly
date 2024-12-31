@@ -11,19 +11,15 @@
 ; segment loaded in CHIP RAM
          SECTION    graphics_data,DATA_C
 
-         xdef       copperlist,scrollx
-         xdef       bplpointers1,bplpointers2
-         xdef       bplpointers_hud
-         xdef       coplist_title
-         xdef       bplpointers_title
-         xdef       title_palette
-  
+         
+         xdef       copperlist 
 copperlist:
          dc.w       DIWSTRT,$2c81                    ; display window start at ($81,$2c)
          dc.w       DIWSTOP,$2cc1                    ; display window stop at ($1c1,$12c)
          dc.w       DDFSTRT,$28                      ; display data fetch start at $28 to hide scrolling artifacts
          dc.w       DDFSTOP,$d0                      ; display data fetch stop at $d0
          dc.w       BPLCON1
+         xdef       scrollx
 scrollx  dc.w       $000f                            ; bits 0-3 scroll value of pf1
 
 ;                            5432109876543210
@@ -43,12 +39,14 @@ scrollx  dc.w       $000f                            ; bits 0-3 scroll value of 
          dc.w       BPLCON0,%0000011000010000
          dc.w       FMODE,0                          ; 16 bit fetch mode
 
+         xdef       bplpointers1
 bplpointers1:
          dc.w       $e0,0,$e2,0                      ; plane 1
          dc.w       $e8,0,$ea,0                      ; plane 3
          dc.w       $f0,0,$f2,0                      ; plane 5
          dc.w       $f8,0,$fa,0                      ; plane 7
 
+         xdef       bplpointers2
 bplpointers2:
          dc.w       $e4,0,$e6,0                      ; plane 2
          dc.w       $ec,0,$ee,0                      ; plane 4
@@ -77,6 +75,7 @@ pf2_palette:
          dc.w       BPL1MOD,0                        ; odd planes modulo
          dc.w       BPL2MOD,0                        ; even planes modulo
 
+         xdef       bplpointers_hud
 bplpointers_hud:
          dc.w       BPL1PT,$0000,BPL1PT+2,$0000      ; bitplane pointers
          dc.w       BPL2PT,$0000,BPL2PT+2,$0000
@@ -94,6 +93,7 @@ hud_palette:
 
 
 ; copperlist used for the title screen only
+         xdef       coplist_title
 coplist_title:
          dc.w       DIWSTRT,$2c81                    ; display window start at ($81,$2c)
          dc.w       DIWSTOP,$2cc1                    ; display window stop at ($1c1,$12c)
@@ -105,7 +105,7 @@ coplist_title:
          dc.w       BPL2MOD,0
             
          
-
+         xdef       bplpointers_title
 bplpointers_title:
          dc.w       BPL1PT,$0000,BPL1PT+2,$0000      ; bitplane pointers
          dc.w       BPL2PT,$0000,BPL2PT+2,$0000
@@ -115,7 +115,8 @@ bplpointers_title:
          dc.w       BPL6PT,$0000,BPL6PT+2,$0000
          dc.w       BPL7PT,$0000,BPL7PT+2,$0000
          dc.w       BPL8PT,$0000,BPL8PT+2,$0000
-   
+
+         xdef       title_palette
 title_palette:
          incbin     "gfx/titlescreen_palette.pal"
 

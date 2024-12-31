@@ -8,26 +8,16 @@
                        include    "hw.i"
                        include    "game_state.i"
 
-                       xdef       init_titlescreen_state
-                       xdef       update_titlescreen_state
-
-                       xref       coplist_title
-                       xref       bplpointers_title
-                       xref       init_bplpointers
-                       xref       game_state
-                       xref       title_palette
-                       xref       change_gamestate
-
-
+                    
 ;****************************************************************
 ; CONSTANTS
 ;****************************************************************
-TITLE_BPP            equ 5
-TITLE_WIDTH          equ 320
-TITLE_HEIGHT         equ 256
-TITLE_ROW_SIZE       equ TITLE_WIDTH/8
-TITLE_PLANE_SZ       equ TITLE_HEIGHT*TITLE_ROW_SIZE
-TITLE_FLASH_DUR      equ 50/5                                           ; 5 fps
+TITLE_BPP       equ 5
+TITLE_WIDTH     equ 320
+TITLE_HEIGHT    equ 256
+TITLE_ROW_SIZE  equ TITLE_WIDTH/8
+TITLE_PLANE_SZ  equ TITLE_HEIGHT*TITLE_ROW_SIZE
+TITLE_FLASH_DUR equ 50/5                                                ; 5 fps
 
 
 ;****************************************************************
@@ -57,6 +47,7 @@ title_flash_color_idx  dc.w       0
 ;****************************************************************
 ; Initializes the TITLE_SCREEN game state.
 ;****************************************************************
+                       xdef       init_titlescreen_state
 init_titlescreen_state:
                        movem.l    d0-a6,-(sp)
 
@@ -85,6 +76,7 @@ init_titlescreen_state:
 ;****************************************************************
 ; Updates the TITLE_SCREEN game state.
 ;****************************************************************
+                       xdef       update_titlescreen_state
 update_titlescreen_state:
                        movem.l    d0-a6,-(sp)
 

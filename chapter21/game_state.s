@@ -6,24 +6,14 @@
 
             include    "game_state.i"
 
-            xref       init_play_state
-            xref       update_play_state
-            xref       init_gameover_state
-            xref       update_gameover_state
-            xref       init_titlescreen_state
-            xref       update_titlescreen_state
-
-
-            xdef       update_gamestate
-            xdef       change_gamestate
-            xdef       game_state
 
 ;****************************************************************
 ; VARIABLES
 ;****************************************************************
             SECTION    code_section,CODE
 
-game_state  dc.w       GAME_STATE_PLAYING          ; current game state
+            xdef       game_state
+game_state  dc.w       GAME_STATE_PLAYING         ; current game state
 
 ; jump table containing pointers to the game state processing routines
 gamestate_table:
@@ -48,6 +38,7 @@ init_gamestate_table:
 ;****************************************************************
 ; Updates the current game state
 ;****************************************************************
+            xdef       update_gamestate
 update_gamestate:
             movem.l    d0/a0,-(sp)
 
@@ -77,6 +68,7 @@ update_gamestate:
 ; parameters:
 ; d0.w  - new game state
 ;****************************************************************
+            xdef       change_gamestate
 change_gamestate:
             movem.l    d0/a0,-(sp)
 

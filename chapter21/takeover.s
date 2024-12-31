@@ -11,23 +11,21 @@
              include    "graphics/graphics_lib.i"
              include    "takeover.i"
  
-             xdef       take_system,release_system
-             xref       copperlist
-
 
 ;************************************************************************
 ; VARIABLES
 ;************************************************************************
-gfx_name     dc.b       "graphics.library",0,0        ; string containing the name of graphics.library
-gfx_base     dc.l       0                             ; base address of graphics.library
-old_dma      dc.w       0                             ; saved state of DMACON
-sys_coplist  dc.l       0                             ; address of system copperlist                
+gfx_name     dc.b       "graphics.library",0,0       ; string containing the name of graphics.library
+gfx_base     dc.l       0                            ; base address of graphics.library
+old_dma      dc.w       0                            ; saved state of DMACON
+sys_coplist  dc.l       0                            ; address of system copperlist                
 
 
 ;************************************************************************
 ; Takes full control of Amiga hardware,
 ; disabling the O.S. in a controlled way.
 ;************************************************************************
+             xdef       take_system
 take_system:
              move.l     ExecBase,a6                   ; base address of Exec
              jsr        _LVOForbid(a6)                ; disables O.S. multitasking
@@ -61,6 +59,7 @@ take_system:
 ;************************************************************************
 ; Releases the hardware control to the O.S.
 ;************************************************************************
+             xdef       release_system
 release_system:
              move.l     sys_coplist,COP1LC(a5)        ; restores the system copperlist
              move.w     d0,COPJMP1(a5)                ; starts the system copperlist 

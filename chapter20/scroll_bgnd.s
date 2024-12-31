@@ -7,35 +7,41 @@
             include    "tilemaps.i"
             include    "scroll_bgnd.i"
 
-            xref       draw_tile_column,scrollx
-            xref       bplpointers1
 
-            xdef       init_background
-            xref       scroll_background
-            xdef       playfield1,camera_x
-            xdef       map_ptr,bgnd_x
-            xdef       camera_x
-
+;****************************************************************
+; BSS DATA
+;****************************************************************
             SECTION    bss_data,BSS_C
 
-
+            xdef       playfield1
 playfield1  ds.b       (PF1_PLANE_SZ*BPP)                   ; used for scrolling background
 
 
+;****************************************************************
+; VARIABLES
+;****************************************************************
             SECTION    code_section,CODE
 
-; Variables
+            xdef       camera_x
 camera_x    dc.w       0*64                                 ; x position of camera
+            xdef       map_ptr
 map_ptr     dc.w       0                                    ; current map column
+            xdef       bgnd_x
 bgnd_x      dc.w       0    
 
 
-;************************************************************************
+;****************************************************************
+; SUBROUTINES
+;****************************************************************
+
+
+;****************************************************************
 ; Initializes the background, copying the initial part of the level map.
 ;
 ; parameters:
 ; d0.w - map column from which to start drawing tiles
-;************************************************************************
+;****************************************************************
+            xdef       init_background 
 init_background:
             movem.l    d0-a6,-(sp)
 
@@ -69,6 +75,7 @@ init_background:
 ;************************************************************************
 ; Scrolls the background to the left.
 ;************************************************************************
+            xdef       scroll_background
 scroll_background:
             movem.l    d0-a6,-(sp)
 
@@ -116,7 +123,6 @@ scroll_background:
             move.l     #playfield1,d0
             add.l      d1,d0                                ; adds offset_x
             move.l     #PF1_PLANE_SZ,d1
-            move.l     #BPP,d7
             jsr        init_bplpointers
             move.w     #$000f,scrollx                       ; resets scroll value
 

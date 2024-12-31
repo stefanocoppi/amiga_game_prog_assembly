@@ -10,13 +10,7 @@
   incdir     "include"
   include    "hw.i"
   
-
-  xref       take_system,release_system
-  xref       wait_vblank
-  xref       update_gamestate
-  xref       init_play_state
-  xref       init_titlescreen_state
-           
+   
 ;************************************************************************
 ; MAIN PROGRAM
 ;************************************************************************
