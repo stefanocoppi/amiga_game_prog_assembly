@@ -8,28 +8,7 @@
              include    "hw.i"
              include    "sound.i"
 
-             xdef       init_ptplayer
-             xdef       quit_ptplayer
-             xdef       play_sfx
-             xdef       stop_sfx
-             xdef       play_sample
-             xdef       update_sound_engine
-             xdef       init_sound
-             xdef       play_pt_module
-          
-             xref       _mt_install_cia
-             xref       _mt_end
-             xref       _mt_remove_cia
-             xref       _mt_loopfx
-             xref       _mt_playfx
-             xref       _mt_stopfx
-             xref       sfx_table
-             xref       _mt_musicmask
-             xref       _mt_mastervol
-             xref       _mt_init
-             xref       _mt_Enable
-
-
+             
 ;****************************************************************
 ; BSS DATA
 ;****************************************************************
@@ -47,6 +26,7 @@ ch_counters  ds.b       2*4
 ;****************************************************************
 ; Initializes the sound subsystem.
 ;****************************************************************
+             xdef       init_sound
 init_sound:
              movem.l    d0-a6,-(sp)
 
@@ -118,6 +98,7 @@ interrupt_lev4:
 ; parameters:
 ; d0.w - sound effect id
 ;****************************************************************
+             xdef       play_sample
 play_sample:
              movem.l    d0-a6,-(sp)
 
@@ -179,6 +160,7 @@ play_sample:
 ;****************************************************************
 ; Updates sound engine state.
 ;****************************************************************
+             xdef       update_sound_engine
 update_sound_engine:
              movem.l    d0-a6,-(sp)
 
@@ -196,8 +178,6 @@ update_sound_engine:
              cmp.w      #2,sfx_ch3_counter(a0)
              bge        .stop_ch3
              bra        .return
-
-
 .stop_ch0:
 ; disables audio DMA channel
              move.w     #%0000000000000001,DMACON(a5)
@@ -228,6 +208,7 @@ update_sound_engine:
 ;****************************************************************
 ; Initializes the Pro Tracker sound engine.
 ;****************************************************************
+             xdef       init_ptplayer
 init_ptplayer:
              movem.l    d0/a0/a6,-(sp)
 
@@ -249,6 +230,7 @@ init_ptplayer:
 ;****************************************************************
 ; Quits the Pro Tracker sound engine.
 ;****************************************************************
+             xdef       quit_ptplayer
 quit_ptplayer:
              movem.l    a6,-(sp)
 
@@ -267,6 +249,7 @@ quit_ptplayer:
 ; d0.w - sound effect id
 ; d1.w - flag 1 loop 0 no loop
 ;****************************************************************
+             xdef       play_sfx
 play_sfx:
              movem.l    d0-d1/a0-a1/a6,-(sp)
 
@@ -306,6 +289,7 @@ play_sfx:
 ; parameters:
 ; a0 - module address
 ;****************************************************************
+             xdef       play_pt_module
 play_pt_module:
 ; plays pro-tracker music
              lea        CUSTOM,a6
@@ -329,6 +313,7 @@ play_pt_module:
 ; parameters:
 ; d0.w - sound effect id
 ;****************************************************************
+             xdef       stop_sfx
 stop_sfx:
              movem.l    d0/a0/a6,-(sp)
 

@@ -3,11 +3,9 @@
 ;
 ; (c) 2024 Stefano Coppi
 ;****************************************************************
-
-                  xdef       sfx_table
-                  xdef       title_music
-
-
+                  include    "sound.i"
+                
+                
 ;****************************************************************
 ; SOUND EFFECTS
 ;****************************************************************
@@ -68,14 +66,16 @@ sfx_title_music   dc.w       0
                   even
 sfx_title_music_len  equ (*-sfx_title_music)/2
 
+                  xdef       title_music
 title_music       incbin     "sfx/xenon2.mod"
                   even
 
-                  include    "sound.i"
+                  
 
                   SECTION    sounds,CODE
 
 ; sound effects table
+                  xdef       sfx_table
 sfx_table:
                   ; 0 - start
                   dc.l       sfx_start                     ; samples pointer

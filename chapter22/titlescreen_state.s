@@ -9,20 +9,6 @@
                        include    "game_state.i"
                        include    "sound.i"
 
-                       xdef       init_titlescreen_state
-                       xdef       update_titlescreen_state
-
-                       xref       coplist_title
-                       xref       bplpointers_title
-                       xref       init_bplpointers
-                       xref       game_state
-                       xref       title_palette
-                       xref       change_gamestate
-                       xref       play_sfx
-                       xref       title_music
-                       xref       play_pt_module
-                        
-
 
 ;****************************************************************
 ; CONSTANTS
@@ -62,6 +48,7 @@ title_flash_color_idx  dc.w       0
 ;****************************************************************
 ; Initializes the TITLE_SCREEN game state.
 ;****************************************************************
+                       xdef       init_titlescreen_state
 init_titlescreen_state:
                        movem.l    d0-a6,-(sp)
 
@@ -93,6 +80,7 @@ init_titlescreen_state:
 ;****************************************************************
 ; Updates the TITLE_SCREEN game state.
 ;****************************************************************
+                       xdef       update_titlescreen_state
 update_titlescreen_state:
                        movem.l    d0-a6,-(sp)
 
