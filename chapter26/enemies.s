@@ -8,23 +8,6 @@
                       include    "bob.i"
                       include    "sound.i"
 
-                      xdef       enemies_activate
-                      xdef       enemies_draw
-                      xdef       enemies_update,enemy_explode
-                      xdef       init_enemies_array
-
-
-                      xref       enemies_model
-                      xref       enemies_array
-                      xref       camera_x
-                      xref       draw_buffer,draw_bob
-                      xref       enemy_shot_create
-                      xref       add_to_score
-                      xref       play_sfx
-                      xref       play_sample
-                      xref       create_powerup
-
-
 ;****************************************************************
 ; GRAPHICS DATA in chip ram
 ;****************************************************************
@@ -42,6 +25,7 @@ enemy_explosion_mask  incbin     "gfx/enemy_explosion.mask"
 ;****************************************************************
 ; Initializes the enemies array, copying data from enemies_model
 ;****************************************************************
+                      xdef       init_enemies_array
 init_enemies_array:
                       movem.l    d0-a6,-(sp)
 
@@ -60,6 +44,7 @@ init_enemies_array:
 ;****************************************************************
 ; Activates enemies based on their map location.
 ;****************************************************************
+                      xdef       enemies_activate
 enemies_activate:
                       movem.l    d0-a6,-(sp)
 
@@ -85,6 +70,7 @@ enemies_activate:
 ;****************************************************************
 ; Draws the enemies.
 ;****************************************************************
+                      xdef       enemies_draw
 enemies_draw:
                       movem.l    d0-a6,-(sp)
 
@@ -112,6 +98,7 @@ enemies_draw:
 ;****************************************************************
 ; Updates the enemies state.
 ;****************************************************************
+                      xdef       enemies_update
 enemies_update:
                       movem.l    d0-a6,-(sp)
 
@@ -286,6 +273,7 @@ enemies_execute_command:
 ; a0 - shot instance
 ; a1 - enemy instance
 ;****************************************************************
+                      xdef       enemy_explode
 enemy_explode:
 
 ; adds points to score

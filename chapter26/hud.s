@@ -11,31 +11,20 @@
                   include    "bob.i
                   include    "plship.i"
 
-                  xref       init_bplpointers
-                  xref       bplpointers_hud
-                  xref       num2string
-                  xref       draw_string
-
-                  xdef       init_hud
-                  xdef       draw_score
-                  xdef       hud_bgnd
-                  xdef       draw_hud_bar
-                  xdef       add_to_score
-                  xdef       hud_bar_gfx
-                  xdef       hud_bar_gfx_mask
-                  xref       hud_bgnd
-
 
 ;****************************************************************
 ; GRAPHICS DATA in chip ram
 ;****************************************************************
                   SECTION    graphics_data,DATA_C
 
+                  xdef       hud_bgnd
 hud_bgnd          incbin     "gfx/hud_bgnd.raw"
 ;hud_bgnd          dcb.b      12800,0
 ;hud_bar_gfx       incbin     "gfx/bar.raw"
+                  xdef       hud_bar_gfx
 hud_bar_gfx       dcb.b      4400,0
 ;hud_bar_gfx_mask  incbin     "gfx/bar.mask"
+                  xdef       hud_bar_gfx_mask
 hud_bar_gfx_mask  dcb.b      880,0
 
 
@@ -72,6 +61,7 @@ hud_bar           dc.w       143                      ; bob.x
 ;****************************************************************
 ; Initializes the hud.
 ;****************************************************************
+                  xdef       init_hud
 init_hud:
                   movem.l    d0-a6,-(sp)
 
@@ -121,6 +111,7 @@ draw_score:
 ; parameters:
 ; d0.w - amount of points to add
 ;****************************************************************
+                  xdef       add_to_score
 add_to_score:
                   movem.l    d0-a6,-(sp)
     
@@ -137,6 +128,7 @@ add_to_score:
 ; parameters;
 ; d0.w - energy (0-20)
 ;****************************************************************
+                  xdef       draw_hud_bar
 draw_hud_bar:
                   movem.l    d0-a6,-(sp)
 

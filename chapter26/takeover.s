@@ -11,8 +11,6 @@
               include    "graphics/graphics_lib.i"
               include    "takeover.i"
  
-              xref       copperlist
-
 
 ;************************************************************************
 ; VARIABLES
@@ -28,8 +26,6 @@ old_ciaa_icr  dc.b       0
               even
 old_int2      dc.l       0
 old_int4      dc.l       0
-
-
 
 ;************************************************************************
 ; Takes full control of Amiga hardware,

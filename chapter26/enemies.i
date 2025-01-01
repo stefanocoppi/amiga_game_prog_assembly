@@ -43,8 +43,8 @@ enemy.length         rs.b       0
 ; CONSTANTS
 ;************************************************************************
 
-ENEMY_CMD_LIST_SIZE   equ 40
-NUM_ENEMIES           equ 15
+ENEMY_CMD_LIST_SIZE   equ 60
+NUM_ENEMIES           equ 16
 ENEMY_STATE_INACTIVE  equ 0
 ENEMY_STATE_ACTIVE    equ 1
 ENEMY_STATE_PAUSE     equ 2

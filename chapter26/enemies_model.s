@@ -8,14 +8,11 @@
                include    "enemies.i"
                include    "powerup.i"
 
-               xdef       enemies_model
-               xdef       enemies_array
-
-
 ;************************************************************************
 ; BSS DATA
 ;************************************************************************
                SECTION    bss_data,BSS_C
+               xdef       enemies_array
 enemies_array  ds.b       (enemy.length*NUM_ENEMIES)
 
 
@@ -27,12 +24,16 @@ enemies_array  ds.b       (enemy.length*NUM_ENEMIES)
 enemies_gfx    incbin     "gfx/enemies.raw"
 enemies_mask   incbin     "gfx/enemies.mask"
 
+boss_gfx       incbin     "gfx/boss.raw"
+boss_mask      incbin     "gfx/boss.mask"
+
 
 ;****************************************************************
 ; VARIABLES
 ;****************************************************************
                SECTION    code_section,CODE
          
+               xdef       enemies_model
 enemies_model:
 enemy1         dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.y
@@ -135,8 +136,8 @@ enemy3         dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.flash_timer
                dc.w       0                                     ; enemy.hit_timer
                dc.w       $ffff                                 ; enemy.visible
-               dc.w       -18                                   ; fire_offx
-               dc.w       44                                    ; fire_offy
+               dc.w       -34                                   ; fire_offx
+               dc.w       15                                    ; fire_offy
                dc.w       PU_TYPE_NONE                          ; enemy.powerup
                dc.w       ENEMY_CMD_SETPOS,CLIP_LEFT+320,65     ; enemy.cmd_list
                dc.w       ENEMY_CMD_GOTO,328,65
@@ -589,3 +590,49 @@ enemy16        dc.w       0                                     ; enemy.x
                dc.w       ENEMY_CMD_GOTO,0,70                                      
                dc.w       ENEMY_CMD_END
                dcb.b      ENEMY_CMD_LIST_SIZE-9*2,0
+boss           dc.w       0                                     ; enemy.x
+               dc.w       0                                     ; enemy.y
+               dc.w       2                                     ; enemy.speed
+               dc.w       128                                   ; enemy.width
+               dc.w       74                                    ; enemy.height
+               dc.w       0                                     ; enemy.ssheet_c
+               dc.w       0                                     ; enemy.ssheet_r
+               dc.w       128                                   ; enemy.ssheet_w 
+               dc.w       74                                    ; enemy.ssheet_h
+               dc.l       boss_gfx                              ; enemy.imgdata
+               dc.l       boss_mask                             ; enemy.mask
+               dc.w       0                                     ; enemy.anim_duration
+               dc.w       0                                     ; enemy.anim_timer
+               dc.w       0                                     ; enemy.num_frames
+               dc.w       ENEMY_STATE_INACTIVE                  ; enemy.state
+               dc.w       5000                                  ; enemy.score
+               dc.w       40                                    ; enemy.energy
+               dc.w       6016                                  ; enemy.map_position
+               dc.w       0                                     ; enemy.tx
+               dc.w       0                                     ; enemy.ty
+               dc.w       0                                     ; enemy.cmd_pointer
+               dc.w       0                                     ; enemy.pause_timer
+               dc.w       0                                     ; rect.x
+               dc.w       0                                     ; rect.y
+               dc.w       128                                   ; rect.width
+               dc.w       74                                    ; rect.height
+               dc.w       0                                     ; enemy.flash_timer
+               dc.w       0                                     ; enemy.hit_timer
+               dc.w       $ffff                                 ; enemy.visible
+               dc.w       0                                     ; fire_offx
+               dc.w       50                                    ; fire_offy
+               dc.w       PU_TYPE_NONE                          ; enemy.powerup
+               dc.w       ENEMY_CMD_SETPOS,CLIP_LEFT+320,45     ; enemy.cmd_list
+               dc.w       ENEMY_CMD_PAUSE,50                    
+               dc.w       ENEMY_CMD_SETPOS,CLIP_LEFT+192,45     
+               dc.w       ENEMY_CMD_PAUSE,50
+               dc.w       ENEMY_CMD_FIRE
+               dc.w       ENEMY_CMD_PAUSE,30
+               dc.w       ENEMY_CMD_FIRE
+               dc.w       ENEMY_CMD_PAUSE,30
+               dc.w       ENEMY_CMD_FIRE
+               dc.w       ENEMY_CMD_PAUSE,30
+               dc.w       ENEMY_CMD_FIRE
+               dc.w       ENEMY_CMD_PAUSE,500                                      
+               dc.w       ENEMY_CMD_END
+               dcb.b      ENEMY_CMD_LIST_SIZE-23*2,0
