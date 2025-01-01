@@ -8,14 +8,11 @@
                include    "enemies.i"
                include    "powerup.i"
 
-               xdef       enemies_model
-               xdef       enemies_array
-
-
 ;************************************************************************
 ; BSS DATA
 ;************************************************************************
                SECTION    bss_data,BSS_C
+               xdef       enemies_array
 enemies_array  ds.b       (enemy.length*NUM_ENEMIES)
 
 
@@ -33,6 +30,7 @@ enemies_mask   incbin     "gfx/enemies.mask"
 ;****************************************************************
                SECTION    code_section,CODE
          
+               xdef       enemies_model
 enemies_model:
 enemy1         dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.y

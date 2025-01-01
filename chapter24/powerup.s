@@ -9,19 +9,7 @@
               include    "plship.i"
               include    "sound.i"
 
-              xdef       create_powerup
-              xdef       draw_powerup
-              xdef       update_powerup
-              xdef       check_coll_ship_powerup
-    
-              xref       draw_bob
-              xref       draw_buffer
-              xref       player_ship
-              xref       rect1,rect2
-              xref       rect_intersects
-              xref       play_sample
-
-
+              
 ;****************************************************************
 ; GRAPHICS DATA in chip ram
 ;****************************************************************
@@ -37,20 +25,7 @@ powerup_mask  incbin     "gfx/powerup.mask"
               SECTION    code_section,CODE
 
 powerup       dcb.b      powerup.length,0                       ; current powerup instance
-; powerup       dc.w       200
-;               dc.w       100
-;               dc.w       0
-;               dc.w       PU_WIDTH
-;               dc.w       PU_HEIGHT
-;               dc.w       0
-;               dc.w       0
-;               dc.w       PU_WIDTH
-;               dc.w       PU_HEIGHT
-;               dc.l       powerup_gfx
-;               dc.l       powerup_mask
-;               dc.w       PU_S_ACTIVE
-;               dc.w       0
-;               dc.w       PU_VIS_DUR
+
 
 ;****************************************************************
 ; SUBROUTINES
@@ -63,6 +38,7 @@ powerup       dcb.b      powerup.length,0                       ; current poweru
 ; parameters:
 ; a0 - address of the enemy data structure
 ;****************************************************************
+              xdef       create_powerup
 create_powerup:
               movem.l    d0-a6,-(sp)
 
@@ -91,6 +67,7 @@ create_powerup:
 ;****************************************************************
 ; Draws a powerup object.
 ;****************************************************************
+              xdef       draw_powerup
 draw_powerup:
               movem.l    d0-a6,-(sp)
 
@@ -108,6 +85,7 @@ draw_powerup:
 ;****************************************************************
 ; Updates the powerup object state.
 ;****************************************************************
+              xdef       update_powerup
 update_powerup:
               movem.l    d0-a6,-(sp)
 
@@ -130,6 +108,7 @@ update_powerup:
 ;****************************************************************
 ; Checks the collision between ship and powerup.
 ;****************************************************************
+              xdef       check_coll_ship_powerup
 check_coll_ship_powerup:
 ; pseudocode:
 ;

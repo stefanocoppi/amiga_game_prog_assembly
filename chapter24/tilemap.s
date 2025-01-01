@@ -10,18 +10,22 @@
   include    "scroll_bgnd.i"
   include    "playfield.i"
 
+
+;****************************************************************
+; GRAPHICS DATA in chip ram
+;****************************************************************
 ; segment loaded in CHIP RAM
   SECTION    graphics_data,DATA_C
          
-tileset       incbin     "gfx/shooter_tiles_16.raw"    ; image 640 x 512 pixel , 8 bitplanes
+tileset       incbin     "gfx/shooter_tiles_16.raw"                   ; image 640 x 512 pixel , 8 bitplanes
 tileset_mask  incbin     "gfx/shooter_tiles.mask"
 
+
+;****************************************************************
+; SUBROUTINES
+;****************************************************************
   SECTION    code_section,CODE
 
-  xref       wait_blitter,tileset
-  xref       tileset_mask
-  xref       ship_coll_plane,map
-  xdef       draw_tile_column
 
 ;************************************************************************
 ; Draws a 64x64 pixel tile using Blitter.
@@ -152,6 +156,7 @@ draw_tile_mask:
 ; d2.w - x position (multiple of 16)
 ; a1   - address where draw the tile
 ;************************************************************************
+              xdef       draw_tile_column
 draw_tile_column: 
   movem.l    d0-a6,-(sp)
         

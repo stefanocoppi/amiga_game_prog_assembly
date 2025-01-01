@@ -11,15 +11,7 @@
                   include    "bob.i"
                   include    "enemies.i"
 
-                  xref       player_ship,draw_buffer,draw_bob
-
-                  xdef       ship_shots_draw,ship_shots_update
-                  xdef       ship_shot_create
-                  xdef       enemy_shot_create
-                  xdef       enemy_shots_draw
-                  xdef       enemy_shots_update
-                  xdef       ship_shots,enemy_shots
-                  xdef       shots_init
+                  
 
 ;****************************************************************
 ; GRAPHICS DATA in chip ram
@@ -38,12 +30,10 @@ enemy_shots_mask  incbin     "gfx/enemy_shots.mask"
 ;****************************************************************
                   SECTION    bss_data,BSS_C
 
+                  xdef       ship_shots
 ship_shots        ds.b       (shot.length*PLSHIP_MAX_SHOTS)                ; ship's shots array
+                  xdef       enemy_shots
 enemy_shots       ds.b       (shot.length*ENEMY_MAX_SHOTS)                 ; enemy shots array
-
-
-
-
 
 
 ;****************************************************************
@@ -56,6 +46,7 @@ enemy_shots       ds.b       (shot.length*ENEMY_MAX_SHOTS)                 ; ene
 ;****************************************************************
 ; Initializes shots array, making all shots idle
 ;****************************************************************
+                  xdef       shots_init
 shots_init:
                   movem.l    d0-a6,-(sp)
 
@@ -83,6 +74,7 @@ shots_init:
 ;****************************************************************
 ; Draws the ship's shots.
 ;****************************************************************
+                  xdef       ship_shots_draw
 ship_shots_draw:
                   movem.l    d0-a6,-(sp)
 
@@ -109,6 +101,7 @@ ship_shots_draw:
 ;****************************************************************
 ; Updates the ship's shots state.
 ;****************************************************************
+                  xdef       ship_shots_update
 ship_shots_update:
                   movem.l    d0-a6,-(sp)
 
@@ -175,6 +168,7 @@ ship_shots_update:
 ;****************************************************************
 ; Creates a new ship's shot.
 ;****************************************************************
+                  xdef       ship_shot_create
 ship_shot_create:
                   movem.l    d0-a6,-(sp)
 
@@ -235,6 +229,7 @@ ship_shot_create:
 ; parameters:
 ; a1 - enemy instance
 ;****************************************************************
+                  xdef       enemy_shot_create
 enemy_shot_create:
                   movem.l    d0-a6,-(sp)
 
@@ -277,6 +272,7 @@ enemy_shot_create:
 ;****************************************************************
 ; Draws the enemy shots.
 ;****************************************************************
+                  xdef       enemy_shots_draw
 enemy_shots_draw:
                   movem.l    d0-a6,-(sp)
 
@@ -304,6 +300,7 @@ enemy_shots_draw:
 ;****************************************************************
 ; Updates the enemy shots state.
 ;****************************************************************
+                  xdef       enemy_shots_update
 enemy_shots_update:
                   movem.l    d0-a6,-(sp)
 
@@ -350,3 +347,8 @@ enemy_shots_update:
 .return:
                   movem.l    (sp)+,d0-a6
                   rts
+
+
+
+
+

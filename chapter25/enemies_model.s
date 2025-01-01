@@ -8,14 +8,11 @@
                include    "enemies.i"
                include    "powerup.i"
 
-               xdef       enemies_model
-               xdef       enemies_array
-
-
 ;************************************************************************
 ; BSS DATA
 ;************************************************************************
                SECTION    bss_data,BSS_C
+               xdef       enemies_array
 enemies_array  ds.b       (enemy.length*NUM_ENEMIES)
 
 
@@ -36,6 +33,7 @@ boss_mask      incbin     "gfx/boss.mask"
 ;****************************************************************
                SECTION    code_section,CODE
          
+               xdef       enemies_model
 enemies_model:
 enemy1         dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.y
@@ -608,7 +606,7 @@ boss           dc.w       0                                     ; enemy.x
                dc.w       0                                     ; enemy.num_frames
                dc.w       ENEMY_STATE_INACTIVE                  ; enemy.state
                dc.w       5000                                  ; enemy.score
-               dc.w       20                                    ; enemy.energy
+               dc.w       40                                    ; enemy.energy
                dc.w       6016                                  ; enemy.map_position
                dc.w       0                                     ; enemy.tx
                dc.w       0                                     ; enemy.ty

@@ -11,9 +11,6 @@
               include    "graphics/graphics_lib.i"
               include    "takeover.i"
  
-              xdef       take_system,release_system
-              xref       copperlist
-
 
 ;************************************************************************
 ; VARIABLES
@@ -34,6 +31,7 @@ old_int4      dc.l       0
 ; Takes full control of Amiga hardware,
 ; disabling the O.S. in a controlled way.
 ;************************************************************************
+             xdef       take_system
 take_system:
               move.l     ExecBase,a6                   ; base address of Exec
               jsr        _LVOForbid(a6)                ; disables O.S. multitasking
@@ -77,6 +75,7 @@ take_system:
 ;************************************************************************
 ; Releases the hardware control to the O.S.
 ;************************************************************************
+             xdef       release_system
 release_system:
               movem.l    d0-a6,-(sp)
 

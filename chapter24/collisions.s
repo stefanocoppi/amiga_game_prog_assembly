@@ -13,31 +13,27 @@
                  include    "plship.i"
                  include    "scroll_bgnd.i"
 
-                 xdef       check_coll_shots_enemies
-                 xdef       check_coll_shots_plship
-                 xdef       check_coll_enemy_plship
-                 xdef       check_coll_plship_map
-                 xdef       ship_coll_plane
-                 xdef       rect1,rect2
-                 xdef       rect_intersects
-
-                 xref       ship_shots,enemies_array
-                 xref       plship_explode,enemy_explode
-                 xref       player_ship_mask,wait_blitter
-                 xref       draw_hud_bar
 
 ;****************************************************************
 ; BSS DATA
 ;****************************************************************
                  SECTION    bss_data,BSS_C
 
+                 xdef       rect1
 rect1            ds.b       rect.length                                    ; rectangles used for collision checking
+                 xdef       rect2
 rect2            ds.b       rect.length
 
+                 xdef       ship_coll_plane
 ship_coll_plane  ds.b       PF1_PLANE_SZ                                   ; plane used for pixel-perfect collisions between player's ship and map
 
 
+;****************************************************************
+; SUBROUTINES
+;****************************************************************
                  SECTION    code_section,CODE
+
+
 ;****************************************************************
 ; Check if two rectangles r1,r2 intersects.
 ;
@@ -48,6 +44,7 @@ ship_coll_plane  ds.b       PF1_PLANE_SZ                                   ; pla
 ; Output:
 ; d0.w 1 if the two rectangles intersects, 0 otherwise.
 ;****************************************************************
+                 xdef       rect_intersects
 rect_intersects:
                  movem.l    d1-a6,-(sp)
 
@@ -82,6 +79,7 @@ rect_intersects:
 ;****************************************************************
 ; Checks for collisions between player's ship shots and enemies.
 ;****************************************************************
+                 xdef       check_coll_shots_enemies
 check_coll_shots_enemies:
                  movem.l    d0-a6,-(sp)
 
@@ -184,6 +182,7 @@ coll_response_shots_enemies:
 ;****************************************************************
 ; Checks for collisions between enemy shots and player's ship.
 ;****************************************************************
+                 xdef       check_coll_shots_plship
 check_coll_shots_plship:
                  movem.l    d0-a6,-(sp)
 
@@ -279,6 +278,7 @@ coll_response_shots_plship:
 ;****************************************************************
 ; Checks for collisions between enemy and player's ship.
 ;****************************************************************
+                 xdef       check_coll_enemy_plship
 check_coll_enemy_plship:
                  movem.l    d0-a6,-(sp)
 
@@ -365,6 +365,7 @@ coll_response_enemy_plship:
 ;****************************************************************
 ; Checks for collisions between player's ship and map.
 ;****************************************************************
+                 xdef       check_coll_plship_map
 check_coll_plship_map:
                  movem.l    d0-a6,-(sp)
 

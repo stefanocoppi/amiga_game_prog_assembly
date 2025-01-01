@@ -7,13 +7,7 @@
             incdir     "include/"
             include    "hw.i"
 
-            xdef       read_mouse
-            xdef       mouse_dx
-            xdef       mouse_dy
-            xdef       mouse_lbtn
-            xdef       mouse_rbtn
-
-
+            
 ;****************************************************************
 ; VARIABLES
 ;****************************************************************
@@ -21,9 +15,13 @@
 
 mouse_x     dc.b       0                    ; old mouse position
 mouse_y     dc.b       0
+            xdef       mouse_dx
 mouse_dx    dc.w       0                    ; difference between current and old position of mouse
+            xdef       mouse_dy
 mouse_dy    dc.w       0
+            xdef       mouse_lbtn
 mouse_lbtn  dc.w       0                    ; state of left mouse button: 1 pressed, 0 not pressed
+            xdef       mouse_rbtn
 mouse_rbtn  dc.w       0                    ; state of left right button: 1 pressed, 0 not pressed
 
 
@@ -35,6 +33,7 @@ mouse_rbtn  dc.w       0                    ; state of left right button: 1 pres
 ;****************************************************************
 ; Reads the mouse position.
 ;****************************************************************
+            xdef       read_mouse
 read_mouse:
             movem.l    d0-a6,-(sp)
 

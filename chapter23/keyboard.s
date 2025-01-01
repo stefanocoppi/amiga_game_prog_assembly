@@ -7,16 +7,13 @@
              incdir     "include/"
              include    "hw.i"
 
-             xdef       init_keyboard
-             xdef       current_key
-
-
+            
              SECTION    code_section,CODE
 
 ;****************************************************************
 ; VARIABLES
 ;****************************************************************
-
+             xdef       current_key
 current_key  dc.b       0                                ; current key pressed on the keyboard
              even
 
@@ -24,9 +21,9 @@ current_key  dc.b       0                                ; current key pressed o
 ;****************************************************************
 ; Initializes the keyboard input.
 ;****************************************************************
+             xdef       init_keyboard
 init_keyboard:
-             ;movem.l    d0-a6,-(sp)
- 
+            
 ; disables all CIAA IRQs
 ;                         76543210
              move.b     #%01111111,CIAAICR
@@ -37,12 +34,10 @@ init_keyboard:
 ; installs level 2 keyboard interrupt routine
              move.l     #keyb_interrupt,$68
 
-; enables audio channel interrupts (bits 7-10)
 ; enables keyboard interrupts (bit 3)
 ;                         5432109876543210           
              move.w     #%1100000000001000,INTENA(A5)
              
-             ;movem.l    (sp)+,d0-a6
              rts
 
 
