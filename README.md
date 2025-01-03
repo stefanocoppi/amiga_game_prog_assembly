@@ -1,2 +1,2 @@
-# amiga_game_prog_assembly
+Source code of the book "Amiga Assembly Game Programming"
  
